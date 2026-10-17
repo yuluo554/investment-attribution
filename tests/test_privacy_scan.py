@@ -109,12 +109,17 @@ def test_digit_rule_does_not_fire_on_source_or_integer_amounts(tmp_path):
     assert not scan_privacy.digits_allowed(".py")
     assert not scan_privacy.digits_allowed(".xlsx")
 
-    # 小数位、URL、32 位以上十六进制摘要在判长数字前先摘掉
+    # 小数位、URL、32 位以上十六进制摘要、允许的 noreply 邮箱在判长数字前先摘掉
     assert not scan_privacy.scan_text("0.069148962371", "ratio", allow_digits=True)
     assert not scan_privacy.scan_text(
         "https://blog.csdn.net/x/article/details/147982719", "url", allow_digits=True
     )
     assert not scan_privacy.scan_text("a" * 56 + "01234567", "sha", allow_digits=True)
+    assert not scan_privacy.scan_text(
+        "282769740+yuluo554@" + "users.noreply.github.com", "identity", allow_digits=True
+    )
+    # 同一串数字离开"允许的邮箱 / URL"语境就必须命中
+    assert scan_privacy.scan_text("282769740", "bare", allow_digits=True)
 
     # 产物通路：整数分金额 / seed / 字符串形态的汇率都不得命中；
     # 同一份 JSON 里塞一个字符串形态的长数字账号串，必须命中。

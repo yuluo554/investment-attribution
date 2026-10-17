@@ -133,6 +133,8 @@ SHARE_TOKEN_RE = re.compile(r"(?<![A-Za-z0-9])A(\d{9,})(?![0-9])")
 # 判长数字前先摘掉的东西
 URL_RE = re.compile(r"[A-Za-z][A-Za-z0-9+.-]*://\S+")
 HEX_DIGEST_RE = re.compile(r"\b[0-9a-fA-F]{32,}\b")
+# 允许的 noreply 邮箱本身可以带一串数字本地部分（GitHub 用户 id），它不是内容
+ALLOWED_EMAIL_RE = re.compile(r"[A-Za-z0-9._%+-]+@" + re.escape(ALLOWED_EMAIL_DOMAIN))
 WHITELIST_TOKEN_RE = re.compile(r"(?<![A-Za-z0-9])[YA]0{6,9}[1-9](?![0-9])")
 DIGIT_RUN_RE = re.compile(r"(?<![\d.])\d{8,}(?![\d.])")
 
@@ -216,6 +218,7 @@ def scan_text(text, where, allow_digits=True):
     if allow_digits:
         scrubbed = URL_RE.sub("<URL>", text)
         scrubbed = HEX_DIGEST_RE.sub("<HEX>", scrubbed)
+        scrubbed = ALLOWED_EMAIL_RE.sub("<EMAIL>", scrubbed)
         scrubbed = WHITELIST_TOKEN_RE.sub("<ACCOUNT>", scrubbed)
         for match in DIGIT_RUN_RE.finditer(scrubbed):
             issues.append((DIGIT_RULE, where, match.group(0)))

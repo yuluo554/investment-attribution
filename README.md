@@ -443,3 +443,5 @@ tools/                        gen_data.py（确定性生成器）、scan_privacy
 
 见 [`plan/00-README总览.md`](plan/00-README总览.md)（决策记录、承诺-证据台账、里程碑）
 与 `plan/02`–`06`（架构、模块详设、数据计划、里程碑、交付对标）。
+本次发布的完整记录见 [`plan/RELEASE-M6.md`](plan/RELEASE-M6.md)
+（发布身份、三件套、脱敏四面扫描、可复现证据、CI 四矩阵）。
