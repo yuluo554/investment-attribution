@@ -1,0 +1,15 @@
+# 源码与文本统一 LF，避免跨平台字节漂移。
+* text=auto eol=lf
+
+# 冻结二进制/容器产物不做行尾归一（否则 sha256 失配）。
+*.xlsx binary
+*.xls binary
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.pdf binary
+*.zip binary
+
+# 合成样例中的 .xls 实际是 Tab 分隔文本，但为保住"扩展名骗人"的真实形态，
+# 仍按二进制冻结，禁止任何 EOL 改写。

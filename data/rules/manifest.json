@@ -1,0 +1,167 @@
+{
+  "format": "ia.manifest",
+  "format_version": 1,
+  "contract_version": "0.1.0-skeleton",
+  "bench_thresholds": {
+    "position_quantity_tolerance_shares": 1,
+    "position_amount_tolerance_cny": 0.01,
+    "xirr_relative_tolerance": 0.0001,
+    "split_conservation_tolerance_cny": 0.01,
+    "transfer_offset_tolerance_cny": 0.01
+  },
+  "coverage": {
+    "note": "M1 起由生成器填满；要求逐形态登记 total / sampled 且分子 = 分母（测试锁定）。",
+    "surfaces": [
+      {
+        "surface": "import.htsec_xlsx",
+        "total": 0,
+        "sampled": 0
+      },
+      {
+        "surface": "import.huaxi_xls_tab_gb18030",
+        "total": 0,
+        "sampled": 0
+      },
+      {
+        "surface": "import.generic_csv_utf8",
+        "total": 0,
+        "sampled": 0
+      },
+      {
+        "surface": "import.generic_csv_gb18030",
+        "total": 0,
+        "sampled": 0
+      },
+      {
+        "surface": "import.cell_formula_shell",
+        "total": 0,
+        "sampled": 0
+      },
+      {
+        "surface": "import.missing_column",
+        "total": 0,
+        "sampled": 0
+      },
+      {
+        "surface": "import.misaligned_column",
+        "total": 0,
+        "sampled": 0
+      },
+      {
+        "surface": "import.empty_file",
+        "total": 0,
+        "sampled": 0
+      },
+      {
+        "surface": "import.header_only",
+        "total": 0,
+        "sampled": 0
+      },
+      {
+        "surface": "cost.same_day_multi_fill",
+        "total": 0,
+        "sampled": 0
+      },
+      {
+        "surface": "cost.partial_sell",
+        "total": 0,
+        "sampled": 0
+      },
+      {
+        "surface": "cost.clear_then_rebuy",
+        "total": 0,
+        "sampled": 0
+      },
+      {
+        "surface": "cost.after_split_sell",
+        "total": 0,
+        "sampled": 0
+      },
+      {
+        "surface": "cost.fifo_vs_wavg_divergence",
+        "total": 0,
+        "sampled": 0
+      },
+      {
+        "surface": "corporate_action.dividend",
+        "total": 0,
+        "sampled": 0
+      },
+      {
+        "surface": "corporate_action.stock_dividend",
+        "total": 0,
+        "sampled": 0
+      },
+      {
+        "surface": "corporate_action.rights_issue",
+        "total": 0,
+        "sampled": 0
+      },
+      {
+        "surface": "corporate_action.split",
+        "total": 0,
+        "sampled": 0
+      },
+      {
+        "surface": "corporate_action.reinvested_dividend",
+        "total": 0,
+        "sampled": 0
+      },
+      {
+        "surface": "corporate_action.unrecognized_pending",
+        "total": 0,
+        "sampled": 0
+      },
+      {
+        "surface": "attribution.lump_sum",
+        "total": 0,
+        "sampled": 0
+      },
+      {
+        "surface": "attribution.dca",
+        "total": 0,
+        "sampled": 0
+      },
+      {
+        "surface": "attribution.midterm_redemption",
+        "total": 0,
+        "sampled": 0
+      },
+      {
+        "surface": "attribution.negative_return",
+        "total": 0,
+        "sampled": 0
+      },
+      {
+        "surface": "attribution.zero_return",
+        "total": 0,
+        "sampled": 0
+      },
+      {
+        "surface": "attribution.zero_terminal_value",
+        "total": 0,
+        "sampled": 0
+      },
+      {
+        "surface": "merge.two_accounts",
+        "total": 0,
+        "sampled": 0
+      },
+      {
+        "surface": "merge.three_accounts",
+        "total": 0,
+        "sampled": 0
+      },
+      {
+        "surface": "merge.internal_transfer",
+        "total": 0,
+        "sampled": 0
+      },
+      {
+        "surface": "merge.overlapping_symbol",
+        "total": 0,
+        "sampled": 0
+      }
+    ]
+  }
+}
