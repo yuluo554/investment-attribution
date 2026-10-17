@@ -24,6 +24,25 @@ jobs:
           # 历史面会静默缩水成"只扫了最新一版"——那正是假绿。
           fetch-depth: 0
 
+      - name: Restore annotated tag objects (checkout leaves a lightweight tag ref)
+        shell: bash
+        run: |
+          # actions/checkout 对 tag 事件执行的是
+          #   git fetch --no-tags origin +<commit>:refs/tags/<tag>
+          # 于是 tag ref 直接指向 commit——标注 tag 对象根本没进本地库，
+          # 脱敏扫描的历史/元数据两面就看不到 tagger（实测踩到：tag run 报
+          # "history hits=0" 却并非因为历史干净，而是因为对象不在）。
+          # 这里按 refspec 强制重取，并要求"ref 上的对象确实是 tag"，
+          # 防止它再次静默降级成"扫了但没扫到"。
+          if git ls-remote --tags --exit-code origin >/dev/null 2>&1; then
+            git fetch --force --no-recurse-submodules origin '+refs/tags/*:refs/tags/*'
+          fi
+          if [ "$GITHUB_REF_TYPE" = "tag" ]; then
+            ref="refs/tags/$GITHUB_REF_NAME"
+            test "$(git cat-file -t "$ref")" = "tag"
+            git for-each-ref --format='tagger=%(taggername) <%(taggeremail)>' "$ref"
+          fi
+
       - uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python-version }}

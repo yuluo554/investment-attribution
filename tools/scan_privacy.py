@@ -12,7 +12,8 @@
 判据（与 ``data/README.md`` §三 的白名单同源）：
 
 - ``abs_path``：本机绝对路径（盘符写法、macOS/Linux 家目录前缀、UNC 共享）；
-- ``email``：非 ``*.noreply.github.com`` 的邮箱；
+- ``email``：非 ``*.noreply.github.com`` 的邮箱（``git@github.com:owner/repo`` 这类
+  SSH 远端写法与 ``git@github.com`` 裸式都不是邮箱，先摘掉再判）；
 - ``credential``：GitHub token、AWS key、私钥头、口令赋值；
 - ``account``：**完整**账号形态 ``Y``+7 位 / ``A``+9 位 之外的一切
   （多一位、少一位、数值不在 1..9 都算）——所以"真实账号形态"必然命中；
@@ -116,6 +117,15 @@ ABS_PATH_PATTERNS = (
 
 EMAIL_RE = re.compile(r"[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}")
 
+# SSH 远端写法长得像邮箱但不是联系方式，判完就得摘掉：
+#   ① scp 式 `git@github.com:owner/repo.git`（主机后紧跟冒号）；
+#   ② 裸式 `git@github.com`（`ssh -T git@github.com` 的写法）。
+# `git` 作为本地部分是 Git 服务的约定账号，不是某个人的邮箱。
+REMOTE_SPEC_RES = (
+    re.compile(r"(?<![A-Za-z0-9._%+-])[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+:[^\s\"'`,)]*"),
+    re.compile(r"(?<![A-Za-z0-9._%+-])git@[A-Za-z0-9.-]+"),
+)
+
 CREDENTIAL_PATTERNS = (
     re.compile(r"\bgh[pousr]_[A-Za-z0-9]{20,}"),
     re.compile(r"\bgithub_pat_[A-Za-z0-9_]{20,}"),
@@ -194,7 +204,10 @@ def scan_text(text, where, allow_digits=True):
         for match in pattern.finditer(text):
             issues.append((PATH_RULE, where, match.group(0)))
 
-    for match in EMAIL_RE.finditer(text):
+    scrubbed = text
+    for pattern in REMOTE_SPEC_RES:
+        scrubbed = pattern.sub("<REMOTE>", scrubbed)
+    for match in EMAIL_RE.finditer(scrubbed):
         address = match.group(0)
         if not address.endswith(ALLOWED_EMAIL_DOMAIN):
             issues.append((EMAIL_RULE, where, address))
@@ -353,7 +366,12 @@ def scan_metadata(root):
 
 
 def _read_blobs(root, shas):
-    """批量读 blob 内容：一次 ``cat-file --batch`` 不用为每个对象起进程。"""
+    """批量读对象内容：一次 ``cat-file --batch`` 不用为每个对象起进程。
+
+    返回 ``{sha: (object_type, raw_bytes)}``——类型必须一起拿回来，因为标注
+    tag 对象的正文是**提交元数据**（含 `tagger` 行里的 Unix 时间戳），不能
+    按文件内容那套规则判长数字串。
+    """
     contents = {}
     if not shas:
         return contents
@@ -373,7 +391,7 @@ def _read_blobs(root, shas):
             if len(parts) != 3:
                 continue
             size = int(parts[2])
-            contents[sha] = proc.stdout.read(size)
+            contents[sha] = (parts[1], proc.stdout.read(size))
             proc.stdout.read(1)
     finally:
         try:
@@ -384,12 +402,12 @@ def _read_blobs(root, shas):
     return contents
 
 
-def scan_history(root):
-    """历史面：``rev-list --objects`` 取「可达对象 + 路径」，按路径后缀套同一套适用范围。
+def history_entries(root):
+    """发布历史里的「对象 + 路径」清单：可达对象，按 (sha, path) 去重。
 
     路径信息**必须拿到**：只有 blob 摘要时无法判断"这是 ``.py`` 还是真值
     JSON"，``digit_run`` 就会把整数分金额整片误报成账号。所以这里不用
-    ``--batch-all-objects``，改用能带路径的 ``rev-list --objects``。
+    ``--batch-all-objects``（它不给路径），改用能带路径的 ``rev-list --objects``。
     范围是**可达对象**：不可达的悬挂对象不会随仓库发布，不属发布物。
     """
     if not is_git_repo(root):
@@ -406,15 +424,40 @@ def scan_history(root):
             continue
         seen.add((sha, path))
         entries.append((sha, path))
+    return entries
+
+
+def scan_history(root):
+    """历史面：逐个「对象 + 路径」套与工作面同一套适用范围。
+
+    - blob 按**路径后缀**定适用范围（`.py` 不判长数字串、JSON 只判字符串叶子）；
+    - 非 blob 对象（annotated tag 等）正文是**元数据**：邮箱 / 账号 / 凭据 / 路径
+      规则照判，但长数字串不判——`tagger` 行自带 Unix 时间戳，一刀切必误报。
+      这类对象的"本行信息"（tagger 邮箱）由 ``scan_metadata`` 单独守。
+    """
+    entries = history_entries(root)
+    if entries is None:
+        return None
     if not entries:
         return []
-    blobs = _read_blobs(root, sorted({sha for sha, _ in entries}))
+    objects = _read_blobs(root, sorted({sha for sha, _ in entries}))
     issues = []
     for sha, path in entries:
-        raw = blobs.get(sha)
-        if raw is None:
+        loaded = objects.get(sha)
+        if loaded is None:
             continue
+        object_type, raw = loaded
         where = "{}@{}".format(path, sha[:12])
+        if object_type != "blob":
+            text, _ = decode_text(raw)
+            issues.extend(
+                scan_text(
+                    text,
+                    "{}:{}".format(object_type, where),
+                    allow_digits=False,
+                )
+            )
+            continue
         if path.endswith(".json"):
             try:
                 payload = json.loads(raw.decode("utf-8"))

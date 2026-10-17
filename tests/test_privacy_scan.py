@@ -79,7 +79,32 @@ def test_history_is_clean_except_the_declared_negative_controls():
     assert excused, "M1 起的阳性对照字面量应仍在历史里——若为空说明扫描没覆盖历史"
     for _, _, snippet in excused:
         assert snippet in scan_privacy.DECLARED_NEGATIVE_CONTROLS, snippet
-        assert snippet in (scan_privacy.DECLARED_NEGATIVE_CONTROLS[snippet], snippet)
+
+
+def test_history_scan_covers_the_annotated_tag_object():
+    """历史面必须真的扫到标注 tag 对象，而不是把它跳过。
+
+    这条是防"为了躲开 tag 元数据里的 Unix 时间戳，干脆不扫 tag 对象"——
+    跳过的代价是 tag 消息里塞个真账号也没人管。正确做法是照扫，只是
+    tag 正文不判长数字串（时间戳天然是 10 位数）。
+    """
+    entries = scan_privacy.history_entries(REPO_ROOT)
+    assert entries is not None
+    objects = scan_privacy._read_blobs(REPO_ROOT, sorted({sha for sha, _ in entries}))
+    tag_paths = [
+        path
+        for sha, path in entries
+        if objects.get(sha, ("", b""))[0] == "tag"
+    ]
+    assert tag_paths, "历史里应含标注 tag 对象；没有说明 tag 还没建或扫描范围不对"
+    # tag 对象正文确实按"元数据"处理：不判长数字串，但邮箱/账号/凭据规则照判
+    for sha, path in entries:
+        object_type, raw = objects.get(sha, ("", b""))
+        if object_type != "tag":
+            continue
+        text = raw.decode("utf-8", "replace")
+        assert "@" in text and "tagger" in text
+        assert not scan_privacy.scan_text(text, "tag", allow_digits=False), path
 
 
 def test_declared_allowance_is_frozen():
@@ -95,6 +120,18 @@ def test_allowance_is_not_a_blanket_mute():
         hits, excused = scan_privacy.split_excused(scan_privacy.scan_text(sample, "probe"))
         assert hits, sample
         assert excused == [], sample
+
+
+def test_ssh_remote_is_not_an_email_but_a_real_address_is():
+    """SSH 远端写法（scp 式与裸式）不是邮箱；同一行的真邮箱仍必须命中。"""
+    scp_style = "origin " + "git" + "@" + "github.com" + ":" + "owner/repo.git"
+    bare_style = "ssh -T " + "git" + "@" + "github.com"
+    for sample in (scp_style, bare_style):
+        found = {item[0] for item in scan_privacy.scan_text(sample, "handoff")}
+        assert scan_privacy.EMAIL_RULE not in found, (sample, found)
+        mixed = sample + " 联系 " + "a" + "@" + "b.invalid"
+        found = {item[0] for item in scan_privacy.scan_text(mixed, "handoff")}
+        assert scan_privacy.EMAIL_RULE in found, ("摘远端把真邮箱一起放过了", mixed)
 
 
 def test_digit_rule_does_not_fire_on_source_or_integer_amounts(tmp_path):

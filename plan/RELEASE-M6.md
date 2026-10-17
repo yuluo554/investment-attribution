@@ -185,26 +185,112 @@ CI 步骤（24 步）覆盖：安装 → 全量测试 → **脱敏四面扫描**
 
 | DoD | 状态 | 在哪验的 |
 |---|---|---|
-| 三件套齐：tag / Release 附产物 / 发布留档 | 🟡 留档已落盘，tag 与 Release 见 §七 | §二、§七 |
+| 三件套齐：tag / Release 附产物 / 发布留档 | ✅ | tag `v1.0.0` + Release 两个附件（§七）+ 本文件在 tag 前落盘并进 tag 树 |
 | 干净环境 clone 按 README 逐条跑通 | ✅ | §4.6 |
-| CI 四矩阵绿（push 与 tag 各一条 run 均绿） | 🟡 push run 已绿，tag run 见 §七 | §五、§七 |
-| 下载件 sha256 与留档一致 | ⬜ | §七 |
-| 脱敏扫描 0 命中（含 tag tagger 邮箱） | 🟡 四面 0 命中已验；tagger 邮箱见 §七 | §三、§七 |
+| CI 四矩阵绿（push 与 tag 各一条 run 均绿） | ✅ | §五、§七：3 次推送 → 3 条 run 全绿，tag run 在列 |
+| 下载件 sha256 与留档一致 | ✅ | §七：下载件与本地留档件逐字节相同，sha256 一致 |
+| 脱敏扫描 0 命中（含 tag tagger 邮箱） | ✅ | §三（四面 0 命中）+ §七（tagger 邮箱同为 noreply） |
 | README 状态行转为正式版 | ✅ | `README.md`：`**状态：v1.0.0 正式发布（2026-10-17）。**` |
-| `plan/00` 里程碑表 M6 行翻 ✅；`plan/06` §五 检查单逐项打勾 | 🟡 与 tag 相关项待 §七 | `plan/00`、`plan/06` |
+| `plan/00` 里程碑表 M6 行翻 ✅；`plan/06` §五 检查单逐项打勾 | ✅ | `plan/00`、`plan/05`、`plan/06` 与本文件同批回写 |
 
 ## 七、发布后分栏（tag 之后追加）
 
-> 本节由 tag 之后的追加提交补齐；tag 树里的这一节是**待补**状态，不是遗漏。
+> 本节由 tag 之后的追加提交补齐。tag 树里的这一节留下的是**待补**状态，不是遗漏——
+> 发布纪律要求留档在 tag 前落盘，而 tag 之后才产生的事实只能在 tag 之后写。
+> 本节内容**不改写 §一–§六**。
+
+### 7.1 事实
 
 | 事实 | 值 |
 |---|---|
-| tag 指向的 commit | ⬜ 待补 |
-| push run（`main`） | <https://github.com/yuluo554/investment-attribution/actions/runs/39035251944> — 四矩阵全绿（py3.8/ubuntu 30s、py3.8/windows 1m32s、py3.12/windows 43s、py3.12/ubuntu 26s） |
-| tag run | ⬜ 待补 |
-| tag tagger 邮箱 | ⬜ 待补 |
-| 附件文件名 / 大小 | ⬜ 待补 |
-| 附件 sha256（本地留档） | ⬜ 待补 |
-| 真下载复核（下载后复算 sha256） | ⬜ 待补 |
+| tag 指向的 commit | `7da7c269aba3289726fdd982c1bf76c106659dd7`（`M6 发布留档：RELEASE-M6.md 落盘（tag 前）+ plan 回写`） |
+| tag tagger 邮箱 | `yuluo554 <282769740+yuluo554@users.noreply.github.com>`——与全部 commit 的 author / committer 同源，非个人邮箱 |
+| 推送事件 | **3 次推送 → 3 条 run**：`8e9b9e6`(main) / `7da7c26`(main) / `v1.0.0`(tag)，事件数 = run 数 |
+| run · `8e9b9e6` | <https://github.com/yuluo554/investment-attribution/actions/runs/39035251944> — 四矩阵全绿（py3.8/ubuntu 30s、py3.8/windows 1m32s、py3.12/windows 43s、py3.12/ubuntu 26s） |
+| run · `7da7c26` | <https://github.com/yuluo554/investment-attribution/actions/runs/39036102893> — 四矩阵全绿（1m25s） |
+| run · tag `v1.0.0` | <https://github.com/yuluo554/investment-attribution/actions/runs/39036251965> — 四矩阵全绿（py3.8/ubuntu 39s、py3.8/windows 1m15s、py3.12/windows 52s、py3.12/ubuntu 25s） |
+| Release | <https://github.com/yuluo554/investment-attribution/releases/tag/v1.0.0>（`isDraft=false`、`isPrerelease=false`） |
+| 附件 | `investment-attribution-v1.0.0.tar.gz`（336748 字节）+ `SHA256SUMS`（103 字节），均 `state = uploaded` |
+| 附件 sha256 | `684a4913d96fa3ddab81ff25f7f167ef9c177d8f9a8297366ab52aa52f3c3498` |
+| 重复构建可复现 | 同一 tag 连建两次 sha256 完全相同（`git archive --format=tar --prefix=investment-attribution-1.0.0/ v1.0.0 \| gzip -9n`）——`git archive` 取 commit 时间戳、`gzip -n` 不写文件名与时间，故字节稳定 |
+| 真下载复核 | `gh release download v1.0.0` 取回两个附件：`sha256sum -c SHA256SUMS` → `OK`；下载件与本地留档件 `cmp` → **逐字节相同**；两次复算均为 `684a4913…c3498`，与上面记录一致 |
+| 本地留档副本 | 仓库内 `release/`（已 gitignore，不入仓）：`investment-attribution-v1.0.0.tar.gz` + `SHA256SUMS` + `download-check/`（下载复核用） |
 
-（push run <https://github.com/yuluo554/investment-attribution/actions/runs/39035251944> 在 §一 的内容基线上触发，属发布前可验，故已在此节先行落值。）
+**tag 树与 main 的差异**：tag `v1.0.0` 指向 `7da7c26`，其 `RELEASE-M6.md` 的 §七 是待补状态；
+本节内容随 tag 之后的追加提交进入 `main`。这是发布纪律要求的形态，不是"两头不一致的漏改"。
+
+### 7.2 发布后查出的两个问题（都记清，不用"后来修好了"糊过去）
+
+**问题 A：CI 的 tag run 其实没看到标注 tag 对象，"tagger 邮箱"这一项没被 CI 覆盖。**
+
+`actions/checkout` 对 tag 事件执行的是
+`git fetch --no-tags --prune origin +<commit>:refs/tags/<tag>`——把 **commit** 直接塞进
+tag ref，于是本地只有一个**轻量 tag**，标注 tag 对象根本没进库。后果是 tag run 里：
+
+- 历史面看不到 tag 对象（它压根不在可达对象里）；
+- 元数据面的 `git for-each-ref refs/tags` 拿到的是空 tagger。
+
+所以 tag run 日志里的 `history hits=0 / metadata hits=0` **不是"历史干净"的证明**，
+至少对 tag 对象那一部分不是——这正是"扫了但没扫到"的假绿形态。
+
+- **tag tagger 邮箱是怎么验的**：本地（有标注 tag 对象）实跑
+  `git for-each-ref --format='%(taggername)|%(taggeremail)' refs/tags` →
+  `yuluo554|<282769740+yuluo554@users.noreply.github.com>`，非个人邮箱。
+- **缺口怎么补的**：CI 增加一步 `Restore annotated tag objects`，按
+  `git fetch --force origin '+refs/tags/*:refs/tags/*'` 强制重取，并**要求
+  `git cat-file -t refs/tags/$GITHUB_REF_NAME` 必须等于 `tag`**——它一旦再退化成轻量 tag，
+  CI 会直接红，而不是安静地少扫一截。本机已复现该退化（checkout 式 fetch 后
+  `cat-file -t` 返回 `commit`，refspec 重取后返回 `tag`）。
+
+**问题 B：`v1.0.0` 里那版脱敏扫描器，在**带标注 tag 的 clone** 上会报 1 条误命中。**
+
+标注 tag 对象的正文里有一行 `tagger <name> <email> <unix 秒> <tz>`，那串 10 位 Unix
+时间戳会被 `digit_run` 规则命中。`v1.0.0`（`7da7c26`）那版把非 blob 对象也按文件内容判，
+于是：
+
+```
+$ git clone <repo> && cd investment-attribution && python tools/scan_privacy.py --all
+[clean] tree hits=0 excused=0
+[clean] artifacts hits=0 excused=0
+[clean] metadata hits=0 excused=0
+[dirty] history hits=1 excused=5
+        HIT  digit_run | v1.0.0@4bef938f5dc7 | <tagger 行里的 10 位 Unix 秒>
+total hits = 1 / excused = 5 / skipped = 0        # exit 1
+```
+
+（上面那段是**复现输出**，不是随手编的示例；那串被命中的 10 位数字是 `tagger` 行的时间戳，
+此处按占位写，免得本文档自己又给扫描器送一条 `digit_run`。）
+
+**影响范围（不含糊）**：只影响"拿 git clone 了带这个标注 tag 的仓库"的人，且只影响
+`--all` 的 `history` 面——**发布包（tarball）里没有 `.git`，历史与元数据两面本来就报
+`skipped`，所以下载附件的人不受影响**；tree / artifacts / metadata 三面也不受影响。
+但**发出去的隐私门禁自己误报，比不报更糟**（门禁一旦噪声大于信号就会被关掉），
+所以这条按缺陷记，不按"设计如此"记。
+
+- **怎么修的（落在 main，不在 tag 里）**：`scan_history` 按对象类型分流——blob 按
+  **路径后缀**定适用范围，非 blob 对象（标注 tag 等）按**元数据**处理：邮箱 / 账号 /
+  凭据 / 绝对路径规则照判，**只有长数字串不判**（时间戳天然是 10 位）。为此
+  `_read_blobs` 改成连对象类型一起取回。同时补了一条测试
+  `test_history_scan_covers_the_annotated_tag_object`：**tag 对象必须真的被扫到**
+  （而不是为了躲开时间戳干脆跳过）——跳过的代价是 tag 消息里塞个真账号也没人管。
+- **为什么没有重打 tag**：`v1.0.0` 已经发布且三件套证据（三条 run、附件 sha256、
+  真下载复核）都已落档，重打会把已记录的 tag→commit 事实作废、并让"发布前落盘的留档"
+  与 tag 树再度错位；而这个缺陷既不改变 `data/`、也不改变任何口径与产物，
+  仅在一种明确的用法下多报一条。**选择记录偏差 + 在 main 修 + 让 CI 能抓住复发**，
+  而不是把已发布的 tag 悄悄挪走。若将来确有需要，正确做法是发 `v1.0.1`，
+  而不是覆盖 `v1.0.0`。
+
+### 7.3 修复后的复跑（main，2026-10-17）
+
+```
+$ python tools/scan_privacy.py --self-test      # 五条规则阳性对照全 caught
+$ python tools/scan_privacy.py --all
+[clean] tree hits=0 excused=0
+[clean] artifacts hits=0 excused=0
+[clean] metadata hits=0 excused=0
+[clean] history hits=0 excused=5
+total hits = 0 / excused = 5 / skipped = 0      # exit 0
+```
+
+`py -3.8` / `py -3.12` 全量 pytest 各 429 passed；`tools/gen_data.py --check` 形态 +
+29 产物逐字节不变。修的是**判据与覆盖面**，没碰任何数据、口径或产物。
