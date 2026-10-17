@@ -29,6 +29,11 @@ def dumps_json(obj):
 def write_atomic(path, text, encoding="utf-8"):
     """先写同目录临时文件再 rename，防中断留下半个产物。"""
     target = os.fspath(path)
+    if os.path.isdir(target):
+        raise UsageError(
+            "输出路径是目录而不是文件：{}".format(target),
+            code="OUT_TARGET_IS_DIRECTORY",
+        )
     directory = os.path.dirname(os.path.abspath(target))
     if not os.path.isdir(directory):
         raise UsageError(

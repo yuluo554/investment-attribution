@@ -1,0 +1,6224 @@
+{
+  "contract_version": "0.3.0-m2",
+  "divergences": [
+    {
+      "account_id": "Y0000001",
+      "difference_fen": -4100,
+      "fifo_realized_fen": 88502,
+      "source_file": "htsec-demo-001.xlsx",
+      "source_line_no": 6,
+      "symbol": "699001",
+      "wavg_realized_fen": 84402
+    },
+    {
+      "account_id": "Y0000001",
+      "difference_fen": 4100,
+      "fifo_realized_fen": 127248,
+      "source_file": "htsec-demo-001.xlsx",
+      "source_line_no": 7,
+      "symbol": "699001",
+      "wavg_realized_fen": 131348
+    },
+    {
+      "account_id": "Y0000002",
+      "difference_fen": 5643,
+      "fifo_realized_fen": 87400,
+      "source_file": "huaxi-demo-001.xls",
+      "source_line_no": 8,
+      "symbol": "699005",
+      "wavg_realized_fen": 93043
+    },
+    {
+      "account_id": "Y0000001",
+      "difference_fen": -16575,
+      "fifo_realized_fen": 23606,
+      "source_file": "htsec-demo-001.xlsx",
+      "source_line_no": 21,
+      "symbol": "699002",
+      "wavg_realized_fen": 7031
+    },
+    {
+      "account_id": "Y0000001",
+      "difference_fen": 16575,
+      "fifo_realized_fen": 222915,
+      "source_file": "htsec-demo-001.xlsx",
+      "source_line_no": 22,
+      "symbol": "699002",
+      "wavg_realized_fen": 239490
+    },
+    {
+      "account_id": "Y0000001",
+      "difference_fen": 1362,
+      "fifo_realized_fen": 6842,
+      "source_file": "htsec-demo-001.xlsx",
+      "source_line_no": 23,
+      "symbol": "699001",
+      "wavg_realized_fen": 8204
+    },
+    {
+      "account_id": "Y0000002",
+      "difference_fen": -5643,
+      "fifo_realized_fen": -18300,
+      "source_file": "huaxi-demo-001.xls",
+      "source_line_no": 16,
+      "symbol": "699005",
+      "wavg_realized_fen": -23943
+    }
+  ],
+  "format": "ia.truth.cost",
+  "format_version": 1,
+  "generator": {
+    "seed": 11400714819323198485,
+    "tool": "tools/gen_data.py"
+  },
+  "methods": {
+    "fifo": {
+      "accounts": [
+        {
+          "account_id": "Y0000001",
+          "cash_in_fen": 19773948,
+          "cash_out_fen": 8136560,
+          "fees_fen": 11346,
+          "net_cash_flow_fen": 11637388,
+          "opening_cash_fen": 0,
+          "position_cost_fen": 1963119,
+          "realized_net_fen": 474273,
+          "rows": 22
+        },
+        {
+          "account_id": "Y0000002",
+          "cash_in_fen": 17623895,
+          "cash_out_fen": 4709500,
+          "fees_fen": 9605,
+          "net_cash_flow_fen": 12914395,
+          "opening_cash_fen": 0,
+          "position_cost_fen": 0,
+          "realized_net_fen": -110605,
+          "rows": 17
+        },
+        {
+          "account_id": "Y0000003",
+          "cash_in_fen": 2214285,
+          "cash_out_fen": 195500,
+          "fees_fen": 1215,
+          "net_cash_flow_fen": 2018785,
+          "opening_cash_fen": 0,
+          "position_cost_fen": 0,
+          "realized_net_fen": 18785,
+          "rows": 3
+        },
+        {
+          "account_id": "Y0000004",
+          "cash_in_fen": 4103390,
+          "cash_out_fen": 2000520,
+          "fees_fen": 2130,
+          "net_cash_flow_fen": 2102870,
+          "opening_cash_fen": 0,
+          "position_cost_fen": 1000260,
+          "realized_net_fen": 98130,
+          "rows": 4
+        }
+      ],
+      "daily_snapshots": [
+        {
+          "date": "2025-01-02",
+          "positions": []
+        },
+        {
+          "date": "2025-01-06",
+          "positions": [
+            {
+              "account_id": "Y0000001",
+              "cost_fen": 1511015,
+              "quantity": "1500",
+              "symbol": "699001"
+            }
+          ]
+        },
+        {
+          "date": "2025-01-10",
+          "positions": [
+            {
+              "account_id": "Y0000001",
+              "cost_fen": 1511015,
+              "quantity": "1500",
+              "symbol": "699001"
+            }
+          ]
+        },
+        {
+          "date": "2025-01-15",
+          "positions": [
+            {
+              "account_id": "Y0000001",
+              "cost_fen": 1511015,
+              "quantity": "1500",
+              "symbol": "699001"
+            },
+            {
+              "account_id": "Y0000002",
+              "cost_fen": 600500,
+              "quantity": "300",
+              "symbol": "699005"
+            }
+          ]
+        },
+        {
+          "date": "2025-02-03",
+          "positions": [
+            {
+              "account_id": "Y0000001",
+              "cost_fen": 1511015,
+              "quantity": "1500",
+              "symbol": "699001"
+            },
+            {
+              "account_id": "Y0000002",
+              "cost_fen": 1011000,
+              "quantity": "500",
+              "symbol": "699005"
+            }
+          ]
+        },
+        {
+          "date": "2025-02-10",
+          "positions": [
+            {
+              "account_id": "Y0000001",
+              "cost_fen": 1511015,
+              "quantity": "1500",
+              "symbol": "699001"
+            },
+            {
+              "account_id": "Y0000001",
+              "cost_fen": 1300513,
+              "quantity": "2000",
+              "symbol": "699002"
+            },
+            {
+              "account_id": "Y0000002",
+              "cost_fen": 1011000,
+              "quantity": "500",
+              "symbol": "699005"
+            }
+          ]
+        },
+        {
+          "date": "2025-02-20",
+          "positions": [
+            {
+              "account_id": "Y0000001",
+              "cost_fen": 1511015,
+              "quantity": "1500",
+              "symbol": "699001"
+            },
+            {
+              "account_id": "Y0000001",
+              "cost_fen": 1300513,
+              "quantity": "2000",
+              "symbol": "699002"
+            },
+            {
+              "account_id": "Y0000002",
+              "cost_fen": 1011000,
+              "quantity": "500",
+              "symbol": "699005"
+            }
+          ]
+        },
+        {
+          "date": "2025-03-03",
+          "positions": [
+            {
+              "account_id": "Y0000001",
+              "cost_fen": 1511015,
+              "quantity": "1500",
+              "symbol": "699001"
+            },
+            {
+              "account_id": "Y0000001",
+              "cost_fen": 1300513,
+              "quantity": "2000",
+              "symbol": "699002"
+            },
+            {
+              "account_id": "Y0000002",
+              "cost_fen": 1407500,
+              "quantity": "700",
+              "symbol": "699005"
+            }
+          ]
+        },
+        {
+          "date": "2025-03-05",
+          "positions": [
+            {
+              "account_id": "Y0000001",
+              "cost_fen": 1300513,
+              "quantity": "2000",
+              "symbol": "699002"
+            },
+            {
+              "account_id": "Y0000002",
+              "cost_fen": 1407500,
+              "quantity": "700",
+              "symbol": "699005"
+            }
+          ]
+        },
+        {
+          "date": "2025-03-12",
+          "positions": [
+            {
+              "account_id": "Y0000001",
+              "cost_fen": 1300513,
+              "quantity": "2000",
+              "symbol": "699002"
+            },
+            {
+              "account_id": "Y0000002",
+              "cost_fen": 1407500,
+              "quantity": "700",
+              "symbol": "699005"
+            },
+            {
+              "account_id": "Y0000003",
+              "cost_fen": 195500,
+              "quantity": "100",
+              "symbol": "699005"
+            }
+          ]
+        },
+        {
+          "date": "2025-03-20",
+          "positions": [
+            {
+              "account_id": "Y0000001",
+              "cost_fen": 1300513,
+              "quantity": "2000",
+              "symbol": "699002"
+            },
+            {
+              "account_id": "Y0000002",
+              "cost_fen": 1407500,
+              "quantity": "700",
+              "symbol": "699005"
+            },
+            {
+              "account_id": "Y0000003",
+              "cost_fen": 195500,
+              "quantity": "100",
+              "symbol": "699005"
+            }
+          ]
+        },
+        {
+          "date": "2025-03-24",
+          "positions": [
+            {
+              "account_id": "Y0000001",
+              "cost_fen": 1300513,
+              "quantity": "2000",
+              "symbol": "699002"
+            },
+            {
+              "account_id": "Y0000002",
+              "cost_fen": 1407500,
+              "quantity": "700",
+              "symbol": "699005"
+            },
+            {
+              "account_id": "Y0000003",
+              "cost_fen": 195500,
+              "quantity": "100",
+              "symbol": "699005"
+            },
+            {
+              "account_id": "Y0000004",
+              "cost_fen": 2000520,
+              "quantity": "200",
+              "symbol": "699004"
+            }
+          ]
+        },
+        {
+          "date": "2025-03-28",
+          "positions": [
+            {
+              "account_id": "Y0000001",
+              "cost_fen": 1300513,
+              "quantity": "2000",
+              "symbol": "699002"
+            },
+            {
+              "account_id": "Y0000002",
+              "cost_fen": 1407500,
+              "quantity": "700",
+              "symbol": "699005"
+            },
+            {
+              "account_id": "Y0000003",
+              "cost_fen": 195500,
+              "quantity": "100",
+              "symbol": "699005"
+            },
+            {
+              "account_id": "Y0000004",
+              "cost_fen": 1000260,
+              "quantity": "100",
+              "symbol": "699004"
+            }
+          ]
+        },
+        {
+          "date": "2025-04-01",
+          "positions": [
+            {
+              "account_id": "Y0000001",
+              "cost_fen": 1300513,
+              "quantity": "2000",
+              "symbol": "699002"
+            },
+            {
+              "account_id": "Y0000002",
+              "cost_fen": 1407500,
+              "quantity": "700",
+              "symbol": "699005"
+            },
+            {
+              "account_id": "Y0000002",
+              "cost_fen": 1200500,
+              "quantity": "1000",
+              "symbol": "699006"
+            },
+            {
+              "account_id": "Y0000003",
+              "cost_fen": 195500,
+              "quantity": "100",
+              "symbol": "699005"
+            },
+            {
+              "account_id": "Y0000004",
+              "cost_fen": 1000260,
+              "quantity": "100",
+              "symbol": "699004"
+            }
+          ]
+        },
+        {
+          "date": "2025-04-02",
+          "positions": [
+            {
+              "account_id": "Y0000001",
+              "cost_fen": 1300513,
+              "quantity": "2000",
+              "symbol": "699002"
+            },
+            {
+              "account_id": "Y0000002",
+              "cost_fen": 1407500,
+              "quantity": "700",
+              "symbol": "699005"
+            },
+            {
+              "account_id": "Y0000002",
+              "cost_fen": 1200500,
+              "quantity": "1000",
+              "symbol": "699006"
+            },
+            {
+              "account_id": "Y0000003",
+              "cost_fen": 195500,
+              "quantity": "100",
+              "symbol": "699005"
+            },
+            {
+              "account_id": "Y0000004",
+              "cost_fen": 1000260,
+              "quantity": "100",
+              "symbol": "699004"
+            }
+          ]
+        },
+        {
+          "date": "2025-04-08",
+          "positions": [
+            {
+              "account_id": "Y0000001",
+              "cost_fen": 784508,
+              "quantity": "800",
+              "symbol": "699001"
+            },
+            {
+              "account_id": "Y0000001",
+              "cost_fen": 1300513,
+              "quantity": "2000",
+              "symbol": "699002"
+            },
+            {
+              "account_id": "Y0000002",
+              "cost_fen": 1407500,
+              "quantity": "700",
+              "symbol": "699005"
+            },
+            {
+              "account_id": "Y0000002",
+              "cost_fen": 1200500,
+              "quantity": "1000",
+              "symbol": "699006"
+            },
+            {
+              "account_id": "Y0000003",
+              "cost_fen": 195500,
+              "quantity": "100",
+              "symbol": "699005"
+            },
+            {
+              "account_id": "Y0000004",
+              "cost_fen": 1000260,
+              "quantity": "100",
+              "symbol": "699004"
+            }
+          ]
+        },
+        {
+          "date": "2025-04-25",
+          "positions": [
+            {
+              "account_id": "Y0000001",
+              "cost_fen": 784508,
+              "quantity": "800",
+              "symbol": "699001"
+            },
+            {
+              "account_id": "Y0000001",
+              "cost_fen": 1300513,
+              "quantity": "2000",
+              "symbol": "699002"
+            },
+            {
+              "account_id": "Y0000001",
+              "cost_fen": 600506,
+              "quantity": "5000",
+              "symbol": "699003"
+            },
+            {
+              "account_id": "Y0000002",
+              "cost_fen": 1407500,
+              "quantity": "700",
+              "symbol": "699005"
+            },
+            {
+              "account_id": "Y0000002",
+              "cost_fen": 1200500,
+              "quantity": "1000",
+              "symbol": "699006"
+            },
+            {
+              "account_id": "Y0000003",
+              "cost_fen": 195500,
+              "quantity": "100",
+              "symbol": "699005"
+            },
+            {
+              "account_id": "Y0000004",
+              "cost_fen": 1000260,
+              "quantity": "100",
+              "symbol": "699004"
+            }
+          ]
+        },
+        {
+          "date": "2025-05-06",
+          "positions": [
+            {
+              "account_id": "Y0000001",
+              "cost_fen": 784508,
+              "quantity": "800",
+              "symbol": "699001"
+            },
+            {
+              "account_id": "Y0000001",
+              "cost_fen": 1300513,
+              "quantity": "2000",
+              "symbol": "699002"
+            },
+            {
+              "account_id": "Y0000001",
+              "cost_fen": 600506,
+              "quantity": "5000",
+              "symbol": "699003"
+            },
+            {
+              "account_id": "Y0000002",
+              "cost_fen": 630500,
+              "quantity": "600",
+              "symbol": "699001"
+            },
+            {
+              "account_id": "Y0000002",
+              "cost_fen": 1407500,
+              "quantity": "700",
+              "symbol": "699005"
+            },
+            {
+              "account_id": "Y0000002",
+              "cost_fen": 1200500,
+              "quantity": "1000",
+              "symbol": "699006"
+            },
+            {
+              "account_id": "Y0000003",
+              "cost_fen": 195500,
+              "quantity": "100",
+              "symbol": "699005"
+            },
+            {
+              "account_id": "Y0000004",
+              "cost_fen": 1000260,
+              "quantity": "100",
+              "symbol": "699004"
+            }
+          ]
+        },
+        {
+          "date": "2025-05-12",
+          "positions": [
+            {
+              "account_id": "Y0000001",
+              "cost_fen": 784508,
+              "quantity": "800",
+              "symbol": "699001"
+            },
+            {
+              "account_id": "Y0000001",
+              "cost_fen": 1300513,
+              "quantity": "2000",
+              "symbol": "699002"
+            },
+            {
+              "account_id": "Y0000001",
+              "cost_fen": 600506,
+              "quantity": "5000",
+              "symbol": "699003"
+            },
+            {
+              "account_id": "Y0000001",
+              "cost_fen": 1055511,
+              "quantity": "100",
+              "symbol": "699004"
+            },
+            {
+              "account_id": "Y0000002",
+              "cost_fen": 630500,
+              "quantity": "600",
+              "symbol": "699001"
+            },
+            {
+              "account_id": "Y0000002",
+              "cost_fen": 1407500,
+              "quantity": "700",
+              "symbol": "699005"
+            },
+            {
+              "account_id": "Y0000002",
+              "cost_fen": 1200500,
+              "quantity": "1000",
+              "symbol": "699006"
+            },
+            {
+              "account_id": "Y0000003",
+              "cost_fen": 195500,
+              "quantity": "100",
+              "symbol": "699005"
+            },
+            {
+              "account_id": "Y0000004",
+              "cost_fen": 1000260,
+              "quantity": "100",
+              "symbol": "699004"
+            }
+          ]
+        },
+        {
+          "date": "2025-05-20",
+          "positions": [
+            {
+              "account_id": "Y0000001",
+              "cost_fen": 784508,
+              "quantity": "800",
+              "symbol": "699001"
+            },
+            {
+              "account_id": "Y0000001",
+              "cost_fen": 1300513,
+              "quantity": "2000",
+              "symbol": "699002"
+            },
+            {
+              "account_id": "Y0000001",
+              "cost_fen": 600506,
+              "quantity": "5000",
+              "symbol": "699003"
+            },
+            {
+              "account_id": "Y0000001",
+              "cost_fen": 1055511,
+              "quantity": "100",
+              "symbol": "699004"
+            },
+            {
+              "account_id": "Y0000002",
+              "cost_fen": 630500,
+              "quantity": "600",
+              "symbol": "699001"
+            },
+            {
+              "account_id": "Y0000002",
+              "cost_fen": 1407500,
+              "quantity": "700",
+              "symbol": "699005"
+            },
+            {
+              "account_id": "Y0000002",
+              "cost_fen": 1200500,
+              "quantity": "1000",
+              "symbol": "699006"
+            },
+            {
+              "account_id": "Y0000003",
+              "cost_fen": 195500,
+              "quantity": "100",
+              "symbol": "699005"
+            },
+            {
+              "account_id": "Y0000004",
+              "cost_fen": 1000260,
+              "quantity": "100",
+              "symbol": "699004"
+            }
+          ]
+        },
+        {
+          "date": "2025-06-10",
+          "positions": [
+            {
+              "account_id": "Y0000001",
+              "cost_fen": 879508,
+              "quantity": "900",
+              "symbol": "699001"
+            },
+            {
+              "account_id": "Y0000001",
+              "cost_fen": 1300513,
+              "quantity": "2200",
+              "symbol": "699002"
+            },
+            {
+              "account_id": "Y0000001",
+              "cost_fen": 600506,
+              "quantity": "5000",
+              "symbol": "699003"
+            },
+            {
+              "account_id": "Y0000001",
+              "cost_fen": 1055511,
+              "quantity": "100",
+              "symbol": "699004"
+            },
+            {
+              "account_id": "Y0000002",
+              "cost_fen": 630500,
+              "quantity": "600",
+              "symbol": "699001"
+            },
+            {
+              "account_id": "Y0000002",
+              "cost_fen": 1407500,
+              "quantity": "700",
+              "symbol": "699005"
+            },
+            {
+              "account_id": "Y0000002",
+              "cost_fen": 1200500,
+              "quantity": "1000",
+              "symbol": "699006"
+            },
+            {
+              "account_id": "Y0000003",
+              "cost_fen": 195500,
+              "quantity": "100",
+              "symbol": "699005"
+            },
+            {
+              "account_id": "Y0000004",
+              "cost_fen": 1000260,
+              "quantity": "100",
+              "symbol": "699004"
+            }
+          ]
+        },
+        {
+          "date": "2025-06-20",
+          "positions": [
+            {
+              "account_id": "Y0000001",
+              "cost_fen": 879508,
+              "quantity": "900",
+              "symbol": "699001"
+            },
+            {
+              "account_id": "Y0000001",
+              "cost_fen": 1300513,
+              "quantity": "2200",
+              "symbol": "699002"
+            },
+            {
+              "account_id": "Y0000001",
+              "cost_fen": 600506,
+              "quantity": "5000",
+              "symbol": "699003"
+            },
+            {
+              "account_id": "Y0000001",
+              "cost_fen": 1055511,
+              "quantity": "100",
+              "symbol": "699004"
+            },
+            {
+              "account_id": "Y0000002",
+              "cost_fen": 630500,
+              "quantity": "600",
+              "symbol": "699001"
+            },
+            {
+              "account_id": "Y0000002",
+              "cost_fen": 396500,
+              "quantity": "200",
+              "symbol": "699005"
+            },
+            {
+              "account_id": "Y0000002",
+              "cost_fen": 1200500,
+              "quantity": "1000",
+              "symbol": "699006"
+            },
+            {
+              "account_id": "Y0000003",
+              "cost_fen": 195500,
+              "quantity": "100",
+              "symbol": "699005"
+            },
+            {
+              "account_id": "Y0000004",
+              "cost_fen": 1000260,
+              "quantity": "100",
+              "symbol": "699004"
+            }
+          ]
+        },
+        {
+          "date": "2025-07-01",
+          "positions": [
+            {
+              "account_id": "Y0000001",
+              "cost_fen": 879508,
+              "quantity": "900",
+              "symbol": "699001"
+            },
+            {
+              "account_id": "Y0000001",
+              "cost_fen": 1474513,
+              "quantity": "2500",
+              "symbol": "699002"
+            },
+            {
+              "account_id": "Y0000001",
+              "cost_fen": 600506,
+              "quantity": "5000",
+              "symbol": "699003"
+            },
+            {
+              "account_id": "Y0000001",
+              "cost_fen": 1055511,
+              "quantity": "100",
+              "symbol": "699004"
+            },
+            {
+              "account_id": "Y0000002",
+              "cost_fen": 630500,
+              "quantity": "600",
+              "symbol": "699001"
+            },
+            {
+              "account_id": "Y0000002",
+              "cost_fen": 396500,
+              "quantity": "200",
+              "symbol": "699005"
+            },
+            {
+              "account_id": "Y0000002",
+              "cost_fen": 1200500,
+              "quantity": "1000",
+              "symbol": "699006"
+            },
+            {
+              "account_id": "Y0000003",
+              "cost_fen": 195500,
+              "quantity": "100",
+              "symbol": "699005"
+            },
+            {
+              "account_id": "Y0000004",
+              "cost_fen": 1000260,
+              "quantity": "100",
+              "symbol": "699004"
+            }
+          ]
+        },
+        {
+          "date": "2025-07-10",
+          "positions": [
+            {
+              "account_id": "Y0000001",
+              "cost_fen": 879508,
+              "quantity": "900",
+              "symbol": "699001"
+            },
+            {
+              "account_id": "Y0000001",
+              "cost_fen": 1474513,
+              "quantity": "2500",
+              "symbol": "699002"
+            },
+            {
+              "account_id": "Y0000001",
+              "cost_fen": 600506,
+              "quantity": "5000",
+              "symbol": "699003"
+            },
+            {
+              "account_id": "Y0000001",
+              "cost_fen": 1055511,
+              "quantity": "100",
+              "symbol": "699004"
+            },
+            {
+              "account_id": "Y0000002",
+              "cost_fen": 630500,
+              "quantity": "600",
+              "symbol": "699001"
+            },
+            {
+              "account_id": "Y0000002",
+              "cost_fen": 396500,
+              "quantity": "200",
+              "symbol": "699005"
+            },
+            {
+              "account_id": "Y0000002",
+              "cost_fen": 1200500,
+              "quantity": "1000",
+              "symbol": "699006"
+            },
+            {
+              "account_id": "Y0000003",
+              "cost_fen": 195500,
+              "quantity": "100",
+              "symbol": "699005"
+            },
+            {
+              "account_id": "Y0000004",
+              "cost_fen": 1000260,
+              "quantity": "100",
+              "symbol": "699004"
+            }
+          ]
+        },
+        {
+          "date": "2025-07-15",
+          "positions": [
+            {
+              "account_id": "Y0000001",
+              "cost_fen": 879508,
+              "quantity": "900",
+              "symbol": "699001"
+            },
+            {
+              "account_id": "Y0000001",
+              "cost_fen": 1474513,
+              "quantity": "2500",
+              "symbol": "699002"
+            },
+            {
+              "account_id": "Y0000001",
+              "cost_fen": 600506,
+              "quantity": "10000",
+              "symbol": "699003"
+            },
+            {
+              "account_id": "Y0000001",
+              "cost_fen": 1055511,
+              "quantity": "100",
+              "symbol": "699004"
+            },
+            {
+              "account_id": "Y0000002",
+              "cost_fen": 630500,
+              "quantity": "600",
+              "symbol": "699001"
+            },
+            {
+              "account_id": "Y0000002",
+              "cost_fen": 396500,
+              "quantity": "200",
+              "symbol": "699005"
+            },
+            {
+              "account_id": "Y0000002",
+              "cost_fen": 1200500,
+              "quantity": "1000",
+              "symbol": "699006"
+            },
+            {
+              "account_id": "Y0000003",
+              "cost_fen": 195500,
+              "quantity": "100",
+              "symbol": "699005"
+            },
+            {
+              "account_id": "Y0000004",
+              "cost_fen": 1000260,
+              "quantity": "100",
+              "symbol": "699004"
+            }
+          ]
+        },
+        {
+          "date": "2025-07-16",
+          "positions": [
+            {
+              "account_id": "Y0000001",
+              "cost_fen": 879508,
+              "quantity": "900",
+              "symbol": "699001"
+            },
+            {
+              "account_id": "Y0000001",
+              "cost_fen": 1474513,
+              "quantity": "2500",
+              "symbol": "699002"
+            },
+            {
+              "account_id": "Y0000001",
+              "cost_fen": 420354,
+              "quantity": "7000",
+              "symbol": "699003"
+            },
+            {
+              "account_id": "Y0000001",
+              "cost_fen": 1055511,
+              "quantity": "100",
+              "symbol": "699004"
+            },
+            {
+              "account_id": "Y0000002",
+              "cost_fen": 630500,
+              "quantity": "600",
+              "symbol": "699001"
+            },
+            {
+              "account_id": "Y0000002",
+              "cost_fen": 396500,
+              "quantity": "200",
+              "symbol": "699005"
+            },
+            {
+              "account_id": "Y0000002",
+              "cost_fen": 1200500,
+              "quantity": "1000",
+              "symbol": "699006"
+            },
+            {
+              "account_id": "Y0000003",
+              "cost_fen": 195500,
+              "quantity": "100",
+              "symbol": "699005"
+            },
+            {
+              "account_id": "Y0000004",
+              "cost_fen": 1000260,
+              "quantity": "100",
+              "symbol": "699004"
+            }
+          ]
+        },
+        {
+          "date": "2025-08-01",
+          "positions": [
+            {
+              "account_id": "Y0000001",
+              "cost_fen": 879508,
+              "quantity": "900",
+              "symbol": "699001"
+            },
+            {
+              "account_id": "Y0000001",
+              "cost_fen": 1474513,
+              "quantity": "2500",
+              "symbol": "699002"
+            },
+            {
+              "account_id": "Y0000001",
+              "cost_fen": 420354,
+              "quantity": "7000",
+              "symbol": "699003"
+            },
+            {
+              "account_id": "Y0000001",
+              "cost_fen": 1055511,
+              "quantity": "100",
+              "symbol": "699004"
+            },
+            {
+              "account_id": "Y0000002",
+              "cost_fen": 630500,
+              "quantity": "600",
+              "symbol": "699001"
+            },
+            {
+              "account_id": "Y0000002",
+              "cost_fen": 396500,
+              "quantity": "200",
+              "symbol": "699005"
+            },
+            {
+              "account_id": "Y0000002",
+              "cost_fen": 1200500,
+              "quantity": "1000",
+              "symbol": "699006"
+            },
+            {
+              "account_id": "Y0000003",
+              "cost_fen": 195500,
+              "quantity": "100",
+              "symbol": "699005"
+            },
+            {
+              "account_id": "Y0000004",
+              "cost_fen": 1000260,
+              "quantity": "100",
+              "symbol": "699004"
+            }
+          ]
+        },
+        {
+          "date": "2025-08-15",
+          "positions": [
+            {
+              "account_id": "Y0000001",
+              "cost_fen": 879508,
+              "quantity": "900",
+              "symbol": "699001"
+            },
+            {
+              "account_id": "Y0000001",
+              "cost_fen": 1474513,
+              "quantity": "2500",
+              "symbol": "699002"
+            },
+            {
+              "account_id": "Y0000001",
+              "cost_fen": 420354,
+              "quantity": "7000",
+              "symbol": "699003"
+            },
+            {
+              "account_id": "Y0000001",
+              "cost_fen": 1055511,
+              "quantity": "100",
+              "symbol": "699004"
+            },
+            {
+              "account_id": "Y0000002",
+              "cost_fen": 630500,
+              "quantity": "600",
+              "symbol": "699001"
+            },
+            {
+              "account_id": "Y0000002",
+              "cost_fen": 396500,
+              "quantity": "200",
+              "symbol": "699005"
+            },
+            {
+              "account_id": "Y0000002",
+              "cost_fen": 1751000,
+              "quantity": "1500",
+              "symbol": "699006"
+            },
+            {
+              "account_id": "Y0000003",
+              "cost_fen": 195500,
+              "quantity": "100",
+              "symbol": "699005"
+            },
+            {
+              "account_id": "Y0000004",
+              "cost_fen": 1000260,
+              "quantity": "100",
+              "symbol": "699004"
+            }
+          ]
+        },
+        {
+          "date": "2025-08-20",
+          "positions": [
+            {
+              "account_id": "Y0000001",
+              "cost_fen": 879508,
+              "quantity": "900",
+              "symbol": "699001"
+            },
+            {
+              "account_id": "Y0000001",
+              "cost_fen": 1474513,
+              "quantity": "2500",
+              "symbol": "699002"
+            },
+            {
+              "account_id": "Y0000001",
+              "cost_fen": 420354,
+              "quantity": "7000",
+              "symbol": "699003"
+            },
+            {
+              "account_id": "Y0000001",
+              "cost_fen": 1055511,
+              "quantity": "100",
+              "symbol": "699004"
+            },
+            {
+              "account_id": "Y0000002",
+              "cost_fen": 630500,
+              "quantity": "600",
+              "symbol": "699001"
+            },
+            {
+              "account_id": "Y0000002",
+              "cost_fen": 396500,
+              "quantity": "200",
+              "symbol": "699005"
+            },
+            {
+              "account_id": "Y0000002",
+              "cost_fen": 1751000,
+              "quantity": "1500",
+              "symbol": "699006"
+            },
+            {
+              "account_id": "Y0000002",
+              "cost_fen": 500000,
+              "quantity": "1000",
+              "symbol": "699007"
+            },
+            {
+              "account_id": "Y0000003",
+              "cost_fen": 195500,
+              "quantity": "100",
+              "symbol": "699005"
+            },
+            {
+              "account_id": "Y0000004",
+              "cost_fen": 1000260,
+              "quantity": "100",
+              "symbol": "699004"
+            }
+          ]
+        },
+        {
+          "date": "2025-09-02",
+          "positions": [
+            {
+              "account_id": "Y0000001",
+              "cost_fen": 879508,
+              "quantity": "900",
+              "symbol": "699001"
+            },
+            {
+              "account_id": "Y0000001",
+              "cost_fen": 2185020,
+              "quantity": "3500",
+              "symbol": "699002"
+            },
+            {
+              "account_id": "Y0000001",
+              "cost_fen": 420354,
+              "quantity": "7000",
+              "symbol": "699003"
+            },
+            {
+              "account_id": "Y0000001",
+              "cost_fen": 1055511,
+              "quantity": "100",
+              "symbol": "699004"
+            },
+            {
+              "account_id": "Y0000002",
+              "cost_fen": 630500,
+              "quantity": "600",
+              "symbol": "699001"
+            },
+            {
+              "account_id": "Y0000002",
+              "cost_fen": 396500,
+              "quantity": "200",
+              "symbol": "699005"
+            },
+            {
+              "account_id": "Y0000002",
+              "cost_fen": 1751000,
+              "quantity": "1500",
+              "symbol": "699006"
+            },
+            {
+              "account_id": "Y0000002",
+              "cost_fen": 500000,
+              "quantity": "1000",
+              "symbol": "699007"
+            },
+            {
+              "account_id": "Y0000003",
+              "cost_fen": 195500,
+              "quantity": "100",
+              "symbol": "699005"
+            },
+            {
+              "account_id": "Y0000004",
+              "cost_fen": 1000260,
+              "quantity": "100",
+              "symbol": "699004"
+            }
+          ]
+        },
+        {
+          "date": "2025-09-18",
+          "positions": [
+            {
+              "account_id": "Y0000001",
+              "cost_fen": 879508,
+              "quantity": "900",
+              "symbol": "699001"
+            },
+            {
+              "account_id": "Y0000001",
+              "cost_fen": 2185020,
+              "quantity": "3500",
+              "symbol": "699002"
+            },
+            {
+              "account_id": "Y0000001",
+              "cost_fen": 420354,
+              "quantity": "7000",
+              "symbol": "699003"
+            },
+            {
+              "account_id": "Y0000001",
+              "cost_fen": 1055511,
+              "quantity": "100",
+              "symbol": "699004"
+            },
+            {
+              "account_id": "Y0000002",
+              "cost_fen": 630500,
+              "quantity": "600",
+              "symbol": "699001"
+            },
+            {
+              "account_id": "Y0000002",
+              "cost_fen": 396500,
+              "quantity": "200",
+              "symbol": "699005"
+            },
+            {
+              "account_id": "Y0000002",
+              "cost_fen": 1751000,
+              "quantity": "1500",
+              "symbol": "699006"
+            },
+            {
+              "account_id": "Y0000002",
+              "cost_fen": 500000,
+              "quantity": "1000",
+              "symbol": "699007"
+            },
+            {
+              "account_id": "Y0000004",
+              "cost_fen": 1000260,
+              "quantity": "100",
+              "symbol": "699004"
+            }
+          ]
+        },
+        {
+          "date": "2025-10-10",
+          "positions": [
+            {
+              "account_id": "Y0000001",
+              "cost_fen": 879508,
+              "quantity": "900",
+              "symbol": "699001"
+            },
+            {
+              "account_id": "Y0000001",
+              "cost_fen": 2185020,
+              "quantity": "3500",
+              "symbol": "699002"
+            },
+            {
+              "account_id": "Y0000001",
+              "cost_fen": 420354,
+              "quantity": "7000",
+              "symbol": "699003"
+            },
+            {
+              "account_id": "Y0000001",
+              "cost_fen": 1055511,
+              "quantity": "100",
+              "symbol": "699004"
+            },
+            {
+              "account_id": "Y0000002",
+              "cost_fen": 630500,
+              "quantity": "600",
+              "symbol": "699001"
+            },
+            {
+              "account_id": "Y0000002",
+              "cost_fen": 396500,
+              "quantity": "200",
+              "symbol": "699005"
+            },
+            {
+              "account_id": "Y0000002",
+              "cost_fen": 1751000,
+              "quantity": "1500",
+              "symbol": "699006"
+            },
+            {
+              "account_id": "Y0000002",
+              "cost_fen": 500000,
+              "quantity": "1000",
+              "symbol": "699007"
+            },
+            {
+              "account_id": "Y0000004",
+              "cost_fen": 1000260,
+              "quantity": "100",
+              "symbol": "699004"
+            }
+          ]
+        },
+        {
+          "date": "2025-11-05",
+          "positions": [
+            {
+              "account_id": "Y0000001",
+              "cost_fen": 879508,
+              "quantity": "900",
+              "symbol": "699001"
+            },
+            {
+              "account_id": "Y0000001",
+              "cost_fen": 2185020,
+              "quantity": "3500",
+              "symbol": "699002"
+            },
+            {
+              "account_id": "Y0000001",
+              "cost_fen": 420354,
+              "quantity": "7000",
+              "symbol": "699003"
+            },
+            {
+              "account_id": "Y0000001",
+              "cost_fen": 1055511,
+              "quantity": "100",
+              "symbol": "699004"
+            },
+            {
+              "account_id": "Y0000002",
+              "cost_fen": 630500,
+              "quantity": "600",
+              "symbol": "699001"
+            },
+            {
+              "account_id": "Y0000002",
+              "cost_fen": 396500,
+              "quantity": "200",
+              "symbol": "699005"
+            },
+            {
+              "account_id": "Y0000002",
+              "cost_fen": 1751000,
+              "quantity": "1500",
+              "symbol": "699006"
+            },
+            {
+              "account_id": "Y0000004",
+              "cost_fen": 1000260,
+              "quantity": "100",
+              "symbol": "699004"
+            }
+          ]
+        },
+        {
+          "date": "2025-11-11",
+          "positions": [
+            {
+              "account_id": "Y0000001",
+              "cost_fen": 879508,
+              "quantity": "900",
+              "symbol": "699001"
+            },
+            {
+              "account_id": "Y0000001",
+              "cost_fen": 2185020,
+              "quantity": "3500",
+              "symbol": "699002"
+            },
+            {
+              "account_id": "Y0000001",
+              "cost_fen": 420354,
+              "quantity": "7000",
+              "symbol": "699003"
+            },
+            {
+              "account_id": "Y0000001",
+              "cost_fen": 1055511,
+              "quantity": "100",
+              "symbol": "699004"
+            },
+            {
+              "account_id": "Y0000002",
+              "cost_fen": 630500,
+              "quantity": "600",
+              "symbol": "699001"
+            },
+            {
+              "account_id": "Y0000002",
+              "cost_fen": 817000,
+              "quantity": "400",
+              "symbol": "699005"
+            },
+            {
+              "account_id": "Y0000002",
+              "cost_fen": 1751000,
+              "quantity": "1500",
+              "symbol": "699006"
+            },
+            {
+              "account_id": "Y0000004",
+              "cost_fen": 1000260,
+              "quantity": "100",
+              "symbol": "699004"
+            }
+          ]
+        },
+        {
+          "date": "2025-11-14",
+          "positions": [
+            {
+              "account_id": "Y0000001",
+              "cost_fen": 879508,
+              "quantity": "900",
+              "symbol": "699001"
+            },
+            {
+              "account_id": "Y0000001",
+              "cost_fen": 1889449,
+              "quantity": "3000",
+              "symbol": "699002"
+            },
+            {
+              "account_id": "Y0000001",
+              "cost_fen": 420354,
+              "quantity": "7000",
+              "symbol": "699003"
+            },
+            {
+              "account_id": "Y0000001",
+              "cost_fen": 1055511,
+              "quantity": "100",
+              "symbol": "699004"
+            },
+            {
+              "account_id": "Y0000002",
+              "cost_fen": 630500,
+              "quantity": "600",
+              "symbol": "699001"
+            },
+            {
+              "account_id": "Y0000002",
+              "cost_fen": 817000,
+              "quantity": "400",
+              "symbol": "699005"
+            },
+            {
+              "account_id": "Y0000002",
+              "cost_fen": 1751000,
+              "quantity": "1500",
+              "symbol": "699006"
+            },
+            {
+              "account_id": "Y0000004",
+              "cost_fen": 1000260,
+              "quantity": "100",
+              "symbol": "699004"
+            }
+          ]
+        },
+        {
+          "date": "2025-12-19",
+          "positions": [
+            {
+              "account_id": "Y0000001",
+              "cost_fen": 487254,
+              "quantity": "500",
+              "symbol": "699001"
+            },
+            {
+              "account_id": "Y0000001",
+              "cost_fen": 420354,
+              "quantity": "7000",
+              "symbol": "699003"
+            },
+            {
+              "account_id": "Y0000001",
+              "cost_fen": 1055511,
+              "quantity": "100",
+              "symbol": "699004"
+            },
+            {
+              "account_id": "Y0000002",
+              "cost_fen": 630500,
+              "quantity": "600",
+              "symbol": "699001"
+            },
+            {
+              "account_id": "Y0000002",
+              "cost_fen": 817000,
+              "quantity": "400",
+              "symbol": "699005"
+            },
+            {
+              "account_id": "Y0000002",
+              "cost_fen": 1751000,
+              "quantity": "1500",
+              "symbol": "699006"
+            },
+            {
+              "account_id": "Y0000004",
+              "cost_fen": 1000260,
+              "quantity": "100",
+              "symbol": "699004"
+            }
+          ]
+        },
+        {
+          "date": "2025-12-22",
+          "positions": [
+            {
+              "account_id": "Y0000001",
+              "cost_fen": 487254,
+              "quantity": "500",
+              "symbol": "699001"
+            },
+            {
+              "account_id": "Y0000001",
+              "cost_fen": 420354,
+              "quantity": "7000",
+              "symbol": "699003"
+            },
+            {
+              "account_id": "Y0000001",
+              "cost_fen": 1055511,
+              "quantity": "100",
+              "symbol": "699004"
+            },
+            {
+              "account_id": "Y0000004",
+              "cost_fen": 1000260,
+              "quantity": "100",
+              "symbol": "699004"
+            }
+          ]
+        }
+      ],
+      "events": [
+        {
+          "account_id": "Y0000001",
+          "expected_cash_balance_fen": 10000000,
+          "key": [
+            "htsec-demo-001.xlsx",
+            2
+          ],
+          "kind": "cash_event",
+          "matched_lots": [],
+          "position_after_cost_fen": 0,
+          "position_after_quantity": "0",
+          "position_before_cost_fen": 0,
+          "position_before_quantity": "0",
+          "realized_fen": null,
+          "symbol": "699000"
+        },
+        {
+          "account_id": "Y0000001",
+          "expected_cash_balance_fen": 8999490,
+          "key": [
+            "htsec-demo-001.xlsx",
+            3
+          ],
+          "kind": "trade_buy",
+          "matched_lots": [],
+          "position_after_cost_fen": 1000510,
+          "position_after_quantity": "1000",
+          "position_before_cost_fen": 0,
+          "position_before_quantity": "0",
+          "realized_fen": null,
+          "symbol": "699001"
+        },
+        {
+          "account_id": "Y0000001",
+          "expected_cash_balance_fen": 8488985,
+          "key": [
+            "htsec-demo-001.xlsx",
+            4
+          ],
+          "kind": "trade_buy",
+          "matched_lots": [],
+          "position_after_cost_fen": 1511015,
+          "position_after_quantity": "1500",
+          "position_before_cost_fen": 1000510,
+          "position_before_quantity": "1000",
+          "realized_fen": null,
+          "symbol": "699001"
+        },
+        {
+          "account_id": "Y0000002",
+          "expected_cash_balance_fen": 8000000,
+          "key": [
+            "huaxi-demo-001.xls",
+            2
+          ],
+          "kind": "cash_event",
+          "matched_lots": [],
+          "position_after_cost_fen": 0,
+          "position_after_quantity": "0",
+          "position_before_cost_fen": 0,
+          "position_before_quantity": "0",
+          "realized_fen": null,
+          "symbol": "699000"
+        },
+        {
+          "account_id": "Y0000002",
+          "expected_cash_balance_fen": 7399500,
+          "key": [
+            "huaxi-demo-001.xls",
+            3
+          ],
+          "kind": "trade_buy",
+          "matched_lots": [],
+          "position_after_cost_fen": 600500,
+          "position_after_quantity": "300",
+          "position_before_cost_fen": 0,
+          "position_before_quantity": "0",
+          "realized_fen": null,
+          "symbol": "699005"
+        },
+        {
+          "account_id": "Y0000002",
+          "expected_cash_balance_fen": 6989000,
+          "key": [
+            "huaxi-demo-001.xls",
+            4
+          ],
+          "kind": "trade_buy",
+          "matched_lots": [],
+          "position_after_cost_fen": 1011000,
+          "position_after_quantity": "500",
+          "position_before_cost_fen": 600500,
+          "position_before_quantity": "300",
+          "realized_fen": null,
+          "symbol": "699005"
+        },
+        {
+          "account_id": "Y0000001",
+          "expected_cash_balance_fen": 7188472,
+          "key": [
+            "htsec-demo-001.xlsx",
+            5
+          ],
+          "kind": "trade_buy",
+          "matched_lots": [],
+          "position_after_cost_fen": 1300513,
+          "position_after_quantity": "2000",
+          "position_before_cost_fen": 0,
+          "position_before_quantity": "0",
+          "realized_fen": null,
+          "symbol": "699002"
+        },
+        {
+          "account_id": "Y0000003",
+          "expected_cash_balance_fen": 2000000,
+          "key": [
+            "generic-demo-013-account-c.csv",
+            2
+          ],
+          "kind": "cash_event",
+          "matched_lots": [],
+          "position_after_cost_fen": 0,
+          "position_after_quantity": "0",
+          "position_before_cost_fen": 0,
+          "position_before_quantity": "0",
+          "realized_fen": null,
+          "symbol": "699000"
+        },
+        {
+          "account_id": "Y0000002",
+          "expected_cash_balance_fen": 6592500,
+          "key": [
+            "huaxi-demo-001.xls",
+            5
+          ],
+          "kind": "trade_buy",
+          "matched_lots": [],
+          "position_after_cost_fen": 1407500,
+          "position_after_quantity": "700",
+          "position_before_cost_fen": 1011000,
+          "position_before_quantity": "500",
+          "realized_fen": null,
+          "symbol": "699005"
+        },
+        {
+          "account_id": "Y0000001",
+          "expected_cash_balance_fen": 7877280,
+          "key": [
+            "htsec-demo-001.xlsx",
+            6
+          ],
+          "kind": "trade_sell",
+          "matched_lots": [
+            [
+              "600",
+              600306
+            ]
+          ],
+          "position_after_cost_fen": 910709,
+          "position_after_quantity": "900",
+          "position_before_cost_fen": 1511015,
+          "position_before_quantity": "1500",
+          "realized_fen": 88502,
+          "symbol": "699001"
+        },
+        {
+          "account_id": "Y0000001",
+          "expected_cash_balance_fen": 8915237,
+          "key": [
+            "htsec-demo-001.xlsx",
+            7
+          ],
+          "kind": "trade_sell",
+          "matched_lots": [
+            [
+              "400",
+              400204
+            ],
+            [
+              "500",
+              510505
+            ]
+          ],
+          "position_after_cost_fen": 0,
+          "position_after_quantity": "0",
+          "position_before_cost_fen": 910709,
+          "position_before_quantity": "900",
+          "realized_fen": 127248,
+          "symbol": "699001"
+        },
+        {
+          "account_id": "Y0000003",
+          "expected_cash_balance_fen": 1804500,
+          "key": [
+            "generic-demo-013-account-c.csv",
+            3
+          ],
+          "kind": "trade_buy",
+          "matched_lots": [],
+          "position_after_cost_fen": 195500,
+          "position_after_quantity": "100",
+          "position_before_cost_fen": 0,
+          "position_before_quantity": "0",
+          "realized_fen": null,
+          "symbol": "699005"
+        },
+        {
+          "account_id": "Y0000004",
+          "expected_cash_balance_fen": 3000000,
+          "key": [
+            "generic-demo-015-no-fee-columns.csv",
+            2
+          ],
+          "kind": "cash_event",
+          "matched_lots": [],
+          "position_after_cost_fen": 0,
+          "position_after_quantity": "0",
+          "position_before_cost_fen": 0,
+          "position_before_quantity": "0",
+          "realized_fen": null,
+          "symbol": "699000"
+        },
+        {
+          "account_id": "Y0000004",
+          "expected_cash_balance_fen": 999480,
+          "key": [
+            "generic-demo-015-no-fee-columns.csv",
+            3
+          ],
+          "kind": "trade_buy",
+          "matched_lots": [],
+          "position_after_cost_fen": 2000520,
+          "position_after_quantity": "200",
+          "position_before_cost_fen": 0,
+          "position_before_quantity": "0",
+          "realized_fen": null,
+          "symbol": "699004"
+        },
+        {
+          "account_id": "Y0000004",
+          "expected_cash_balance_fen": 2097870,
+          "key": [
+            "generic-demo-015-no-fee-columns.csv",
+            4
+          ],
+          "kind": "trade_sell",
+          "matched_lots": [
+            [
+              "100",
+              1000260
+            ]
+          ],
+          "position_after_cost_fen": 1000260,
+          "position_after_quantity": "100",
+          "position_before_cost_fen": 2000520,
+          "position_before_quantity": "200",
+          "realized_fen": 98130,
+          "symbol": "699004"
+        },
+        {
+          "account_id": "Y0000002",
+          "expected_cash_balance_fen": 5392000,
+          "key": [
+            "huaxi-demo-001.xls",
+            6
+          ],
+          "kind": "trade_buy",
+          "matched_lots": [],
+          "position_after_cost_fen": 1200500,
+          "position_after_quantity": "1000",
+          "position_before_cost_fen": 0,
+          "position_before_quantity": "0",
+          "realized_fen": null,
+          "symbol": "699006"
+        },
+        {
+          "account_id": "Y0000004",
+          "expected_cash_balance_fen": 2102870,
+          "key": [
+            "generic-demo-015-no-fee-columns.csv",
+            5
+          ],
+          "kind": "cash_event",
+          "matched_lots": [],
+          "position_after_cost_fen": 1000260,
+          "position_after_quantity": "100",
+          "position_before_cost_fen": 1000260,
+          "position_before_quantity": "100",
+          "realized_fen": null,
+          "symbol": "699004"
+        },
+        {
+          "account_id": "Y0000001",
+          "expected_cash_balance_fen": 8130729,
+          "key": [
+            "htsec-demo-001.xlsx",
+            8
+          ],
+          "kind": "trade_buy",
+          "matched_lots": [],
+          "position_after_cost_fen": 784508,
+          "position_after_quantity": "800",
+          "position_before_cost_fen": 0,
+          "position_before_quantity": "0",
+          "realized_fen": null,
+          "symbol": "699001"
+        },
+        {
+          "account_id": "Y0000001",
+          "expected_cash_balance_fen": 7530223,
+          "key": [
+            "htsec-demo-001.xlsx",
+            9
+          ],
+          "kind": "trade_buy",
+          "matched_lots": [],
+          "position_after_cost_fen": 600506,
+          "position_after_quantity": "5000",
+          "position_before_cost_fen": 0,
+          "position_before_quantity": "0",
+          "realized_fen": null,
+          "symbol": "699003"
+        },
+        {
+          "account_id": "Y0000002",
+          "expected_cash_balance_fen": 4761500,
+          "key": [
+            "huaxi-demo-001.xls",
+            7
+          ],
+          "kind": "trade_buy",
+          "matched_lots": [],
+          "position_after_cost_fen": 630500,
+          "position_after_quantity": "600",
+          "position_before_cost_fen": 0,
+          "position_before_quantity": "0",
+          "realized_fen": null,
+          "symbol": "699001"
+        },
+        {
+          "account_id": "Y0000001",
+          "expected_cash_balance_fen": 6474712,
+          "key": [
+            "htsec-demo-001.xlsx",
+            10
+          ],
+          "kind": "trade_buy",
+          "matched_lots": [],
+          "position_after_cost_fen": 1055511,
+          "position_after_quantity": "100",
+          "position_before_cost_fen": 0,
+          "position_before_quantity": "0",
+          "realized_fen": null,
+          "symbol": "699004"
+        },
+        {
+          "account_id": "Y0000001",
+          "expected_cash_balance_fen": 6504712,
+          "key": [
+            "htsec-demo-001.xlsx",
+            11
+          ],
+          "kind": "cash_event",
+          "matched_lots": [],
+          "position_after_cost_fen": 1300513,
+          "position_after_quantity": "2000",
+          "position_before_cost_fen": 1300513,
+          "position_before_quantity": "2000",
+          "realized_fen": null,
+          "symbol": "699002"
+        },
+        {
+          "account_id": "Y0000001",
+          "expected_cash_balance_fen": 6504712,
+          "key": [
+            "htsec-demo-001.xlsx",
+            12
+          ],
+          "kind": "receipt_free",
+          "matched_lots": [],
+          "position_after_cost_fen": 1300513,
+          "position_after_quantity": "2200",
+          "position_before_cost_fen": 1300513,
+          "position_before_quantity": "2000",
+          "realized_fen": null,
+          "symbol": "699002"
+        },
+        {
+          "account_id": "Y0000001",
+          "expected_cash_balance_fen": 6504712,
+          "key": [
+            "htsec-demo-001.xlsx",
+            13
+          ],
+          "kind": "receipt_valued",
+          "matched_lots": [],
+          "position_after_cost_fen": 879508,
+          "position_after_quantity": "900",
+          "position_before_cost_fen": 784508,
+          "position_before_quantity": "800",
+          "realized_fen": null,
+          "symbol": "699001"
+        },
+        {
+          "account_id": "Y0000002",
+          "expected_cash_balance_fen": 5859900,
+          "key": [
+            "huaxi-demo-001.xls",
+            8
+          ],
+          "kind": "trade_sell",
+          "matched_lots": [
+            [
+              "300",
+              600500
+            ],
+            [
+              "200",
+              410500
+            ]
+          ],
+          "position_after_cost_fen": 396500,
+          "position_after_quantity": "200",
+          "position_before_cost_fen": 1407500,
+          "position_before_quantity": "700",
+          "realized_fen": 87400,
+          "symbol": "699005"
+        },
+        {
+          "account_id": "Y0000001",
+          "expected_cash_balance_fen": 6330712,
+          "key": [
+            "htsec-demo-001.xlsx",
+            14
+          ],
+          "kind": "receipt_paid",
+          "matched_lots": [],
+          "position_after_cost_fen": 1474513,
+          "position_after_quantity": "2500",
+          "position_before_cost_fen": 1300513,
+          "position_before_quantity": "2200",
+          "realized_fen": null,
+          "symbol": "699002"
+        },
+        {
+          "account_id": "Y0000002",
+          "expected_cash_balance_fen": 5884900,
+          "key": [
+            "huaxi-demo-001.xls",
+            9
+          ],
+          "kind": "cash_event",
+          "matched_lots": [],
+          "position_after_cost_fen": 396500,
+          "position_after_quantity": "200",
+          "position_before_cost_fen": 396500,
+          "position_before_quantity": "200",
+          "realized_fen": null,
+          "symbol": "699005"
+        },
+        {
+          "account_id": "Y0000001",
+          "expected_cash_balance_fen": 6330712,
+          "key": [
+            "htsec-demo-001.xlsx",
+            15
+          ],
+          "kind": "receipt_free",
+          "matched_lots": [],
+          "position_after_cost_fen": 600506,
+          "position_after_quantity": "10000",
+          "position_before_cost_fen": 600506,
+          "position_before_quantity": "5000",
+          "realized_fen": null,
+          "symbol": "699003"
+        },
+        {
+          "account_id": "Y0000001",
+          "expected_cash_balance_fen": 6516024,
+          "key": [
+            "htsec-demo-001.xlsx",
+            16
+          ],
+          "kind": "trade_sell",
+          "matched_lots": [
+            [
+              "3000",
+              180152
+            ]
+          ],
+          "position_after_cost_fen": 420354,
+          "position_after_quantity": "7000",
+          "position_before_cost_fen": 600506,
+          "position_before_quantity": "10000",
+          "realized_fen": 5160,
+          "symbol": "699003"
+        },
+        {
+          "account_id": "Y0000001",
+          "expected_cash_balance_fen": 6517258,
+          "key": [
+            "htsec-demo-001.xlsx",
+            17
+          ],
+          "kind": "cash_event",
+          "matched_lots": [],
+          "position_after_cost_fen": 1474513,
+          "position_after_quantity": "2500",
+          "position_before_cost_fen": 1474513,
+          "position_before_quantity": "2500",
+          "realized_fen": null,
+          "symbol": "699002"
+        },
+        {
+          "account_id": "Y0000002",
+          "expected_cash_balance_fen": 5334400,
+          "key": [
+            "huaxi-demo-001.xls",
+            10
+          ],
+          "kind": "trade_buy",
+          "matched_lots": [],
+          "position_after_cost_fen": 1751000,
+          "position_after_quantity": "1500",
+          "position_before_cost_fen": 1200500,
+          "position_before_quantity": "1000",
+          "realized_fen": null,
+          "symbol": "699006"
+        },
+        {
+          "account_id": "Y0000002",
+          "expected_cash_balance_fen": 4834400,
+          "key": [
+            "huaxi-demo-001.xls",
+            11
+          ],
+          "kind": "trade_buy",
+          "matched_lots": [],
+          "position_after_cost_fen": 500000,
+          "position_after_quantity": "1000",
+          "position_before_cost_fen": 0,
+          "position_before_quantity": "0",
+          "realized_fen": null,
+          "symbol": "699007"
+        },
+        {
+          "account_id": "Y0000002",
+          "expected_cash_balance_fen": 7834400,
+          "key": [
+            "huaxi-demo-001.xls",
+            12
+          ],
+          "kind": "cash_event",
+          "matched_lots": [],
+          "position_after_cost_fen": 0,
+          "position_after_quantity": "0",
+          "position_before_cost_fen": 0,
+          "position_before_quantity": "0",
+          "realized_fen": null,
+          "symbol": "699000"
+        },
+        {
+          "account_id": "Y0000001",
+          "expected_cash_balance_fen": 11517258,
+          "key": [
+            "htsec-demo-001.xlsx",
+            18
+          ],
+          "kind": "cash_event",
+          "matched_lots": [],
+          "position_after_cost_fen": 0,
+          "position_after_quantity": "0",
+          "position_before_cost_fen": 0,
+          "position_before_quantity": "0",
+          "realized_fen": null,
+          "symbol": "699000"
+        },
+        {
+          "account_id": "Y0000001",
+          "expected_cash_balance_fen": 10806751,
+          "key": [
+            "htsec-demo-001.xlsx",
+            19
+          ],
+          "kind": "trade_buy",
+          "matched_lots": [],
+          "position_after_cost_fen": 2185020,
+          "position_after_quantity": "3500",
+          "position_before_cost_fen": 1474513,
+          "position_before_quantity": "2500",
+          "realized_fen": null,
+          "symbol": "699002"
+        },
+        {
+          "account_id": "Y0000003",
+          "expected_cash_balance_fen": 2018785,
+          "key": [
+            "generic-demo-013-account-c.csv",
+            4
+          ],
+          "kind": "trade_sell",
+          "matched_lots": [
+            [
+              "100",
+              195500
+            ]
+          ],
+          "position_after_cost_fen": 0,
+          "position_after_quantity": "0",
+          "position_before_cost_fen": 195500,
+          "position_before_quantity": "100",
+          "realized_fen": 18785,
+          "symbol": "699005"
+        },
+        {
+          "account_id": "Y0000002",
+          "expected_cash_balance_fen": 9834400,
+          "key": [
+            "huaxi-demo-001.xls",
+            13
+          ],
+          "kind": "cash_event",
+          "matched_lots": [],
+          "position_after_cost_fen": 0,
+          "position_after_quantity": "0",
+          "position_before_cost_fen": 0,
+          "position_before_quantity": "0",
+          "realized_fen": null,
+          "symbol": "699000"
+        },
+        {
+          "account_id": "Y0000001",
+          "expected_cash_balance_fen": 8806751,
+          "key": [
+            "htsec-demo-001.xlsx",
+            20
+          ],
+          "kind": "cash_event",
+          "matched_lots": [],
+          "position_after_cost_fen": 0,
+          "position_after_quantity": "0",
+          "position_before_cost_fen": 0,
+          "position_before_quantity": "0",
+          "realized_fen": null,
+          "symbol": "699000"
+        },
+        {
+          "account_id": "Y0000002",
+          "expected_cash_balance_fen": 10334400,
+          "key": [
+            "huaxi-demo-001.xls",
+            14
+          ],
+          "kind": "trade_sell",
+          "matched_lots": [
+            [
+              "1000",
+              500000
+            ]
+          ],
+          "position_after_cost_fen": 0,
+          "position_after_quantity": "0",
+          "position_before_cost_fen": 500000,
+          "position_before_quantity": "1000",
+          "realized_fen": 0,
+          "symbol": "699007"
+        },
+        {
+          "account_id": "Y0000002",
+          "expected_cash_balance_fen": 9913900,
+          "key": [
+            "huaxi-demo-001.xls",
+            15
+          ],
+          "kind": "trade_buy",
+          "matched_lots": [],
+          "position_after_cost_fen": 817000,
+          "position_after_quantity": "400",
+          "position_before_cost_fen": 396500,
+          "position_before_quantity": "200",
+          "realized_fen": null,
+          "symbol": "699005"
+        },
+        {
+          "account_id": "Y0000001",
+          "expected_cash_balance_fen": 9125928,
+          "key": [
+            "htsec-demo-001.xlsx",
+            21
+          ],
+          "kind": "trade_sell",
+          "matched_lots": [
+            [
+              "500",
+              295571
+            ]
+          ],
+          "position_after_cost_fen": 1889449,
+          "position_after_quantity": "3000",
+          "position_before_cost_fen": 2185020,
+          "position_before_quantity": "3500",
+          "realized_fen": 23606,
+          "symbol": "699002"
+        },
+        {
+          "account_id": "Y0000001",
+          "expected_cash_balance_fen": 11238292,
+          "key": [
+            "htsec-demo-001.xlsx",
+            22
+          ],
+          "kind": "trade_sell",
+          "matched_lots": [
+            [
+              "1700",
+              1004942
+            ],
+            [
+              "300",
+              174000
+            ],
+            [
+              "1000",
+              710507
+            ]
+          ],
+          "position_after_cost_fen": 0,
+          "position_after_quantity": "0",
+          "position_before_cost_fen": 1889449,
+          "position_before_quantity": "3000",
+          "realized_fen": 222915,
+          "symbol": "699002"
+        },
+        {
+          "account_id": "Y0000001",
+          "expected_cash_balance_fen": 11637388,
+          "key": [
+            "htsec-demo-001.xlsx",
+            23
+          ],
+          "kind": "trade_sell",
+          "matched_lots": [
+            [
+              "400",
+              392254
+            ]
+          ],
+          "position_after_cost_fen": 487254,
+          "position_after_quantity": "500",
+          "position_before_cost_fen": 879508,
+          "position_before_quantity": "900",
+          "realized_fen": 6842,
+          "symbol": "699001"
+        },
+        {
+          "account_id": "Y0000002",
+          "expected_cash_balance_fen": 10712600,
+          "key": [
+            "huaxi-demo-001.xls",
+            16
+          ],
+          "kind": "trade_sell",
+          "matched_lots": [
+            [
+              "200",
+              396500
+            ],
+            [
+              "200",
+              420500
+            ]
+          ],
+          "position_after_cost_fen": 0,
+          "position_after_quantity": "0",
+          "position_before_cost_fen": 817000,
+          "position_before_quantity": "400",
+          "realized_fen": -18300,
+          "symbol": "699005"
+        },
+        {
+          "account_id": "Y0000002",
+          "expected_cash_balance_fen": 12285525,
+          "key": [
+            "huaxi-demo-001.xls",
+            17
+          ],
+          "kind": "trade_sell",
+          "matched_lots": [
+            [
+              "1000",
+              1200500
+            ],
+            [
+              "500",
+              550500
+            ]
+          ],
+          "position_after_cost_fen": 0,
+          "position_after_quantity": "0",
+          "position_before_cost_fen": 1751000,
+          "position_before_quantity": "1500",
+          "realized_fen": -178075,
+          "symbol": "699006"
+        },
+        {
+          "account_id": "Y0000002",
+          "expected_cash_balance_fen": 12914395,
+          "key": [
+            "huaxi-demo-001.xls",
+            18
+          ],
+          "kind": "trade_sell",
+          "matched_lots": [
+            [
+              "600",
+              630500
+            ]
+          ],
+          "position_after_cost_fen": 0,
+          "position_after_quantity": "0",
+          "position_before_cost_fen": 630500,
+          "position_before_quantity": "600",
+          "realized_fen": -1630,
+          "symbol": "699001"
+        }
+      ],
+      "positions": [
+        {
+          "account_id": "Y0000001",
+          "cost_fen": 487254,
+          "is_open": true,
+          "quantity": "500",
+          "symbol": "699001"
+        },
+        {
+          "account_id": "Y0000001",
+          "cost_fen": 0,
+          "is_open": false,
+          "quantity": "0",
+          "symbol": "699002"
+        },
+        {
+          "account_id": "Y0000001",
+          "cost_fen": 420354,
+          "is_open": true,
+          "quantity": "7000",
+          "symbol": "699003"
+        },
+        {
+          "account_id": "Y0000001",
+          "cost_fen": 1055511,
+          "is_open": true,
+          "quantity": "100",
+          "symbol": "699004"
+        },
+        {
+          "account_id": "Y0000002",
+          "cost_fen": 0,
+          "is_open": false,
+          "quantity": "0",
+          "symbol": "699001"
+        },
+        {
+          "account_id": "Y0000002",
+          "cost_fen": 0,
+          "is_open": false,
+          "quantity": "0",
+          "symbol": "699005"
+        },
+        {
+          "account_id": "Y0000002",
+          "cost_fen": 0,
+          "is_open": false,
+          "quantity": "0",
+          "symbol": "699006"
+        },
+        {
+          "account_id": "Y0000002",
+          "cost_fen": 0,
+          "is_open": false,
+          "quantity": "0",
+          "symbol": "699007"
+        },
+        {
+          "account_id": "Y0000003",
+          "cost_fen": 0,
+          "is_open": false,
+          "quantity": "0",
+          "symbol": "699005"
+        },
+        {
+          "account_id": "Y0000004",
+          "cost_fen": 1000260,
+          "is_open": true,
+          "quantity": "100",
+          "symbol": "699004"
+        }
+      ],
+      "totals": {
+        "fees_total_fen": 24296,
+        "open_positions": 4,
+        "position_cost_fen": 2963379,
+        "realized_net_fen": 480583
+      }
+    },
+    "wavg": {
+      "accounts": [
+        {
+          "account_id": "Y0000001",
+          "cash_in_fen": 19773948,
+          "cash_out_fen": 8136560,
+          "fees_fen": 11346,
+          "net_cash_flow_fen": 11637388,
+          "opening_cash_fen": 0,
+          "position_cost_fen": 1964481,
+          "realized_net_fen": 475635,
+          "rows": 22
+        },
+        {
+          "account_id": "Y0000002",
+          "cash_in_fen": 17623895,
+          "cash_out_fen": 4709500,
+          "fees_fen": 9605,
+          "net_cash_flow_fen": 12914395,
+          "opening_cash_fen": 0,
+          "position_cost_fen": 0,
+          "realized_net_fen": -110605,
+          "rows": 17
+        },
+        {
+          "account_id": "Y0000003",
+          "cash_in_fen": 2214285,
+          "cash_out_fen": 195500,
+          "fees_fen": 1215,
+          "net_cash_flow_fen": 2018785,
+          "opening_cash_fen": 0,
+          "position_cost_fen": 0,
+          "realized_net_fen": 18785,
+          "rows": 3
+        },
+        {
+          "account_id": "Y0000004",
+          "cash_in_fen": 4103390,
+          "cash_out_fen": 2000520,
+          "fees_fen": 2130,
+          "net_cash_flow_fen": 2102870,
+          "opening_cash_fen": 0,
+          "position_cost_fen": 1000260,
+          "realized_net_fen": 98130,
+          "rows": 4
+        }
+      ],
+      "daily_snapshots": [
+        {
+          "date": "2025-01-02",
+          "positions": []
+        },
+        {
+          "date": "2025-01-06",
+          "positions": [
+            {
+              "account_id": "Y0000001",
+              "cost_fen": 1511015,
+              "quantity": "1500",
+              "symbol": "699001"
+            }
+          ]
+        },
+        {
+          "date": "2025-01-10",
+          "positions": [
+            {
+              "account_id": "Y0000001",
+              "cost_fen": 1511015,
+              "quantity": "1500",
+              "symbol": "699001"
+            }
+          ]
+        },
+        {
+          "date": "2025-01-15",
+          "positions": [
+            {
+              "account_id": "Y0000001",
+              "cost_fen": 1511015,
+              "quantity": "1500",
+              "symbol": "699001"
+            },
+            {
+              "account_id": "Y0000002",
+              "cost_fen": 600500,
+              "quantity": "300",
+              "symbol": "699005"
+            }
+          ]
+        },
+        {
+          "date": "2025-02-03",
+          "positions": [
+            {
+              "account_id": "Y0000001",
+              "cost_fen": 1511015,
+              "quantity": "1500",
+              "symbol": "699001"
+            },
+            {
+              "account_id": "Y0000002",
+              "cost_fen": 1011000,
+              "quantity": "500",
+              "symbol": "699005"
+            }
+          ]
+        },
+        {
+          "date": "2025-02-10",
+          "positions": [
+            {
+              "account_id": "Y0000001",
+              "cost_fen": 1511015,
+              "quantity": "1500",
+              "symbol": "699001"
+            },
+            {
+              "account_id": "Y0000001",
+              "cost_fen": 1300513,
+              "quantity": "2000",
+              "symbol": "699002"
+            },
+            {
+              "account_id": "Y0000002",
+              "cost_fen": 1011000,
+              "quantity": "500",
+              "symbol": "699005"
+            }
+          ]
+        },
+        {
+          "date": "2025-02-20",
+          "positions": [
+            {
+              "account_id": "Y0000001",
+              "cost_fen": 1511015,
+              "quantity": "1500",
+              "symbol": "699001"
+            },
+            {
+              "account_id": "Y0000001",
+              "cost_fen": 1300513,
+              "quantity": "2000",
+              "symbol": "699002"
+            },
+            {
+              "account_id": "Y0000002",
+              "cost_fen": 1011000,
+              "quantity": "500",
+              "symbol": "699005"
+            }
+          ]
+        },
+        {
+          "date": "2025-03-03",
+          "positions": [
+            {
+              "account_id": "Y0000001",
+              "cost_fen": 1511015,
+              "quantity": "1500",
+              "symbol": "699001"
+            },
+            {
+              "account_id": "Y0000001",
+              "cost_fen": 1300513,
+              "quantity": "2000",
+              "symbol": "699002"
+            },
+            {
+              "account_id": "Y0000002",
+              "cost_fen": 1407500,
+              "quantity": "700",
+              "symbol": "699005"
+            }
+          ]
+        },
+        {
+          "date": "2025-03-05",
+          "positions": [
+            {
+              "account_id": "Y0000001",
+              "cost_fen": 1300513,
+              "quantity": "2000",
+              "symbol": "699002"
+            },
+            {
+              "account_id": "Y0000002",
+              "cost_fen": 1407500,
+              "quantity": "700",
+              "symbol": "699005"
+            }
+          ]
+        },
+        {
+          "date": "2025-03-12",
+          "positions": [
+            {
+              "account_id": "Y0000001",
+              "cost_fen": 1300513,
+              "quantity": "2000",
+              "symbol": "699002"
+            },
+            {
+              "account_id": "Y0000002",
+              "cost_fen": 1407500,
+              "quantity": "700",
+              "symbol": "699005"
+            },
+            {
+              "account_id": "Y0000003",
+              "cost_fen": 195500,
+              "quantity": "100",
+              "symbol": "699005"
+            }
+          ]
+        },
+        {
+          "date": "2025-03-20",
+          "positions": [
+            {
+              "account_id": "Y0000001",
+              "cost_fen": 1300513,
+              "quantity": "2000",
+              "symbol": "699002"
+            },
+            {
+              "account_id": "Y0000002",
+              "cost_fen": 1407500,
+              "quantity": "700",
+              "symbol": "699005"
+            },
+            {
+              "account_id": "Y0000003",
+              "cost_fen": 195500,
+              "quantity": "100",
+              "symbol": "699005"
+            }
+          ]
+        },
+        {
+          "date": "2025-03-24",
+          "positions": [
+            {
+              "account_id": "Y0000001",
+              "cost_fen": 1300513,
+              "quantity": "2000",
+              "symbol": "699002"
+            },
+            {
+              "account_id": "Y0000002",
+              "cost_fen": 1407500,
+              "quantity": "700",
+              "symbol": "699005"
+            },
+            {
+              "account_id": "Y0000003",
+              "cost_fen": 195500,
+              "quantity": "100",
+              "symbol": "699005"
+            },
+            {
+              "account_id": "Y0000004",
+              "cost_fen": 2000520,
+              "quantity": "200",
+              "symbol": "699004"
+            }
+          ]
+        },
+        {
+          "date": "2025-03-28",
+          "positions": [
+            {
+              "account_id": "Y0000001",
+              "cost_fen": 1300513,
+              "quantity": "2000",
+              "symbol": "699002"
+            },
+            {
+              "account_id": "Y0000002",
+              "cost_fen": 1407500,
+              "quantity": "700",
+              "symbol": "699005"
+            },
+            {
+              "account_id": "Y0000003",
+              "cost_fen": 195500,
+              "quantity": "100",
+              "symbol": "699005"
+            },
+            {
+              "account_id": "Y0000004",
+              "cost_fen": 1000260,
+              "quantity": "100",
+              "symbol": "699004"
+            }
+          ]
+        },
+        {
+          "date": "2025-04-01",
+          "positions": [
+            {
+              "account_id": "Y0000001",
+              "cost_fen": 1300513,
+              "quantity": "2000",
+              "symbol": "699002"
+            },
+            {
+              "account_id": "Y0000002",
+              "cost_fen": 1407500,
+              "quantity": "700",
+              "symbol": "699005"
+            },
+            {
+              "account_id": "Y0000002",
+              "cost_fen": 1200500,
+              "quantity": "1000",
+              "symbol": "699006"
+            },
+            {
+              "account_id": "Y0000003",
+              "cost_fen": 195500,
+              "quantity": "100",
+              "symbol": "699005"
+            },
+            {
+              "account_id": "Y0000004",
+              "cost_fen": 1000260,
+              "quantity": "100",
+              "symbol": "699004"
+            }
+          ]
+        },
+        {
+          "date": "2025-04-02",
+          "positions": [
+            {
+              "account_id": "Y0000001",
+              "cost_fen": 1300513,
+              "quantity": "2000",
+              "symbol": "699002"
+            },
+            {
+              "account_id": "Y0000002",
+              "cost_fen": 1407500,
+              "quantity": "700",
+              "symbol": "699005"
+            },
+            {
+              "account_id": "Y0000002",
+              "cost_fen": 1200500,
+              "quantity": "1000",
+              "symbol": "699006"
+            },
+            {
+              "account_id": "Y0000003",
+              "cost_fen": 195500,
+              "quantity": "100",
+              "symbol": "699005"
+            },
+            {
+              "account_id": "Y0000004",
+              "cost_fen": 1000260,
+              "quantity": "100",
+              "symbol": "699004"
+            }
+          ]
+        },
+        {
+          "date": "2025-04-08",
+          "positions": [
+            {
+              "account_id": "Y0000001",
+              "cost_fen": 784508,
+              "quantity": "800",
+              "symbol": "699001"
+            },
+            {
+              "account_id": "Y0000001",
+              "cost_fen": 1300513,
+              "quantity": "2000",
+              "symbol": "699002"
+            },
+            {
+              "account_id": "Y0000002",
+              "cost_fen": 1407500,
+              "quantity": "700",
+              "symbol": "699005"
+            },
+            {
+              "account_id": "Y0000002",
+              "cost_fen": 1200500,
+              "quantity": "1000",
+              "symbol": "699006"
+            },
+            {
+              "account_id": "Y0000003",
+              "cost_fen": 195500,
+              "quantity": "100",
+              "symbol": "699005"
+            },
+            {
+              "account_id": "Y0000004",
+              "cost_fen": 1000260,
+              "quantity": "100",
+              "symbol": "699004"
+            }
+          ]
+        },
+        {
+          "date": "2025-04-25",
+          "positions": [
+            {
+              "account_id": "Y0000001",
+              "cost_fen": 784508,
+              "quantity": "800",
+              "symbol": "699001"
+            },
+            {
+              "account_id": "Y0000001",
+              "cost_fen": 1300513,
+              "quantity": "2000",
+              "symbol": "699002"
+            },
+            {
+              "account_id": "Y0000001",
+              "cost_fen": 600506,
+              "quantity": "5000",
+              "symbol": "699003"
+            },
+            {
+              "account_id": "Y0000002",
+              "cost_fen": 1407500,
+              "quantity": "700",
+              "symbol": "699005"
+            },
+            {
+              "account_id": "Y0000002",
+              "cost_fen": 1200500,
+              "quantity": "1000",
+              "symbol": "699006"
+            },
+            {
+              "account_id": "Y0000003",
+              "cost_fen": 195500,
+              "quantity": "100",
+              "symbol": "699005"
+            },
+            {
+              "account_id": "Y0000004",
+              "cost_fen": 1000260,
+              "quantity": "100",
+              "symbol": "699004"
+            }
+          ]
+        },
+        {
+          "date": "2025-05-06",
+          "positions": [
+            {
+              "account_id": "Y0000001",
+              "cost_fen": 784508,
+              "quantity": "800",
+              "symbol": "699001"
+            },
+            {
+              "account_id": "Y0000001",
+              "cost_fen": 1300513,
+              "quantity": "2000",
+              "symbol": "699002"
+            },
+            {
+              "account_id": "Y0000001",
+              "cost_fen": 600506,
+              "quantity": "5000",
+              "symbol": "699003"
+            },
+            {
+              "account_id": "Y0000002",
+              "cost_fen": 630500,
+              "quantity": "600",
+              "symbol": "699001"
+            },
+            {
+              "account_id": "Y0000002",
+              "cost_fen": 1407500,
+              "quantity": "700",
+              "symbol": "699005"
+            },
+            {
+              "account_id": "Y0000002",
+              "cost_fen": 1200500,
+              "quantity": "1000",
+              "symbol": "699006"
+            },
+            {
+              "account_id": "Y0000003",
+              "cost_fen": 195500,
+              "quantity": "100",
+              "symbol": "699005"
+            },
+            {
+              "account_id": "Y0000004",
+              "cost_fen": 1000260,
+              "quantity": "100",
+              "symbol": "699004"
+            }
+          ]
+        },
+        {
+          "date": "2025-05-12",
+          "positions": [
+            {
+              "account_id": "Y0000001",
+              "cost_fen": 784508,
+              "quantity": "800",
+              "symbol": "699001"
+            },
+            {
+              "account_id": "Y0000001",
+              "cost_fen": 1300513,
+              "quantity": "2000",
+              "symbol": "699002"
+            },
+            {
+              "account_id": "Y0000001",
+              "cost_fen": 600506,
+              "quantity": "5000",
+              "symbol": "699003"
+            },
+            {
+              "account_id": "Y0000001",
+              "cost_fen": 1055511,
+              "quantity": "100",
+              "symbol": "699004"
+            },
+            {
+              "account_id": "Y0000002",
+              "cost_fen": 630500,
+              "quantity": "600",
+              "symbol": "699001"
+            },
+            {
+              "account_id": "Y0000002",
+              "cost_fen": 1407500,
+              "quantity": "700",
+              "symbol": "699005"
+            },
+            {
+              "account_id": "Y0000002",
+              "cost_fen": 1200500,
+              "quantity": "1000",
+              "symbol": "699006"
+            },
+            {
+              "account_id": "Y0000003",
+              "cost_fen": 195500,
+              "quantity": "100",
+              "symbol": "699005"
+            },
+            {
+              "account_id": "Y0000004",
+              "cost_fen": 1000260,
+              "quantity": "100",
+              "symbol": "699004"
+            }
+          ]
+        },
+        {
+          "date": "2025-05-20",
+          "positions": [
+            {
+              "account_id": "Y0000001",
+              "cost_fen": 784508,
+              "quantity": "800",
+              "symbol": "699001"
+            },
+            {
+              "account_id": "Y0000001",
+              "cost_fen": 1300513,
+              "quantity": "2000",
+              "symbol": "699002"
+            },
+            {
+              "account_id": "Y0000001",
+              "cost_fen": 600506,
+              "quantity": "5000",
+              "symbol": "699003"
+            },
+            {
+              "account_id": "Y0000001",
+              "cost_fen": 1055511,
+              "quantity": "100",
+              "symbol": "699004"
+            },
+            {
+              "account_id": "Y0000002",
+              "cost_fen": 630500,
+              "quantity": "600",
+              "symbol": "699001"
+            },
+            {
+              "account_id": "Y0000002",
+              "cost_fen": 1407500,
+              "quantity": "700",
+              "symbol": "699005"
+            },
+            {
+              "account_id": "Y0000002",
+              "cost_fen": 1200500,
+              "quantity": "1000",
+              "symbol": "699006"
+            },
+            {
+              "account_id": "Y0000003",
+              "cost_fen": 195500,
+              "quantity": "100",
+              "symbol": "699005"
+            },
+            {
+              "account_id": "Y0000004",
+              "cost_fen": 1000260,
+              "quantity": "100",
+              "symbol": "699004"
+            }
+          ]
+        },
+        {
+          "date": "2025-06-10",
+          "positions": [
+            {
+              "account_id": "Y0000001",
+              "cost_fen": 879508,
+              "quantity": "900",
+              "symbol": "699001"
+            },
+            {
+              "account_id": "Y0000001",
+              "cost_fen": 1300513,
+              "quantity": "2200",
+              "symbol": "699002"
+            },
+            {
+              "account_id": "Y0000001",
+              "cost_fen": 600506,
+              "quantity": "5000",
+              "symbol": "699003"
+            },
+            {
+              "account_id": "Y0000001",
+              "cost_fen": 1055511,
+              "quantity": "100",
+              "symbol": "699004"
+            },
+            {
+              "account_id": "Y0000002",
+              "cost_fen": 630500,
+              "quantity": "600",
+              "symbol": "699001"
+            },
+            {
+              "account_id": "Y0000002",
+              "cost_fen": 1407500,
+              "quantity": "700",
+              "symbol": "699005"
+            },
+            {
+              "account_id": "Y0000002",
+              "cost_fen": 1200500,
+              "quantity": "1000",
+              "symbol": "699006"
+            },
+            {
+              "account_id": "Y0000003",
+              "cost_fen": 195500,
+              "quantity": "100",
+              "symbol": "699005"
+            },
+            {
+              "account_id": "Y0000004",
+              "cost_fen": 1000260,
+              "quantity": "100",
+              "symbol": "699004"
+            }
+          ]
+        },
+        {
+          "date": "2025-06-20",
+          "positions": [
+            {
+              "account_id": "Y0000001",
+              "cost_fen": 879508,
+              "quantity": "900",
+              "symbol": "699001"
+            },
+            {
+              "account_id": "Y0000001",
+              "cost_fen": 1300513,
+              "quantity": "2200",
+              "symbol": "699002"
+            },
+            {
+              "account_id": "Y0000001",
+              "cost_fen": 600506,
+              "quantity": "5000",
+              "symbol": "699003"
+            },
+            {
+              "account_id": "Y0000001",
+              "cost_fen": 1055511,
+              "quantity": "100",
+              "symbol": "699004"
+            },
+            {
+              "account_id": "Y0000002",
+              "cost_fen": 630500,
+              "quantity": "600",
+              "symbol": "699001"
+            },
+            {
+              "account_id": "Y0000002",
+              "cost_fen": 402143,
+              "quantity": "200",
+              "symbol": "699005"
+            },
+            {
+              "account_id": "Y0000002",
+              "cost_fen": 1200500,
+              "quantity": "1000",
+              "symbol": "699006"
+            },
+            {
+              "account_id": "Y0000003",
+              "cost_fen": 195500,
+              "quantity": "100",
+              "symbol": "699005"
+            },
+            {
+              "account_id": "Y0000004",
+              "cost_fen": 1000260,
+              "quantity": "100",
+              "symbol": "699004"
+            }
+          ]
+        },
+        {
+          "date": "2025-07-01",
+          "positions": [
+            {
+              "account_id": "Y0000001",
+              "cost_fen": 879508,
+              "quantity": "900",
+              "symbol": "699001"
+            },
+            {
+              "account_id": "Y0000001",
+              "cost_fen": 1474513,
+              "quantity": "2500",
+              "symbol": "699002"
+            },
+            {
+              "account_id": "Y0000001",
+              "cost_fen": 600506,
+              "quantity": "5000",
+              "symbol": "699003"
+            },
+            {
+              "account_id": "Y0000001",
+              "cost_fen": 1055511,
+              "quantity": "100",
+              "symbol": "699004"
+            },
+            {
+              "account_id": "Y0000002",
+              "cost_fen": 630500,
+              "quantity": "600",
+              "symbol": "699001"
+            },
+            {
+              "account_id": "Y0000002",
+              "cost_fen": 402143,
+              "quantity": "200",
+              "symbol": "699005"
+            },
+            {
+              "account_id": "Y0000002",
+              "cost_fen": 1200500,
+              "quantity": "1000",
+              "symbol": "699006"
+            },
+            {
+              "account_id": "Y0000003",
+              "cost_fen": 195500,
+              "quantity": "100",
+              "symbol": "699005"
+            },
+            {
+              "account_id": "Y0000004",
+              "cost_fen": 1000260,
+              "quantity": "100",
+              "symbol": "699004"
+            }
+          ]
+        },
+        {
+          "date": "2025-07-10",
+          "positions": [
+            {
+              "account_id": "Y0000001",
+              "cost_fen": 879508,
+              "quantity": "900",
+              "symbol": "699001"
+            },
+            {
+              "account_id": "Y0000001",
+              "cost_fen": 1474513,
+              "quantity": "2500",
+              "symbol": "699002"
+            },
+            {
+              "account_id": "Y0000001",
+              "cost_fen": 600506,
+              "quantity": "5000",
+              "symbol": "699003"
+            },
+            {
+              "account_id": "Y0000001",
+              "cost_fen": 1055511,
+              "quantity": "100",
+              "symbol": "699004"
+            },
+            {
+              "account_id": "Y0000002",
+              "cost_fen": 630500,
+              "quantity": "600",
+              "symbol": "699001"
+            },
+            {
+              "account_id": "Y0000002",
+              "cost_fen": 402143,
+              "quantity": "200",
+              "symbol": "699005"
+            },
+            {
+              "account_id": "Y0000002",
+              "cost_fen": 1200500,
+              "quantity": "1000",
+              "symbol": "699006"
+            },
+            {
+              "account_id": "Y0000003",
+              "cost_fen": 195500,
+              "quantity": "100",
+              "symbol": "699005"
+            },
+            {
+              "account_id": "Y0000004",
+              "cost_fen": 1000260,
+              "quantity": "100",
+              "symbol": "699004"
+            }
+          ]
+        },
+        {
+          "date": "2025-07-15",
+          "positions": [
+            {
+              "account_id": "Y0000001",
+              "cost_fen": 879508,
+              "quantity": "900",
+              "symbol": "699001"
+            },
+            {
+              "account_id": "Y0000001",
+              "cost_fen": 1474513,
+              "quantity": "2500",
+              "symbol": "699002"
+            },
+            {
+              "account_id": "Y0000001",
+              "cost_fen": 600506,
+              "quantity": "10000",
+              "symbol": "699003"
+            },
+            {
+              "account_id": "Y0000001",
+              "cost_fen": 1055511,
+              "quantity": "100",
+              "symbol": "699004"
+            },
+            {
+              "account_id": "Y0000002",
+              "cost_fen": 630500,
+              "quantity": "600",
+              "symbol": "699001"
+            },
+            {
+              "account_id": "Y0000002",
+              "cost_fen": 402143,
+              "quantity": "200",
+              "symbol": "699005"
+            },
+            {
+              "account_id": "Y0000002",
+              "cost_fen": 1200500,
+              "quantity": "1000",
+              "symbol": "699006"
+            },
+            {
+              "account_id": "Y0000003",
+              "cost_fen": 195500,
+              "quantity": "100",
+              "symbol": "699005"
+            },
+            {
+              "account_id": "Y0000004",
+              "cost_fen": 1000260,
+              "quantity": "100",
+              "symbol": "699004"
+            }
+          ]
+        },
+        {
+          "date": "2025-07-16",
+          "positions": [
+            {
+              "account_id": "Y0000001",
+              "cost_fen": 879508,
+              "quantity": "900",
+              "symbol": "699001"
+            },
+            {
+              "account_id": "Y0000001",
+              "cost_fen": 1474513,
+              "quantity": "2500",
+              "symbol": "699002"
+            },
+            {
+              "account_id": "Y0000001",
+              "cost_fen": 420354,
+              "quantity": "7000",
+              "symbol": "699003"
+            },
+            {
+              "account_id": "Y0000001",
+              "cost_fen": 1055511,
+              "quantity": "100",
+              "symbol": "699004"
+            },
+            {
+              "account_id": "Y0000002",
+              "cost_fen": 630500,
+              "quantity": "600",
+              "symbol": "699001"
+            },
+            {
+              "account_id": "Y0000002",
+              "cost_fen": 402143,
+              "quantity": "200",
+              "symbol": "699005"
+            },
+            {
+              "account_id": "Y0000002",
+              "cost_fen": 1200500,
+              "quantity": "1000",
+              "symbol": "699006"
+            },
+            {
+              "account_id": "Y0000003",
+              "cost_fen": 195500,
+              "quantity": "100",
+              "symbol": "699005"
+            },
+            {
+              "account_id": "Y0000004",
+              "cost_fen": 1000260,
+              "quantity": "100",
+              "symbol": "699004"
+            }
+          ]
+        },
+        {
+          "date": "2025-08-01",
+          "positions": [
+            {
+              "account_id": "Y0000001",
+              "cost_fen": 879508,
+              "quantity": "900",
+              "symbol": "699001"
+            },
+            {
+              "account_id": "Y0000001",
+              "cost_fen": 1474513,
+              "quantity": "2500",
+              "symbol": "699002"
+            },
+            {
+              "account_id": "Y0000001",
+              "cost_fen": 420354,
+              "quantity": "7000",
+              "symbol": "699003"
+            },
+            {
+              "account_id": "Y0000001",
+              "cost_fen": 1055511,
+              "quantity": "100",
+              "symbol": "699004"
+            },
+            {
+              "account_id": "Y0000002",
+              "cost_fen": 630500,
+              "quantity": "600",
+              "symbol": "699001"
+            },
+            {
+              "account_id": "Y0000002",
+              "cost_fen": 402143,
+              "quantity": "200",
+              "symbol": "699005"
+            },
+            {
+              "account_id": "Y0000002",
+              "cost_fen": 1200500,
+              "quantity": "1000",
+              "symbol": "699006"
+            },
+            {
+              "account_id": "Y0000003",
+              "cost_fen": 195500,
+              "quantity": "100",
+              "symbol": "699005"
+            },
+            {
+              "account_id": "Y0000004",
+              "cost_fen": 1000260,
+              "quantity": "100",
+              "symbol": "699004"
+            }
+          ]
+        },
+        {
+          "date": "2025-08-15",
+          "positions": [
+            {
+              "account_id": "Y0000001",
+              "cost_fen": 879508,
+              "quantity": "900",
+              "symbol": "699001"
+            },
+            {
+              "account_id": "Y0000001",
+              "cost_fen": 1474513,
+              "quantity": "2500",
+              "symbol": "699002"
+            },
+            {
+              "account_id": "Y0000001",
+              "cost_fen": 420354,
+              "quantity": "7000",
+              "symbol": "699003"
+            },
+            {
+              "account_id": "Y0000001",
+              "cost_fen": 1055511,
+              "quantity": "100",
+              "symbol": "699004"
+            },
+            {
+              "account_id": "Y0000002",
+              "cost_fen": 630500,
+              "quantity": "600",
+              "symbol": "699001"
+            },
+            {
+              "account_id": "Y0000002",
+              "cost_fen": 402143,
+              "quantity": "200",
+              "symbol": "699005"
+            },
+            {
+              "account_id": "Y0000002",
+              "cost_fen": 1751000,
+              "quantity": "1500",
+              "symbol": "699006"
+            },
+            {
+              "account_id": "Y0000003",
+              "cost_fen": 195500,
+              "quantity": "100",
+              "symbol": "699005"
+            },
+            {
+              "account_id": "Y0000004",
+              "cost_fen": 1000260,
+              "quantity": "100",
+              "symbol": "699004"
+            }
+          ]
+        },
+        {
+          "date": "2025-08-20",
+          "positions": [
+            {
+              "account_id": "Y0000001",
+              "cost_fen": 879508,
+              "quantity": "900",
+              "symbol": "699001"
+            },
+            {
+              "account_id": "Y0000001",
+              "cost_fen": 1474513,
+              "quantity": "2500",
+              "symbol": "699002"
+            },
+            {
+              "account_id": "Y0000001",
+              "cost_fen": 420354,
+              "quantity": "7000",
+              "symbol": "699003"
+            },
+            {
+              "account_id": "Y0000001",
+              "cost_fen": 1055511,
+              "quantity": "100",
+              "symbol": "699004"
+            },
+            {
+              "account_id": "Y0000002",
+              "cost_fen": 630500,
+              "quantity": "600",
+              "symbol": "699001"
+            },
+            {
+              "account_id": "Y0000002",
+              "cost_fen": 402143,
+              "quantity": "200",
+              "symbol": "699005"
+            },
+            {
+              "account_id": "Y0000002",
+              "cost_fen": 1751000,
+              "quantity": "1500",
+              "symbol": "699006"
+            },
+            {
+              "account_id": "Y0000002",
+              "cost_fen": 500000,
+              "quantity": "1000",
+              "symbol": "699007"
+            },
+            {
+              "account_id": "Y0000003",
+              "cost_fen": 195500,
+              "quantity": "100",
+              "symbol": "699005"
+            },
+            {
+              "account_id": "Y0000004",
+              "cost_fen": 1000260,
+              "quantity": "100",
+              "symbol": "699004"
+            }
+          ]
+        },
+        {
+          "date": "2025-09-02",
+          "positions": [
+            {
+              "account_id": "Y0000001",
+              "cost_fen": 879508,
+              "quantity": "900",
+              "symbol": "699001"
+            },
+            {
+              "account_id": "Y0000001",
+              "cost_fen": 2185020,
+              "quantity": "3500",
+              "symbol": "699002"
+            },
+            {
+              "account_id": "Y0000001",
+              "cost_fen": 420354,
+              "quantity": "7000",
+              "symbol": "699003"
+            },
+            {
+              "account_id": "Y0000001",
+              "cost_fen": 1055511,
+              "quantity": "100",
+              "symbol": "699004"
+            },
+            {
+              "account_id": "Y0000002",
+              "cost_fen": 630500,
+              "quantity": "600",
+              "symbol": "699001"
+            },
+            {
+              "account_id": "Y0000002",
+              "cost_fen": 402143,
+              "quantity": "200",
+              "symbol": "699005"
+            },
+            {
+              "account_id": "Y0000002",
+              "cost_fen": 1751000,
+              "quantity": "1500",
+              "symbol": "699006"
+            },
+            {
+              "account_id": "Y0000002",
+              "cost_fen": 500000,
+              "quantity": "1000",
+              "symbol": "699007"
+            },
+            {
+              "account_id": "Y0000003",
+              "cost_fen": 195500,
+              "quantity": "100",
+              "symbol": "699005"
+            },
+            {
+              "account_id": "Y0000004",
+              "cost_fen": 1000260,
+              "quantity": "100",
+              "symbol": "699004"
+            }
+          ]
+        },
+        {
+          "date": "2025-09-18",
+          "positions": [
+            {
+              "account_id": "Y0000001",
+              "cost_fen": 879508,
+              "quantity": "900",
+              "symbol": "699001"
+            },
+            {
+              "account_id": "Y0000001",
+              "cost_fen": 2185020,
+              "quantity": "3500",
+              "symbol": "699002"
+            },
+            {
+              "account_id": "Y0000001",
+              "cost_fen": 420354,
+              "quantity": "7000",
+              "symbol": "699003"
+            },
+            {
+              "account_id": "Y0000001",
+              "cost_fen": 1055511,
+              "quantity": "100",
+              "symbol": "699004"
+            },
+            {
+              "account_id": "Y0000002",
+              "cost_fen": 630500,
+              "quantity": "600",
+              "symbol": "699001"
+            },
+            {
+              "account_id": "Y0000002",
+              "cost_fen": 402143,
+              "quantity": "200",
+              "symbol": "699005"
+            },
+            {
+              "account_id": "Y0000002",
+              "cost_fen": 1751000,
+              "quantity": "1500",
+              "symbol": "699006"
+            },
+            {
+              "account_id": "Y0000002",
+              "cost_fen": 500000,
+              "quantity": "1000",
+              "symbol": "699007"
+            },
+            {
+              "account_id": "Y0000004",
+              "cost_fen": 1000260,
+              "quantity": "100",
+              "symbol": "699004"
+            }
+          ]
+        },
+        {
+          "date": "2025-10-10",
+          "positions": [
+            {
+              "account_id": "Y0000001",
+              "cost_fen": 879508,
+              "quantity": "900",
+              "symbol": "699001"
+            },
+            {
+              "account_id": "Y0000001",
+              "cost_fen": 2185020,
+              "quantity": "3500",
+              "symbol": "699002"
+            },
+            {
+              "account_id": "Y0000001",
+              "cost_fen": 420354,
+              "quantity": "7000",
+              "symbol": "699003"
+            },
+            {
+              "account_id": "Y0000001",
+              "cost_fen": 1055511,
+              "quantity": "100",
+              "symbol": "699004"
+            },
+            {
+              "account_id": "Y0000002",
+              "cost_fen": 630500,
+              "quantity": "600",
+              "symbol": "699001"
+            },
+            {
+              "account_id": "Y0000002",
+              "cost_fen": 402143,
+              "quantity": "200",
+              "symbol": "699005"
+            },
+            {
+              "account_id": "Y0000002",
+              "cost_fen": 1751000,
+              "quantity": "1500",
+              "symbol": "699006"
+            },
+            {
+              "account_id": "Y0000002",
+              "cost_fen": 500000,
+              "quantity": "1000",
+              "symbol": "699007"
+            },
+            {
+              "account_id": "Y0000004",
+              "cost_fen": 1000260,
+              "quantity": "100",
+              "symbol": "699004"
+            }
+          ]
+        },
+        {
+          "date": "2025-11-05",
+          "positions": [
+            {
+              "account_id": "Y0000001",
+              "cost_fen": 879508,
+              "quantity": "900",
+              "symbol": "699001"
+            },
+            {
+              "account_id": "Y0000001",
+              "cost_fen": 2185020,
+              "quantity": "3500",
+              "symbol": "699002"
+            },
+            {
+              "account_id": "Y0000001",
+              "cost_fen": 420354,
+              "quantity": "7000",
+              "symbol": "699003"
+            },
+            {
+              "account_id": "Y0000001",
+              "cost_fen": 1055511,
+              "quantity": "100",
+              "symbol": "699004"
+            },
+            {
+              "account_id": "Y0000002",
+              "cost_fen": 630500,
+              "quantity": "600",
+              "symbol": "699001"
+            },
+            {
+              "account_id": "Y0000002",
+              "cost_fen": 402143,
+              "quantity": "200",
+              "symbol": "699005"
+            },
+            {
+              "account_id": "Y0000002",
+              "cost_fen": 1751000,
+              "quantity": "1500",
+              "symbol": "699006"
+            },
+            {
+              "account_id": "Y0000004",
+              "cost_fen": 1000260,
+              "quantity": "100",
+              "symbol": "699004"
+            }
+          ]
+        },
+        {
+          "date": "2025-11-11",
+          "positions": [
+            {
+              "account_id": "Y0000001",
+              "cost_fen": 879508,
+              "quantity": "900",
+              "symbol": "699001"
+            },
+            {
+              "account_id": "Y0000001",
+              "cost_fen": 2185020,
+              "quantity": "3500",
+              "symbol": "699002"
+            },
+            {
+              "account_id": "Y0000001",
+              "cost_fen": 420354,
+              "quantity": "7000",
+              "symbol": "699003"
+            },
+            {
+              "account_id": "Y0000001",
+              "cost_fen": 1055511,
+              "quantity": "100",
+              "symbol": "699004"
+            },
+            {
+              "account_id": "Y0000002",
+              "cost_fen": 630500,
+              "quantity": "600",
+              "symbol": "699001"
+            },
+            {
+              "account_id": "Y0000002",
+              "cost_fen": 822643,
+              "quantity": "400",
+              "symbol": "699005"
+            },
+            {
+              "account_id": "Y0000002",
+              "cost_fen": 1751000,
+              "quantity": "1500",
+              "symbol": "699006"
+            },
+            {
+              "account_id": "Y0000004",
+              "cost_fen": 1000260,
+              "quantity": "100",
+              "symbol": "699004"
+            }
+          ]
+        },
+        {
+          "date": "2025-11-14",
+          "positions": [
+            {
+              "account_id": "Y0000001",
+              "cost_fen": 879508,
+              "quantity": "900",
+              "symbol": "699001"
+            },
+            {
+              "account_id": "Y0000001",
+              "cost_fen": 1872874,
+              "quantity": "3000",
+              "symbol": "699002"
+            },
+            {
+              "account_id": "Y0000001",
+              "cost_fen": 420354,
+              "quantity": "7000",
+              "symbol": "699003"
+            },
+            {
+              "account_id": "Y0000001",
+              "cost_fen": 1055511,
+              "quantity": "100",
+              "symbol": "699004"
+            },
+            {
+              "account_id": "Y0000002",
+              "cost_fen": 630500,
+              "quantity": "600",
+              "symbol": "699001"
+            },
+            {
+              "account_id": "Y0000002",
+              "cost_fen": 822643,
+              "quantity": "400",
+              "symbol": "699005"
+            },
+            {
+              "account_id": "Y0000002",
+              "cost_fen": 1751000,
+              "quantity": "1500",
+              "symbol": "699006"
+            },
+            {
+              "account_id": "Y0000004",
+              "cost_fen": 1000260,
+              "quantity": "100",
+              "symbol": "699004"
+            }
+          ]
+        },
+        {
+          "date": "2025-12-19",
+          "positions": [
+            {
+              "account_id": "Y0000001",
+              "cost_fen": 488616,
+              "quantity": "500",
+              "symbol": "699001"
+            },
+            {
+              "account_id": "Y0000001",
+              "cost_fen": 420354,
+              "quantity": "7000",
+              "symbol": "699003"
+            },
+            {
+              "account_id": "Y0000001",
+              "cost_fen": 1055511,
+              "quantity": "100",
+              "symbol": "699004"
+            },
+            {
+              "account_id": "Y0000002",
+              "cost_fen": 630500,
+              "quantity": "600",
+              "symbol": "699001"
+            },
+            {
+              "account_id": "Y0000002",
+              "cost_fen": 822643,
+              "quantity": "400",
+              "symbol": "699005"
+            },
+            {
+              "account_id": "Y0000002",
+              "cost_fen": 1751000,
+              "quantity": "1500",
+              "symbol": "699006"
+            },
+            {
+              "account_id": "Y0000004",
+              "cost_fen": 1000260,
+              "quantity": "100",
+              "symbol": "699004"
+            }
+          ]
+        },
+        {
+          "date": "2025-12-22",
+          "positions": [
+            {
+              "account_id": "Y0000001",
+              "cost_fen": 488616,
+              "quantity": "500",
+              "symbol": "699001"
+            },
+            {
+              "account_id": "Y0000001",
+              "cost_fen": 420354,
+              "quantity": "7000",
+              "symbol": "699003"
+            },
+            {
+              "account_id": "Y0000001",
+              "cost_fen": 1055511,
+              "quantity": "100",
+              "symbol": "699004"
+            },
+            {
+              "account_id": "Y0000004",
+              "cost_fen": 1000260,
+              "quantity": "100",
+              "symbol": "699004"
+            }
+          ]
+        }
+      ],
+      "events": [
+        {
+          "account_id": "Y0000001",
+          "expected_cash_balance_fen": 10000000,
+          "key": [
+            "htsec-demo-001.xlsx",
+            2
+          ],
+          "kind": "cash_event",
+          "matched_lots": [],
+          "position_after_cost_fen": 0,
+          "position_after_quantity": "0",
+          "position_before_cost_fen": 0,
+          "position_before_quantity": "0",
+          "realized_fen": null,
+          "symbol": "699000"
+        },
+        {
+          "account_id": "Y0000001",
+          "expected_cash_balance_fen": 8999490,
+          "key": [
+            "htsec-demo-001.xlsx",
+            3
+          ],
+          "kind": "trade_buy",
+          "matched_lots": [],
+          "position_after_cost_fen": 1000510,
+          "position_after_quantity": "1000",
+          "position_before_cost_fen": 0,
+          "position_before_quantity": "0",
+          "realized_fen": null,
+          "symbol": "699001"
+        },
+        {
+          "account_id": "Y0000001",
+          "expected_cash_balance_fen": 8488985,
+          "key": [
+            "htsec-demo-001.xlsx",
+            4
+          ],
+          "kind": "trade_buy",
+          "matched_lots": [],
+          "position_after_cost_fen": 1511015,
+          "position_after_quantity": "1500",
+          "position_before_cost_fen": 1000510,
+          "position_before_quantity": "1000",
+          "realized_fen": null,
+          "symbol": "699001"
+        },
+        {
+          "account_id": "Y0000002",
+          "expected_cash_balance_fen": 8000000,
+          "key": [
+            "huaxi-demo-001.xls",
+            2
+          ],
+          "kind": "cash_event",
+          "matched_lots": [],
+          "position_after_cost_fen": 0,
+          "position_after_quantity": "0",
+          "position_before_cost_fen": 0,
+          "position_before_quantity": "0",
+          "realized_fen": null,
+          "symbol": "699000"
+        },
+        {
+          "account_id": "Y0000002",
+          "expected_cash_balance_fen": 7399500,
+          "key": [
+            "huaxi-demo-001.xls",
+            3
+          ],
+          "kind": "trade_buy",
+          "matched_lots": [],
+          "position_after_cost_fen": 600500,
+          "position_after_quantity": "300",
+          "position_before_cost_fen": 0,
+          "position_before_quantity": "0",
+          "realized_fen": null,
+          "symbol": "699005"
+        },
+        {
+          "account_id": "Y0000002",
+          "expected_cash_balance_fen": 6989000,
+          "key": [
+            "huaxi-demo-001.xls",
+            4
+          ],
+          "kind": "trade_buy",
+          "matched_lots": [],
+          "position_after_cost_fen": 1011000,
+          "position_after_quantity": "500",
+          "position_before_cost_fen": 600500,
+          "position_before_quantity": "300",
+          "realized_fen": null,
+          "symbol": "699005"
+        },
+        {
+          "account_id": "Y0000001",
+          "expected_cash_balance_fen": 7188472,
+          "key": [
+            "htsec-demo-001.xlsx",
+            5
+          ],
+          "kind": "trade_buy",
+          "matched_lots": [],
+          "position_after_cost_fen": 1300513,
+          "position_after_quantity": "2000",
+          "position_before_cost_fen": 0,
+          "position_before_quantity": "0",
+          "realized_fen": null,
+          "symbol": "699002"
+        },
+        {
+          "account_id": "Y0000003",
+          "expected_cash_balance_fen": 2000000,
+          "key": [
+            "generic-demo-013-account-c.csv",
+            2
+          ],
+          "kind": "cash_event",
+          "matched_lots": [],
+          "position_after_cost_fen": 0,
+          "position_after_quantity": "0",
+          "position_before_cost_fen": 0,
+          "position_before_quantity": "0",
+          "realized_fen": null,
+          "symbol": "699000"
+        },
+        {
+          "account_id": "Y0000002",
+          "expected_cash_balance_fen": 6592500,
+          "key": [
+            "huaxi-demo-001.xls",
+            5
+          ],
+          "kind": "trade_buy",
+          "matched_lots": [],
+          "position_after_cost_fen": 1407500,
+          "position_after_quantity": "700",
+          "position_before_cost_fen": 1011000,
+          "position_before_quantity": "500",
+          "realized_fen": null,
+          "symbol": "699005"
+        },
+        {
+          "account_id": "Y0000001",
+          "expected_cash_balance_fen": 7877280,
+          "key": [
+            "htsec-demo-001.xlsx",
+            6
+          ],
+          "kind": "trade_sell",
+          "matched_lots": [
+            [
+              "600",
+              604406
+            ]
+          ],
+          "position_after_cost_fen": 906609,
+          "position_after_quantity": "900",
+          "position_before_cost_fen": 1511015,
+          "position_before_quantity": "1500",
+          "realized_fen": 84402,
+          "symbol": "699001"
+        },
+        {
+          "account_id": "Y0000001",
+          "expected_cash_balance_fen": 8915237,
+          "key": [
+            "htsec-demo-001.xlsx",
+            7
+          ],
+          "kind": "trade_sell",
+          "matched_lots": [
+            [
+              "900",
+              906609
+            ]
+          ],
+          "position_after_cost_fen": 0,
+          "position_after_quantity": "0",
+          "position_before_cost_fen": 906609,
+          "position_before_quantity": "900",
+          "realized_fen": 131348,
+          "symbol": "699001"
+        },
+        {
+          "account_id": "Y0000003",
+          "expected_cash_balance_fen": 1804500,
+          "key": [
+            "generic-demo-013-account-c.csv",
+            3
+          ],
+          "kind": "trade_buy",
+          "matched_lots": [],
+          "position_after_cost_fen": 195500,
+          "position_after_quantity": "100",
+          "position_before_cost_fen": 0,
+          "position_before_quantity": "0",
+          "realized_fen": null,
+          "symbol": "699005"
+        },
+        {
+          "account_id": "Y0000004",
+          "expected_cash_balance_fen": 3000000,
+          "key": [
+            "generic-demo-015-no-fee-columns.csv",
+            2
+          ],
+          "kind": "cash_event",
+          "matched_lots": [],
+          "position_after_cost_fen": 0,
+          "position_after_quantity": "0",
+          "position_before_cost_fen": 0,
+          "position_before_quantity": "0",
+          "realized_fen": null,
+          "symbol": "699000"
+        },
+        {
+          "account_id": "Y0000004",
+          "expected_cash_balance_fen": 999480,
+          "key": [
+            "generic-demo-015-no-fee-columns.csv",
+            3
+          ],
+          "kind": "trade_buy",
+          "matched_lots": [],
+          "position_after_cost_fen": 2000520,
+          "position_after_quantity": "200",
+          "position_before_cost_fen": 0,
+          "position_before_quantity": "0",
+          "realized_fen": null,
+          "symbol": "699004"
+        },
+        {
+          "account_id": "Y0000004",
+          "expected_cash_balance_fen": 2097870,
+          "key": [
+            "generic-demo-015-no-fee-columns.csv",
+            4
+          ],
+          "kind": "trade_sell",
+          "matched_lots": [
+            [
+              "100",
+              1000260
+            ]
+          ],
+          "position_after_cost_fen": 1000260,
+          "position_after_quantity": "100",
+          "position_before_cost_fen": 2000520,
+          "position_before_quantity": "200",
+          "realized_fen": 98130,
+          "symbol": "699004"
+        },
+        {
+          "account_id": "Y0000002",
+          "expected_cash_balance_fen": 5392000,
+          "key": [
+            "huaxi-demo-001.xls",
+            6
+          ],
+          "kind": "trade_buy",
+          "matched_lots": [],
+          "position_after_cost_fen": 1200500,
+          "position_after_quantity": "1000",
+          "position_before_cost_fen": 0,
+          "position_before_quantity": "0",
+          "realized_fen": null,
+          "symbol": "699006"
+        },
+        {
+          "account_id": "Y0000004",
+          "expected_cash_balance_fen": 2102870,
+          "key": [
+            "generic-demo-015-no-fee-columns.csv",
+            5
+          ],
+          "kind": "cash_event",
+          "matched_lots": [],
+          "position_after_cost_fen": 1000260,
+          "position_after_quantity": "100",
+          "position_before_cost_fen": 1000260,
+          "position_before_quantity": "100",
+          "realized_fen": null,
+          "symbol": "699004"
+        },
+        {
+          "account_id": "Y0000001",
+          "expected_cash_balance_fen": 8130729,
+          "key": [
+            "htsec-demo-001.xlsx",
+            8
+          ],
+          "kind": "trade_buy",
+          "matched_lots": [],
+          "position_after_cost_fen": 784508,
+          "position_after_quantity": "800",
+          "position_before_cost_fen": 0,
+          "position_before_quantity": "0",
+          "realized_fen": null,
+          "symbol": "699001"
+        },
+        {
+          "account_id": "Y0000001",
+          "expected_cash_balance_fen": 7530223,
+          "key": [
+            "htsec-demo-001.xlsx",
+            9
+          ],
+          "kind": "trade_buy",
+          "matched_lots": [],
+          "position_after_cost_fen": 600506,
+          "position_after_quantity": "5000",
+          "position_before_cost_fen": 0,
+          "position_before_quantity": "0",
+          "realized_fen": null,
+          "symbol": "699003"
+        },
+        {
+          "account_id": "Y0000002",
+          "expected_cash_balance_fen": 4761500,
+          "key": [
+            "huaxi-demo-001.xls",
+            7
+          ],
+          "kind": "trade_buy",
+          "matched_lots": [],
+          "position_after_cost_fen": 630500,
+          "position_after_quantity": "600",
+          "position_before_cost_fen": 0,
+          "position_before_quantity": "0",
+          "realized_fen": null,
+          "symbol": "699001"
+        },
+        {
+          "account_id": "Y0000001",
+          "expected_cash_balance_fen": 6474712,
+          "key": [
+            "htsec-demo-001.xlsx",
+            10
+          ],
+          "kind": "trade_buy",
+          "matched_lots": [],
+          "position_after_cost_fen": 1055511,
+          "position_after_quantity": "100",
+          "position_before_cost_fen": 0,
+          "position_before_quantity": "0",
+          "realized_fen": null,
+          "symbol": "699004"
+        },
+        {
+          "account_id": "Y0000001",
+          "expected_cash_balance_fen": 6504712,
+          "key": [
+            "htsec-demo-001.xlsx",
+            11
+          ],
+          "kind": "cash_event",
+          "matched_lots": [],
+          "position_after_cost_fen": 1300513,
+          "position_after_quantity": "2000",
+          "position_before_cost_fen": 1300513,
+          "position_before_quantity": "2000",
+          "realized_fen": null,
+          "symbol": "699002"
+        },
+        {
+          "account_id": "Y0000001",
+          "expected_cash_balance_fen": 6504712,
+          "key": [
+            "htsec-demo-001.xlsx",
+            12
+          ],
+          "kind": "receipt_free",
+          "matched_lots": [],
+          "position_after_cost_fen": 1300513,
+          "position_after_quantity": "2200",
+          "position_before_cost_fen": 1300513,
+          "position_before_quantity": "2000",
+          "realized_fen": null,
+          "symbol": "699002"
+        },
+        {
+          "account_id": "Y0000001",
+          "expected_cash_balance_fen": 6504712,
+          "key": [
+            "htsec-demo-001.xlsx",
+            13
+          ],
+          "kind": "receipt_valued",
+          "matched_lots": [],
+          "position_after_cost_fen": 879508,
+          "position_after_quantity": "900",
+          "position_before_cost_fen": 784508,
+          "position_before_quantity": "800",
+          "realized_fen": null,
+          "symbol": "699001"
+        },
+        {
+          "account_id": "Y0000002",
+          "expected_cash_balance_fen": 5859900,
+          "key": [
+            "huaxi-demo-001.xls",
+            8
+          ],
+          "kind": "trade_sell",
+          "matched_lots": [
+            [
+              "500",
+              1005357
+            ]
+          ],
+          "position_after_cost_fen": 402143,
+          "position_after_quantity": "200",
+          "position_before_cost_fen": 1407500,
+          "position_before_quantity": "700",
+          "realized_fen": 93043,
+          "symbol": "699005"
+        },
+        {
+          "account_id": "Y0000001",
+          "expected_cash_balance_fen": 6330712,
+          "key": [
+            "htsec-demo-001.xlsx",
+            14
+          ],
+          "kind": "receipt_paid",
+          "matched_lots": [],
+          "position_after_cost_fen": 1474513,
+          "position_after_quantity": "2500",
+          "position_before_cost_fen": 1300513,
+          "position_before_quantity": "2200",
+          "realized_fen": null,
+          "symbol": "699002"
+        },
+        {
+          "account_id": "Y0000002",
+          "expected_cash_balance_fen": 5884900,
+          "key": [
+            "huaxi-demo-001.xls",
+            9
+          ],
+          "kind": "cash_event",
+          "matched_lots": [],
+          "position_after_cost_fen": 402143,
+          "position_after_quantity": "200",
+          "position_before_cost_fen": 402143,
+          "position_before_quantity": "200",
+          "realized_fen": null,
+          "symbol": "699005"
+        },
+        {
+          "account_id": "Y0000001",
+          "expected_cash_balance_fen": 6330712,
+          "key": [
+            "htsec-demo-001.xlsx",
+            15
+          ],
+          "kind": "receipt_free",
+          "matched_lots": [],
+          "position_after_cost_fen": 600506,
+          "position_after_quantity": "10000",
+          "position_before_cost_fen": 600506,
+          "position_before_quantity": "5000",
+          "realized_fen": null,
+          "symbol": "699003"
+        },
+        {
+          "account_id": "Y0000001",
+          "expected_cash_balance_fen": 6516024,
+          "key": [
+            "htsec-demo-001.xlsx",
+            16
+          ],
+          "kind": "trade_sell",
+          "matched_lots": [
+            [
+              "3000",
+              180152
+            ]
+          ],
+          "position_after_cost_fen": 420354,
+          "position_after_quantity": "7000",
+          "position_before_cost_fen": 600506,
+          "position_before_quantity": "10000",
+          "realized_fen": 5160,
+          "symbol": "699003"
+        },
+        {
+          "account_id": "Y0000001",
+          "expected_cash_balance_fen": 6517258,
+          "key": [
+            "htsec-demo-001.xlsx",
+            17
+          ],
+          "kind": "cash_event",
+          "matched_lots": [],
+          "position_after_cost_fen": 1474513,
+          "position_after_quantity": "2500",
+          "position_before_cost_fen": 1474513,
+          "position_before_quantity": "2500",
+          "realized_fen": null,
+          "symbol": "699002"
+        },
+        {
+          "account_id": "Y0000002",
+          "expected_cash_balance_fen": 5334400,
+          "key": [
+            "huaxi-demo-001.xls",
+            10
+          ],
+          "kind": "trade_buy",
+          "matched_lots": [],
+          "position_after_cost_fen": 1751000,
+          "position_after_quantity": "1500",
+          "position_before_cost_fen": 1200500,
+          "position_before_quantity": "1000",
+          "realized_fen": null,
+          "symbol": "699006"
+        },
+        {
+          "account_id": "Y0000002",
+          "expected_cash_balance_fen": 4834400,
+          "key": [
+            "huaxi-demo-001.xls",
+            11
+          ],
+          "kind": "trade_buy",
+          "matched_lots": [],
+          "position_after_cost_fen": 500000,
+          "position_after_quantity": "1000",
+          "position_before_cost_fen": 0,
+          "position_before_quantity": "0",
+          "realized_fen": null,
+          "symbol": "699007"
+        },
+        {
+          "account_id": "Y0000002",
+          "expected_cash_balance_fen": 7834400,
+          "key": [
+            "huaxi-demo-001.xls",
+            12
+          ],
+          "kind": "cash_event",
+          "matched_lots": [],
+          "position_after_cost_fen": 0,
+          "position_after_quantity": "0",
+          "position_before_cost_fen": 0,
+          "position_before_quantity": "0",
+          "realized_fen": null,
+          "symbol": "699000"
+        },
+        {
+          "account_id": "Y0000001",
+          "expected_cash_balance_fen": 11517258,
+          "key": [
+            "htsec-demo-001.xlsx",
+            18
+          ],
+          "kind": "cash_event",
+          "matched_lots": [],
+          "position_after_cost_fen": 0,
+          "position_after_quantity": "0",
+          "position_before_cost_fen": 0,
+          "position_before_quantity": "0",
+          "realized_fen": null,
+          "symbol": "699000"
+        },
+        {
+          "account_id": "Y0000001",
+          "expected_cash_balance_fen": 10806751,
+          "key": [
+            "htsec-demo-001.xlsx",
+            19
+          ],
+          "kind": "trade_buy",
+          "matched_lots": [],
+          "position_after_cost_fen": 2185020,
+          "position_after_quantity": "3500",
+          "position_before_cost_fen": 1474513,
+          "position_before_quantity": "2500",
+          "realized_fen": null,
+          "symbol": "699002"
+        },
+        {
+          "account_id": "Y0000003",
+          "expected_cash_balance_fen": 2018785,
+          "key": [
+            "generic-demo-013-account-c.csv",
+            4
+          ],
+          "kind": "trade_sell",
+          "matched_lots": [
+            [
+              "100",
+              195500
+            ]
+          ],
+          "position_after_cost_fen": 0,
+          "position_after_quantity": "0",
+          "position_before_cost_fen": 195500,
+          "position_before_quantity": "100",
+          "realized_fen": 18785,
+          "symbol": "699005"
+        },
+        {
+          "account_id": "Y0000002",
+          "expected_cash_balance_fen": 9834400,
+          "key": [
+            "huaxi-demo-001.xls",
+            13
+          ],
+          "kind": "cash_event",
+          "matched_lots": [],
+          "position_after_cost_fen": 0,
+          "position_after_quantity": "0",
+          "position_before_cost_fen": 0,
+          "position_before_quantity": "0",
+          "realized_fen": null,
+          "symbol": "699000"
+        },
+        {
+          "account_id": "Y0000001",
+          "expected_cash_balance_fen": 8806751,
+          "key": [
+            "htsec-demo-001.xlsx",
+            20
+          ],
+          "kind": "cash_event",
+          "matched_lots": [],
+          "position_after_cost_fen": 0,
+          "position_after_quantity": "0",
+          "position_before_cost_fen": 0,
+          "position_before_quantity": "0",
+          "realized_fen": null,
+          "symbol": "699000"
+        },
+        {
+          "account_id": "Y0000002",
+          "expected_cash_balance_fen": 10334400,
+          "key": [
+            "huaxi-demo-001.xls",
+            14
+          ],
+          "kind": "trade_sell",
+          "matched_lots": [
+            [
+              "1000",
+              500000
+            ]
+          ],
+          "position_after_cost_fen": 0,
+          "position_after_quantity": "0",
+          "position_before_cost_fen": 500000,
+          "position_before_quantity": "1000",
+          "realized_fen": 0,
+          "symbol": "699007"
+        },
+        {
+          "account_id": "Y0000002",
+          "expected_cash_balance_fen": 9913900,
+          "key": [
+            "huaxi-demo-001.xls",
+            15
+          ],
+          "kind": "trade_buy",
+          "matched_lots": [],
+          "position_after_cost_fen": 822643,
+          "position_after_quantity": "400",
+          "position_before_cost_fen": 402143,
+          "position_before_quantity": "200",
+          "realized_fen": null,
+          "symbol": "699005"
+        },
+        {
+          "account_id": "Y0000001",
+          "expected_cash_balance_fen": 9125928,
+          "key": [
+            "htsec-demo-001.xlsx",
+            21
+          ],
+          "kind": "trade_sell",
+          "matched_lots": [
+            [
+              "500",
+              312146
+            ]
+          ],
+          "position_after_cost_fen": 1872874,
+          "position_after_quantity": "3000",
+          "position_before_cost_fen": 2185020,
+          "position_before_quantity": "3500",
+          "realized_fen": 7031,
+          "symbol": "699002"
+        },
+        {
+          "account_id": "Y0000001",
+          "expected_cash_balance_fen": 11238292,
+          "key": [
+            "htsec-demo-001.xlsx",
+            22
+          ],
+          "kind": "trade_sell",
+          "matched_lots": [
+            [
+              "3000",
+              1872874
+            ]
+          ],
+          "position_after_cost_fen": 0,
+          "position_after_quantity": "0",
+          "position_before_cost_fen": 1872874,
+          "position_before_quantity": "3000",
+          "realized_fen": 239490,
+          "symbol": "699002"
+        },
+        {
+          "account_id": "Y0000001",
+          "expected_cash_balance_fen": 11637388,
+          "key": [
+            "htsec-demo-001.xlsx",
+            23
+          ],
+          "kind": "trade_sell",
+          "matched_lots": [
+            [
+              "400",
+              390892
+            ]
+          ],
+          "position_after_cost_fen": 488616,
+          "position_after_quantity": "500",
+          "position_before_cost_fen": 879508,
+          "position_before_quantity": "900",
+          "realized_fen": 8204,
+          "symbol": "699001"
+        },
+        {
+          "account_id": "Y0000002",
+          "expected_cash_balance_fen": 10712600,
+          "key": [
+            "huaxi-demo-001.xls",
+            16
+          ],
+          "kind": "trade_sell",
+          "matched_lots": [
+            [
+              "400",
+              822643
+            ]
+          ],
+          "position_after_cost_fen": 0,
+          "position_after_quantity": "0",
+          "position_before_cost_fen": 822643,
+          "position_before_quantity": "400",
+          "realized_fen": -23943,
+          "symbol": "699005"
+        },
+        {
+          "account_id": "Y0000002",
+          "expected_cash_balance_fen": 12285525,
+          "key": [
+            "huaxi-demo-001.xls",
+            17
+          ],
+          "kind": "trade_sell",
+          "matched_lots": [
+            [
+              "1500",
+              1751000
+            ]
+          ],
+          "position_after_cost_fen": 0,
+          "position_after_quantity": "0",
+          "position_before_cost_fen": 1751000,
+          "position_before_quantity": "1500",
+          "realized_fen": -178075,
+          "symbol": "699006"
+        },
+        {
+          "account_id": "Y0000002",
+          "expected_cash_balance_fen": 12914395,
+          "key": [
+            "huaxi-demo-001.xls",
+            18
+          ],
+          "kind": "trade_sell",
+          "matched_lots": [
+            [
+              "600",
+              630500
+            ]
+          ],
+          "position_after_cost_fen": 0,
+          "position_after_quantity": "0",
+          "position_before_cost_fen": 630500,
+          "position_before_quantity": "600",
+          "realized_fen": -1630,
+          "symbol": "699001"
+        }
+      ],
+      "positions": [
+        {
+          "account_id": "Y0000001",
+          "cost_fen": 488616,
+          "is_open": true,
+          "quantity": "500",
+          "symbol": "699001"
+        },
+        {
+          "account_id": "Y0000001",
+          "cost_fen": 0,
+          "is_open": false,
+          "quantity": "0",
+          "symbol": "699002"
+        },
+        {
+          "account_id": "Y0000001",
+          "cost_fen": 420354,
+          "is_open": true,
+          "quantity": "7000",
+          "symbol": "699003"
+        },
+        {
+          "account_id": "Y0000001",
+          "cost_fen": 1055511,
+          "is_open": true,
+          "quantity": "100",
+          "symbol": "699004"
+        },
+        {
+          "account_id": "Y0000002",
+          "cost_fen": 0,
+          "is_open": false,
+          "quantity": "0",
+          "symbol": "699001"
+        },
+        {
+          "account_id": "Y0000002",
+          "cost_fen": 0,
+          "is_open": false,
+          "quantity": "0",
+          "symbol": "699005"
+        },
+        {
+          "account_id": "Y0000002",
+          "cost_fen": 0,
+          "is_open": false,
+          "quantity": "0",
+          "symbol": "699006"
+        },
+        {
+          "account_id": "Y0000002",
+          "cost_fen": 0,
+          "is_open": false,
+          "quantity": "0",
+          "symbol": "699007"
+        },
+        {
+          "account_id": "Y0000003",
+          "cost_fen": 0,
+          "is_open": false,
+          "quantity": "0",
+          "symbol": "699005"
+        },
+        {
+          "account_id": "Y0000004",
+          "cost_fen": 1000260,
+          "is_open": true,
+          "quantity": "100",
+          "symbol": "699004"
+        }
+      ],
+      "totals": {
+        "fees_total_fen": 24296,
+        "open_positions": 4,
+        "position_cost_fen": 2964741,
+        "realized_net_fen": 481945
+      }
+    }
+  },
+  "note": "只存输入与期望，不含 observed_*；由 tools/gen_data.py 独立实现（Fraction 精确数量，整数分成本），不 import 引擎。scenario.files 是成本真值的导入范围：其余样例是这些账户的子集/副本，全部一起导入会重复计数。",
+  "rows": [
+    {
+      "account_id": "Y0000001",
+      "amount_fen": 0,
+      "business": "银证转入",
+      "cash_balance_fen": 10000000,
+      "fee_detail_fen": {
+        "commission": 0,
+        "other_fee": 0,
+        "stamp_tax": 0,
+        "transfer_fee": 0
+      },
+      "fee_source": "as_reported",
+      "fees_fen": 0,
+      "key": [
+        "htsec-demo-001.xlsx",
+        2
+      ],
+      "kind": "cash_event",
+      "quantity": "0",
+      "settlement_fen": 10000000,
+      "symbol": "699000",
+      "trade_date": "2025-01-02",
+      "trade_time": "09:25:00"
+    },
+    {
+      "account_id": "Y0000001",
+      "amount_fen": 1000000,
+      "business": "证券买入",
+      "cash_balance_fen": 8999490,
+      "fee_detail_fen": {
+        "commission": 500,
+        "other_fee": 0,
+        "stamp_tax": 0,
+        "transfer_fee": 10
+      },
+      "fee_source": "as_reported",
+      "fees_fen": 510,
+      "key": [
+        "htsec-demo-001.xlsx",
+        3
+      ],
+      "kind": "trade_buy",
+      "quantity": "1000",
+      "settlement_fen": -1000510,
+      "symbol": "699001",
+      "trade_date": "2025-01-06",
+      "trade_time": "09:31:02"
+    },
+    {
+      "account_id": "Y0000001",
+      "amount_fen": 510000,
+      "business": "证券买入",
+      "cash_balance_fen": 8488985,
+      "fee_detail_fen": {
+        "commission": 500,
+        "other_fee": 0,
+        "stamp_tax": 0,
+        "transfer_fee": 5
+      },
+      "fee_source": "as_reported",
+      "fees_fen": 505,
+      "key": [
+        "htsec-demo-001.xlsx",
+        4
+      ],
+      "kind": "trade_buy",
+      "quantity": "500",
+      "settlement_fen": -510505,
+      "symbol": "699001",
+      "trade_date": "2025-01-06",
+      "trade_time": "14:01:11"
+    },
+    {
+      "account_id": "Y0000002",
+      "amount_fen": 0,
+      "business": "银证转入",
+      "cash_balance_fen": 8000000,
+      "fee_detail_fen": {
+        "commission": 0,
+        "other_fee": 0,
+        "stamp_tax": 0,
+        "transfer_fee": 0
+      },
+      "fee_source": "as_reported",
+      "fees_fen": 0,
+      "key": [
+        "huaxi-demo-001.xls",
+        2
+      ],
+      "kind": "cash_event",
+      "quantity": "0",
+      "settlement_fen": 8000000,
+      "symbol": "699000",
+      "trade_date": "2025-01-10",
+      "trade_time": "09:20:00"
+    },
+    {
+      "account_id": "Y0000002",
+      "amount_fen": 600000,
+      "business": "证券买入",
+      "cash_balance_fen": 7399500,
+      "fee_detail_fen": {
+        "commission": 500,
+        "other_fee": 0,
+        "stamp_tax": 0,
+        "transfer_fee": 0
+      },
+      "fee_source": "as_reported",
+      "fees_fen": 500,
+      "key": [
+        "huaxi-demo-001.xls",
+        3
+      ],
+      "kind": "trade_buy",
+      "quantity": "300",
+      "settlement_fen": -600500,
+      "symbol": "699005",
+      "trade_date": "2025-01-15",
+      "trade_time": "09:40:00"
+    },
+    {
+      "account_id": "Y0000002",
+      "amount_fen": 410000,
+      "business": "证券买入",
+      "cash_balance_fen": 6989000,
+      "fee_detail_fen": {
+        "commission": 500,
+        "other_fee": 0,
+        "stamp_tax": 0,
+        "transfer_fee": 0
+      },
+      "fee_source": "as_reported",
+      "fees_fen": 500,
+      "key": [
+        "huaxi-demo-001.xls",
+        4
+      ],
+      "kind": "trade_buy",
+      "quantity": "200",
+      "settlement_fen": -410500,
+      "symbol": "699005",
+      "trade_date": "2025-02-03",
+      "trade_time": "09:50:00"
+    },
+    {
+      "account_id": "Y0000001",
+      "amount_fen": 1300000,
+      "business": "证券买入",
+      "cash_balance_fen": 7188472,
+      "fee_detail_fen": {
+        "commission": 500,
+        "other_fee": 0,
+        "stamp_tax": 0,
+        "transfer_fee": 13
+      },
+      "fee_source": "as_reported",
+      "fees_fen": 513,
+      "key": [
+        "htsec-demo-001.xlsx",
+        5
+      ],
+      "kind": "trade_buy",
+      "quantity": "2000",
+      "settlement_fen": -1300513,
+      "symbol": "699002",
+      "trade_date": "2025-02-10",
+      "trade_time": "10:15:00"
+    },
+    {
+      "account_id": "Y0000003",
+      "amount_fen": 0,
+      "business": "银证转入",
+      "cash_balance_fen": 2000000,
+      "fee_detail_fen": {
+        "commission": 0,
+        "other_fee": 0,
+        "stamp_tax": 0,
+        "transfer_fee": 0
+      },
+      "fee_source": "as_reported",
+      "fees_fen": 0,
+      "key": [
+        "generic-demo-013-account-c.csv",
+        2
+      ],
+      "kind": "cash_event",
+      "quantity": "0",
+      "settlement_fen": 2000000,
+      "symbol": "699000",
+      "trade_date": "2025-02-20",
+      "trade_time": "10:00:00"
+    },
+    {
+      "account_id": "Y0000002",
+      "amount_fen": 396000,
+      "business": "证券买入",
+      "cash_balance_fen": 6592500,
+      "fee_detail_fen": {
+        "commission": 500,
+        "other_fee": 0,
+        "stamp_tax": 0,
+        "transfer_fee": 0
+      },
+      "fee_source": "as_reported",
+      "fees_fen": 500,
+      "key": [
+        "huaxi-demo-001.xls",
+        5
+      ],
+      "kind": "trade_buy",
+      "quantity": "200",
+      "settlement_fen": -396500,
+      "symbol": "699005",
+      "trade_date": "2025-03-03",
+      "trade_time": "09:55:00"
+    },
+    {
+      "account_id": "Y0000001",
+      "amount_fen": 690000,
+      "business": "证券卖出",
+      "cash_balance_fen": 7877280,
+      "fee_detail_fen": {
+        "commission": 500,
+        "other_fee": 0,
+        "stamp_tax": 690,
+        "transfer_fee": 2
+      },
+      "fee_source": "as_reported",
+      "fees_fen": 1192,
+      "key": [
+        "htsec-demo-001.xlsx",
+        6
+      ],
+      "kind": "trade_sell",
+      "quantity": "600",
+      "settlement_fen": 688808,
+      "symbol": "699001",
+      "trade_date": "2025-03-05",
+      "trade_time": "10:00:00"
+    },
+    {
+      "account_id": "Y0000001",
+      "amount_fen": 1039500,
+      "business": "证券卖出",
+      "cash_balance_fen": 8915237,
+      "fee_detail_fen": {
+        "commission": 500,
+        "other_fee": 0,
+        "stamp_tax": 1040,
+        "transfer_fee": 3
+      },
+      "fee_source": "as_reported",
+      "fees_fen": 1543,
+      "key": [
+        "htsec-demo-001.xlsx",
+        7
+      ],
+      "kind": "trade_sell",
+      "quantity": "900",
+      "settlement_fen": 1037957,
+      "symbol": "699001",
+      "trade_date": "2025-03-05",
+      "trade_time": "10:00:30"
+    },
+    {
+      "account_id": "Y0000003",
+      "amount_fen": 195000,
+      "business": "证券买入",
+      "cash_balance_fen": 1804500,
+      "fee_detail_fen": {
+        "commission": 500,
+        "other_fee": 0,
+        "stamp_tax": 0,
+        "transfer_fee": 0
+      },
+      "fee_source": "as_reported",
+      "fees_fen": 500,
+      "key": [
+        "generic-demo-013-account-c.csv",
+        3
+      ],
+      "kind": "trade_buy",
+      "quantity": "100",
+      "settlement_fen": -195500,
+      "symbol": "699005",
+      "trade_date": "2025-03-12",
+      "trade_time": "09:50:00"
+    },
+    {
+      "account_id": "Y0000004",
+      "amount_fen": 0,
+      "business": "银证转入",
+      "cash_balance_fen": 3000000,
+      "fee_detail_fen": {
+        "commission": null,
+        "other_fee": null,
+        "stamp_tax": null,
+        "transfer_fee": null
+      },
+      "fee_source": "not_reported",
+      "fees_fen": 0,
+      "key": [
+        "generic-demo-015-no-fee-columns.csv",
+        2
+      ],
+      "kind": "cash_event",
+      "quantity": "0",
+      "settlement_fen": 3000000,
+      "symbol": "699000",
+      "trade_date": "2025-03-20",
+      "trade_time": "09:20:00"
+    },
+    {
+      "account_id": "Y0000004",
+      "amount_fen": 2000000,
+      "business": "证券买入",
+      "cash_balance_fen": 999480,
+      "fee_detail_fen": {
+        "commission": null,
+        "other_fee": null,
+        "stamp_tax": null,
+        "transfer_fee": null
+      },
+      "fee_source": "derived_from_settlement",
+      "fees_fen": 520,
+      "key": [
+        "generic-demo-015-no-fee-columns.csv",
+        3
+      ],
+      "kind": "trade_buy",
+      "quantity": "200",
+      "settlement_fen": -2000520,
+      "symbol": "699004",
+      "trade_date": "2025-03-24",
+      "trade_time": "09:40:00"
+    },
+    {
+      "account_id": "Y0000004",
+      "amount_fen": 1100000,
+      "business": "证券卖出",
+      "cash_balance_fen": 2097870,
+      "fee_detail_fen": {
+        "commission": null,
+        "other_fee": null,
+        "stamp_tax": null,
+        "transfer_fee": null
+      },
+      "fee_source": "derived_from_settlement",
+      "fees_fen": 1610,
+      "key": [
+        "generic-demo-015-no-fee-columns.csv",
+        4
+      ],
+      "kind": "trade_sell",
+      "quantity": "100",
+      "settlement_fen": 1098390,
+      "symbol": "699004",
+      "trade_date": "2025-03-28",
+      "trade_time": "10:10:00"
+    },
+    {
+      "account_id": "Y0000002",
+      "amount_fen": 1200000,
+      "business": "证券买入",
+      "cash_balance_fen": 5392000,
+      "fee_detail_fen": {
+        "commission": 500,
+        "other_fee": 0,
+        "stamp_tax": 0,
+        "transfer_fee": 0
+      },
+      "fee_source": "as_reported",
+      "fees_fen": 500,
+      "key": [
+        "huaxi-demo-001.xls",
+        6
+      ],
+      "kind": "trade_buy",
+      "quantity": "1000",
+      "settlement_fen": -1200500,
+      "symbol": "699006",
+      "trade_date": "2025-04-01",
+      "trade_time": "09:35:00"
+    },
+    {
+      "account_id": "Y0000004",
+      "amount_fen": 0,
+      "business": "红利入账",
+      "cash_balance_fen": 2102870,
+      "fee_detail_fen": {
+        "commission": null,
+        "other_fee": null,
+        "stamp_tax": null,
+        "transfer_fee": null
+      },
+      "fee_source": "not_reported",
+      "fees_fen": 0,
+      "key": [
+        "generic-demo-015-no-fee-columns.csv",
+        5
+      ],
+      "kind": "cash_event",
+      "quantity": "0",
+      "settlement_fen": 5000,
+      "symbol": "699004",
+      "trade_date": "2025-04-02",
+      "trade_time": "09:30:00"
+    },
+    {
+      "account_id": "Y0000001",
+      "amount_fen": 784000,
+      "business": "证券买入",
+      "cash_balance_fen": 8130729,
+      "fee_detail_fen": {
+        "commission": 500,
+        "other_fee": 0,
+        "stamp_tax": 0,
+        "transfer_fee": 8
+      },
+      "fee_source": "as_reported",
+      "fees_fen": 508,
+      "key": [
+        "htsec-demo-001.xlsx",
+        8
+      ],
+      "kind": "trade_buy",
+      "quantity": "800",
+      "settlement_fen": -784508,
+      "symbol": "699001",
+      "trade_date": "2025-04-08",
+      "trade_time": "09:45:00"
+    },
+    {
+      "account_id": "Y0000001",
+      "amount_fen": 600000,
+      "business": "证券买入",
+      "cash_balance_fen": 7530223,
+      "fee_detail_fen": {
+        "commission": 500,
+        "other_fee": 0,
+        "stamp_tax": 0,
+        "transfer_fee": 6
+      },
+      "fee_source": "as_reported",
+      "fees_fen": 506,
+      "key": [
+        "htsec-demo-001.xlsx",
+        9
+      ],
+      "kind": "trade_buy",
+      "quantity": "5000",
+      "settlement_fen": -600506,
+      "symbol": "699003",
+      "trade_date": "2025-04-25",
+      "trade_time": "09:40:00"
+    },
+    {
+      "account_id": "Y0000002",
+      "amount_fen": 630000,
+      "business": "证券买入",
+      "cash_balance_fen": 4761500,
+      "fee_detail_fen": {
+        "commission": 500,
+        "other_fee": 0,
+        "stamp_tax": 0,
+        "transfer_fee": 0
+      },
+      "fee_source": "as_reported",
+      "fees_fen": 500,
+      "key": [
+        "huaxi-demo-001.xls",
+        7
+      ],
+      "kind": "trade_buy",
+      "quantity": "600",
+      "settlement_fen": -630500,
+      "symbol": "699001",
+      "trade_date": "2025-05-06",
+      "trade_time": "09:42:00"
+    },
+    {
+      "account_id": "Y0000001",
+      "amount_fen": 1055000,
+      "business": "证券买入",
+      "cash_balance_fen": 6474712,
+      "fee_detail_fen": {
+        "commission": 500,
+        "other_fee": 0,
+        "stamp_tax": 0,
+        "transfer_fee": 11
+      },
+      "fee_source": "as_reported",
+      "fees_fen": 511,
+      "key": [
+        "htsec-demo-001.xlsx",
+        10
+      ],
+      "kind": "trade_buy",
+      "quantity": "100",
+      "settlement_fen": -1055511,
+      "symbol": "699004",
+      "trade_date": "2025-05-12",
+      "trade_time": "09:35:00"
+    },
+    {
+      "account_id": "Y0000001",
+      "amount_fen": 0,
+      "business": "红利入账",
+      "cash_balance_fen": 6504712,
+      "fee_detail_fen": {
+        "commission": 0,
+        "other_fee": 0,
+        "stamp_tax": 0,
+        "transfer_fee": 0
+      },
+      "fee_source": "as_reported",
+      "fees_fen": 0,
+      "key": [
+        "htsec-demo-001.xlsx",
+        11
+      ],
+      "kind": "cash_event",
+      "quantity": "0",
+      "settlement_fen": 30000,
+      "symbol": "699002",
+      "trade_date": "2025-05-20",
+      "trade_time": "09:30:00"
+    },
+    {
+      "account_id": "Y0000001",
+      "amount_fen": 0,
+      "business": "送股入账",
+      "cash_balance_fen": 6504712,
+      "fee_detail_fen": {
+        "commission": 0,
+        "other_fee": 0,
+        "stamp_tax": 0,
+        "transfer_fee": 0
+      },
+      "fee_source": "as_reported",
+      "fees_fen": 0,
+      "key": [
+        "htsec-demo-001.xlsx",
+        12
+      ],
+      "kind": "receipt_free",
+      "quantity": "200",
+      "settlement_fen": 0,
+      "symbol": "699002",
+      "trade_date": "2025-06-10",
+      "trade_time": "09:30:00"
+    },
+    {
+      "account_id": "Y0000001",
+      "amount_fen": 95000,
+      "business": "红利再投",
+      "cash_balance_fen": 6504712,
+      "fee_detail_fen": {
+        "commission": 0,
+        "other_fee": 0,
+        "stamp_tax": 0,
+        "transfer_fee": 0
+      },
+      "fee_source": "as_reported",
+      "fees_fen": 0,
+      "key": [
+        "htsec-demo-001.xlsx",
+        13
+      ],
+      "kind": "receipt_valued",
+      "quantity": "100",
+      "settlement_fen": 0,
+      "symbol": "699001",
+      "trade_date": "2025-06-10",
+      "trade_time": "09:30:05"
+    },
+    {
+      "account_id": "Y0000002",
+      "amount_fen": 1100000,
+      "business": "证券卖出",
+      "cash_balance_fen": 5859900,
+      "fee_detail_fen": {
+        "commission": 500,
+        "other_fee": 0,
+        "stamp_tax": 1100,
+        "transfer_fee": 0
+      },
+      "fee_source": "as_reported",
+      "fees_fen": 1600,
+      "key": [
+        "huaxi-demo-001.xls",
+        8
+      ],
+      "kind": "trade_sell",
+      "quantity": "500",
+      "settlement_fen": 1098400,
+      "symbol": "699005",
+      "trade_date": "2025-06-20",
+      "trade_time": "10:05:00"
+    },
+    {
+      "account_id": "Y0000001",
+      "amount_fen": 174000,
+      "business": "配股",
+      "cash_balance_fen": 6330712,
+      "fee_detail_fen": {
+        "commission": 0,
+        "other_fee": 0,
+        "stamp_tax": 0,
+        "transfer_fee": 0
+      },
+      "fee_source": "as_reported",
+      "fees_fen": 0,
+      "key": [
+        "htsec-demo-001.xlsx",
+        14
+      ],
+      "kind": "receipt_paid",
+      "quantity": "300",
+      "settlement_fen": -174000,
+      "symbol": "699002",
+      "trade_date": "2025-07-01",
+      "trade_time": "09:30:00"
+    },
+    {
+      "account_id": "Y0000002",
+      "amount_fen": 0,
+      "business": "红利入账",
+      "cash_balance_fen": 5884900,
+      "fee_detail_fen": {
+        "commission": 0,
+        "other_fee": 0,
+        "stamp_tax": 0,
+        "transfer_fee": 0
+      },
+      "fee_source": "as_reported",
+      "fees_fen": 0,
+      "key": [
+        "huaxi-demo-001.xls",
+        9
+      ],
+      "kind": "cash_event",
+      "quantity": "0",
+      "settlement_fen": 25000,
+      "symbol": "699005",
+      "trade_date": "2025-07-10",
+      "trade_time": "09:30:00"
+    },
+    {
+      "account_id": "Y0000001",
+      "amount_fen": 0,
+      "business": "拆分",
+      "cash_balance_fen": 6330712,
+      "fee_detail_fen": {
+        "commission": 0,
+        "other_fee": 0,
+        "stamp_tax": 0,
+        "transfer_fee": 0
+      },
+      "fee_source": "as_reported",
+      "fees_fen": 0,
+      "key": [
+        "htsec-demo-001.xlsx",
+        15
+      ],
+      "kind": "receipt_free",
+      "quantity": "5000",
+      "settlement_fen": 0,
+      "symbol": "699003",
+      "trade_date": "2025-07-15",
+      "trade_time": "09:30:00"
+    },
+    {
+      "account_id": "Y0000001",
+      "amount_fen": 186000,
+      "business": "证券卖出",
+      "cash_balance_fen": 6516024,
+      "fee_detail_fen": {
+        "commission": 500,
+        "other_fee": 0,
+        "stamp_tax": 186,
+        "transfer_fee": 2
+      },
+      "fee_source": "as_reported",
+      "fees_fen": 688,
+      "key": [
+        "htsec-demo-001.xlsx",
+        16
+      ],
+      "kind": "trade_sell",
+      "quantity": "3000",
+      "settlement_fen": 185312,
+      "symbol": "699003",
+      "trade_date": "2025-07-16",
+      "trade_time": "10:00:00"
+    },
+    {
+      "account_id": "Y0000001",
+      "amount_fen": 0,
+      "business": "其他业务甲",
+      "cash_balance_fen": 6517258,
+      "fee_detail_fen": {
+        "commission": 0,
+        "other_fee": 0,
+        "stamp_tax": 0,
+        "transfer_fee": 0
+      },
+      "fee_source": "as_reported",
+      "fees_fen": 0,
+      "key": [
+        "htsec-demo-001.xlsx",
+        17
+      ],
+      "kind": "cash_event",
+      "quantity": "0",
+      "settlement_fen": 1234,
+      "symbol": "699002",
+      "trade_date": "2025-08-01",
+      "trade_time": "09:30:00"
+    },
+    {
+      "account_id": "Y0000002",
+      "amount_fen": 550000,
+      "business": "证券买入",
+      "cash_balance_fen": 5334400,
+      "fee_detail_fen": {
+        "commission": 500,
+        "other_fee": 0,
+        "stamp_tax": 0,
+        "transfer_fee": 0
+      },
+      "fee_source": "as_reported",
+      "fees_fen": 500,
+      "key": [
+        "huaxi-demo-001.xls",
+        10
+      ],
+      "kind": "trade_buy",
+      "quantity": "500",
+      "settlement_fen": -550500,
+      "symbol": "699006",
+      "trade_date": "2025-08-15",
+      "trade_time": "09:30:00"
+    },
+    {
+      "account_id": "Y0000002",
+      "amount_fen": 500000,
+      "business": "证券买入",
+      "cash_balance_fen": 4834400,
+      "fee_detail_fen": {
+        "commission": 0,
+        "other_fee": 0,
+        "stamp_tax": 0,
+        "transfer_fee": 0
+      },
+      "fee_source": "as_reported",
+      "fees_fen": 0,
+      "key": [
+        "huaxi-demo-001.xls",
+        11
+      ],
+      "kind": "trade_buy",
+      "quantity": "1000",
+      "settlement_fen": -500000,
+      "symbol": "699007",
+      "trade_date": "2025-08-20",
+      "trade_time": "09:40:00"
+    },
+    {
+      "account_id": "Y0000002",
+      "amount_fen": 0,
+      "business": "银证转入",
+      "cash_balance_fen": 7834400,
+      "fee_detail_fen": {
+        "commission": 0,
+        "other_fee": 0,
+        "stamp_tax": 0,
+        "transfer_fee": 0
+      },
+      "fee_source": "as_reported",
+      "fees_fen": 0,
+      "key": [
+        "huaxi-demo-001.xls",
+        12
+      ],
+      "kind": "cash_event",
+      "quantity": "0",
+      "settlement_fen": 3000000,
+      "symbol": "699000",
+      "trade_date": "2025-09-02",
+      "trade_time": "09:30:00"
+    },
+    {
+      "account_id": "Y0000001",
+      "amount_fen": 0,
+      "business": "银证转入",
+      "cash_balance_fen": 11517258,
+      "fee_detail_fen": {
+        "commission": 0,
+        "other_fee": 0,
+        "stamp_tax": 0,
+        "transfer_fee": 0
+      },
+      "fee_source": "as_reported",
+      "fees_fen": 0,
+      "key": [
+        "htsec-demo-001.xlsx",
+        18
+      ],
+      "kind": "cash_event",
+      "quantity": "0",
+      "settlement_fen": 5000000,
+      "symbol": "699000",
+      "trade_date": "2025-09-02",
+      "trade_time": "09:30:00"
+    },
+    {
+      "account_id": "Y0000001",
+      "amount_fen": 710000,
+      "business": "证券买入",
+      "cash_balance_fen": 10806751,
+      "fee_detail_fen": {
+        "commission": 500,
+        "other_fee": 0,
+        "stamp_tax": 0,
+        "transfer_fee": 7
+      },
+      "fee_source": "as_reported",
+      "fees_fen": 507,
+      "key": [
+        "htsec-demo-001.xlsx",
+        19
+      ],
+      "kind": "trade_buy",
+      "quantity": "1000",
+      "settlement_fen": -710507,
+      "symbol": "699002",
+      "trade_date": "2025-09-02",
+      "trade_time": "09:31:00"
+    },
+    {
+      "account_id": "Y0000003",
+      "amount_fen": 215000,
+      "business": "证券卖出",
+      "cash_balance_fen": 2018785,
+      "fee_detail_fen": {
+        "commission": 500,
+        "other_fee": 0,
+        "stamp_tax": 215,
+        "transfer_fee": 0
+      },
+      "fee_source": "as_reported",
+      "fees_fen": 715,
+      "key": [
+        "generic-demo-013-account-c.csv",
+        4
+      ],
+      "kind": "trade_sell",
+      "quantity": "100",
+      "settlement_fen": 214285,
+      "symbol": "699005",
+      "trade_date": "2025-09-18",
+      "trade_time": "10:10:00"
+    },
+    {
+      "account_id": "Y0000002",
+      "amount_fen": 0,
+      "business": "内部划转",
+      "cash_balance_fen": 9834400,
+      "fee_detail_fen": {
+        "commission": 0,
+        "other_fee": 0,
+        "stamp_tax": 0,
+        "transfer_fee": 0
+      },
+      "fee_source": "as_reported",
+      "fees_fen": 0,
+      "key": [
+        "huaxi-demo-001.xls",
+        13
+      ],
+      "kind": "cash_event",
+      "quantity": "0",
+      "settlement_fen": 2000000,
+      "symbol": "699000",
+      "trade_date": "2025-10-10",
+      "trade_time": "14:00:00"
+    },
+    {
+      "account_id": "Y0000001",
+      "amount_fen": 0,
+      "business": "内部划转",
+      "cash_balance_fen": 8806751,
+      "fee_detail_fen": {
+        "commission": 0,
+        "other_fee": 0,
+        "stamp_tax": 0,
+        "transfer_fee": 0
+      },
+      "fee_source": "as_reported",
+      "fees_fen": 0,
+      "key": [
+        "htsec-demo-001.xlsx",
+        20
+      ],
+      "kind": "cash_event",
+      "quantity": "0",
+      "settlement_fen": -2000000,
+      "symbol": "699000",
+      "trade_date": "2025-10-10",
+      "trade_time": "14:00:00"
+    },
+    {
+      "account_id": "Y0000002",
+      "amount_fen": 500000,
+      "business": "证券卖出",
+      "cash_balance_fen": 10334400,
+      "fee_detail_fen": {
+        "commission": 0,
+        "other_fee": 0,
+        "stamp_tax": 0,
+        "transfer_fee": 0
+      },
+      "fee_source": "as_reported",
+      "fees_fen": 0,
+      "key": [
+        "huaxi-demo-001.xls",
+        14
+      ],
+      "kind": "trade_sell",
+      "quantity": "1000",
+      "settlement_fen": 500000,
+      "symbol": "699007",
+      "trade_date": "2025-11-05",
+      "trade_time": "09:40:00"
+    },
+    {
+      "account_id": "Y0000002",
+      "amount_fen": 420000,
+      "business": "证券买入",
+      "cash_balance_fen": 9913900,
+      "fee_detail_fen": {
+        "commission": 500,
+        "other_fee": 0,
+        "stamp_tax": 0,
+        "transfer_fee": 0
+      },
+      "fee_source": "as_reported",
+      "fees_fen": 500,
+      "key": [
+        "huaxi-demo-001.xls",
+        15
+      ],
+      "kind": "trade_buy",
+      "quantity": "200",
+      "settlement_fen": -420500,
+      "symbol": "699005",
+      "trade_date": "2025-11-11",
+      "trade_time": "09:45:00"
+    },
+    {
+      "account_id": "Y0000001",
+      "amount_fen": 320000,
+      "business": "证券卖出",
+      "cash_balance_fen": 9125928,
+      "fee_detail_fen": {
+        "commission": 500,
+        "other_fee": 0,
+        "stamp_tax": 320,
+        "transfer_fee": 3
+      },
+      "fee_source": "as_reported",
+      "fees_fen": 823,
+      "key": [
+        "htsec-demo-001.xlsx",
+        21
+      ],
+      "kind": "trade_sell",
+      "quantity": "500",
+      "settlement_fen": 319177,
+      "symbol": "699002",
+      "trade_date": "2025-11-14",
+      "trade_time": "10:20:00"
+    },
+    {
+      "account_id": "Y0000001",
+      "amount_fen": 2115000,
+      "business": "证券卖出",
+      "cash_balance_fen": 11238292,
+      "fee_detail_fen": {
+        "commission": 500,
+        "other_fee": 0,
+        "stamp_tax": 2115,
+        "transfer_fee": 21
+      },
+      "fee_source": "as_reported",
+      "fees_fen": 2636,
+      "key": [
+        "htsec-demo-001.xlsx",
+        22
+      ],
+      "kind": "trade_sell",
+      "quantity": "3000",
+      "settlement_fen": 2112364,
+      "symbol": "699002",
+      "trade_date": "2025-12-19",
+      "trade_time": "10:00:00"
+    },
+    {
+      "account_id": "Y0000001",
+      "amount_fen": 400000,
+      "business": "证券卖出",
+      "cash_balance_fen": 11637388,
+      "fee_detail_fen": {
+        "commission": 500,
+        "other_fee": 0,
+        "stamp_tax": 400,
+        "transfer_fee": 4
+      },
+      "fee_source": "as_reported",
+      "fees_fen": 904,
+      "key": [
+        "htsec-demo-001.xlsx",
+        23
+      ],
+      "kind": "trade_sell",
+      "quantity": "400",
+      "settlement_fen": 399096,
+      "symbol": "699001",
+      "trade_date": "2025-12-19",
+      "trade_time": "10:01:00"
+    },
+    {
+      "account_id": "Y0000002",
+      "amount_fen": 800000,
+      "business": "证券卖出",
+      "cash_balance_fen": 10712600,
+      "fee_detail_fen": {
+        "commission": 500,
+        "other_fee": 0,
+        "stamp_tax": 800,
+        "transfer_fee": 0
+      },
+      "fee_source": "as_reported",
+      "fees_fen": 1300,
+      "key": [
+        "huaxi-demo-001.xls",
+        16
+      ],
+      "kind": "trade_sell",
+      "quantity": "400",
+      "settlement_fen": 798700,
+      "symbol": "699005",
+      "trade_date": "2025-12-22",
+      "trade_time": "10:00:00"
+    },
+    {
+      "account_id": "Y0000002",
+      "amount_fen": 1575000,
+      "business": "证券卖出",
+      "cash_balance_fen": 12285525,
+      "fee_detail_fen": {
+        "commission": 500,
+        "other_fee": 0,
+        "stamp_tax": 1575,
+        "transfer_fee": 0
+      },
+      "fee_source": "as_reported",
+      "fees_fen": 2075,
+      "key": [
+        "huaxi-demo-001.xls",
+        17
+      ],
+      "kind": "trade_sell",
+      "quantity": "1500",
+      "settlement_fen": 1572925,
+      "symbol": "699006",
+      "trade_date": "2025-12-22",
+      "trade_time": "10:01:00"
+    },
+    {
+      "account_id": "Y0000002",
+      "amount_fen": 630000,
+      "business": "证券卖出",
+      "cash_balance_fen": 12914395,
+      "fee_detail_fen": {
+        "commission": 500,
+        "other_fee": 0,
+        "stamp_tax": 630,
+        "transfer_fee": 0
+      },
+      "fee_source": "as_reported",
+      "fees_fen": 1130,
+      "key": [
+        "huaxi-demo-001.xls",
+        18
+      ],
+      "kind": "trade_sell",
+      "quantity": "600",
+      "settlement_fen": 628870,
+      "symbol": "699001",
+      "trade_date": "2025-12-22",
+      "trade_time": "10:02:00"
+    }
+  ],
+  "scenario": {
+    "cost_methods": [
+      "fifo",
+      "wavg"
+    ],
+    "files": [
+      "htsec-demo-001.xlsx",
+      "huaxi-demo-001.xls",
+      "generic-demo-013-account-c.csv",
+      "generic-demo-015-no-fee-columns.csv"
+    ],
+    "row_count": 46
+  },
+  "surface_evidence": {
+    "cost.after_split_sell": [
+      [
+        "htsec-demo-001.xlsx",
+        15
+      ],
+      [
+        "htsec-demo-001.xlsx",
+        16
+      ]
+    ],
+    "cost.clear_then_rebuy": [
+      [
+        "htsec-demo-001.xlsx",
+        6
+      ],
+      [
+        "htsec-demo-001.xlsx",
+        7
+      ],
+      [
+        "htsec-demo-001.xlsx",
+        8
+      ]
+    ],
+    "cost.fee_not_itemized": [
+      [
+        "generic-demo-015-no-fee-columns.csv",
+        3
+      ],
+      [
+        "generic-demo-015-no-fee-columns.csv",
+        4
+      ]
+    ],
+    "cost.fifo_vs_wavg_divergence": [
+      [
+        "htsec-demo-001.xlsx",
+        3
+      ],
+      [
+        "htsec-demo-001.xlsx",
+        4
+      ],
+      [
+        "htsec-demo-001.xlsx",
+        6
+      ],
+      [
+        "htsec-demo-001.xlsx",
+        7
+      ]
+    ],
+    "cost.partial_sell": [
+      [
+        "htsec-demo-001.xlsx",
+        6
+      ],
+      [
+        "htsec-demo-001.xlsx",
+        7
+      ]
+    ],
+    "cost.same_day_multi_fill": [
+      [
+        "htsec-demo-001.xlsx",
+        3
+      ],
+      [
+        "htsec-demo-001.xlsx",
+        4
+      ]
+    ]
+  }
+}

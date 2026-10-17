@@ -15,6 +15,9 @@ import gen_data  # noqa: E402
 TRUTH = json.loads(
     (DATA_DIR / "truth" / "import_truth.json").read_text(encoding="utf-8")
 )
+COST_TRUTH = json.loads(
+    (DATA_DIR / "truth" / "cost_truth.json").read_text(encoding="utf-8")
+)
 
 
 def run_generator(*args):
@@ -87,7 +90,7 @@ def test_manifest_surfaces_are_fully_sampled():
         (DATA_DIR / "rules" / "manifest.json").read_text(encoding="utf-8")
     )
     surfaces = manifest["coverage"]["surfaces"]
-    assert len(surfaces) == 30
+    assert len(surfaces) == 31
     for item in surfaces:
         assert item["total"] == item["sampled"] == 1, item["surface"]
         assert item["evidence"], item["surface"]
@@ -197,3 +200,102 @@ def test_generator_forbidden_imports():
     assert "from random" not in source
     assert "datetime.now" not in source
     assert "time.time" not in source
+
+
+# ---------------------------------------------------------------------------
+# M2 成本真值（B2）
+# ---------------------------------------------------------------------------
+
+
+def test_cost_truth_is_generated_not_imported_from_engine():
+    """真值纪律：生成器不得 import 引擎，否则"独立复算"变成自己比自己。"""
+    source = GEN_DATA.read_text(encoding="utf-8")
+    assert "investment_attribution" not in source
+    assert COST_TRUTH["format"] == "ia.truth.cost"
+    assert sorted(COST_TRUTH["methods"]) == ["fifo", "wavg"]
+
+
+def test_cost_truth_has_no_observed_fields():
+    def keys(obj):
+        if isinstance(obj, dict):
+            for key, value in obj.items():
+                yield key
+                for item in keys(value):
+                    yield item
+        elif isinstance(obj, list):
+            for value in obj:
+                for item in keys(value):
+                    yield item
+
+    offenders = [key for key in keys(COST_TRUTH) if key.startswith("observed")]
+    assert offenders == []
+
+
+def test_cost_truth_scenario_files_exist_and_are_registered():
+    files = COST_TRUTH["scenario"]["files"]
+    assert files
+    known = {entry["source_file"] for entry in TRUTH["files"]}
+    for name in files:
+        assert (DATA_DIR / "samples" / name).is_file(), name
+        assert name in known, name
+
+
+def test_cost_truth_row_count_matches_events():
+    rows = COST_TRUTH["rows"]
+    assert COST_TRUTH["scenario"]["row_count"] == len(rows)
+    for method, data in COST_TRUTH["methods"].items():
+        assert len(data["events"]) == len(rows), method
+        assert len({tuple(event["key"]) for event in data["events"]}) == len(rows), method
+
+
+def test_cost_truth_internal_arithmetic_holds():
+    """真值自身的守恒：未平仓成本之和、已实现之和、费用来源合法性。"""
+    for method, data in COST_TRUTH["methods"].items():
+        open_cost = sum(item["cost_fen"] for item in data["positions"] if item["is_open"])
+        assert open_cost == data["totals"]["position_cost_fen"], method
+        realized = sum(item["realized_net_fen"] for item in data["accounts"])
+        assert realized == data["totals"]["realized_net_fen"], method
+        for event in data["events"]:
+            assert event["position_after_cost_fen"] >= 0, (method, event["key"])
+            if event["kind"] == "trade_sell":
+                assert event["realized_fen"] is not None, (method, event["key"])
+    allowed = {"as_reported", "derived_from_settlement", "partially_reported", "not_reported"}
+    for row in COST_TRUTH["rows"]:
+        assert row["fee_source"] in allowed, row["key"]
+
+
+def test_cost_truth_has_a_genuine_divergence_case():
+    """双口径必须真的分叉；否则"差异可解释到笔"无从断言。"""
+    divergences = COST_TRUTH["divergences"]
+    assert divergences
+    for item in divergences:
+        assert item["fifo_realized_fen"] != item["wavg_realized_fen"]
+        assert item["difference_fen"] == (
+            item["wavg_realized_fen"] - item["fifo_realized_fen"]
+        )
+        assert item["symbol"].startswith("699")
+
+
+def test_cost_truth_uses_both_itemized_and_derived_fees():
+    sources = {row["fee_source"] for row in COST_TRUTH["rows"]}
+    assert "as_reported" in sources
+    assert "derived_from_settlement" in sources
+
+
+def test_every_cost_surface_points_at_real_rows():
+    """每个成本形态必须指向真实存在的行；否则"逐笔期望"只是口头承诺。"""
+    keys = {tuple(row["key"]) for row in COST_TRUTH["rows"]}
+    evidence = COST_TRUTH["surface_evidence"]
+    manifest = json.loads(
+        (DATA_DIR / "rules" / "manifest.json").read_text(encoding="utf-8")
+    )
+    cost_surfaces = [
+        item["surface"]
+        for item in manifest["coverage"]["surfaces"]
+        if item["surface"].startswith("cost.")
+    ]
+    assert set(cost_surfaces) == set(evidence)
+    for surface in cost_surfaces:
+        assert evidence[surface], surface
+        for key in evidence[surface]:
+            assert tuple(key) in keys, (surface, key)

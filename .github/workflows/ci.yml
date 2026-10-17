@@ -42,10 +42,24 @@ jobs:
       - name: Import smoke (two real formats)
         run: python -m investment_attribution import data/samples/htsec-demo-001.xlsx data/samples/huaxi-demo-001.xls --out-dir out/
 
+      - name: Cost smoke (both methods)
+        run: |
+          python -m investment_attribution cost --method fifo --ledger out/ledger.json --out-dir out/fifo
+          python -m investment_attribution cost --method wavg --ledger out/ledger.json --out-dir out/wavg
+          python -m investment_attribution pnl --method fifo --ledger out/ledger.json --out-dir out/fifo --fees
+
+      - name: Cost method is mandatory (exit 2)
+        shell: bash
+        run: |
+          set +e
+          python -m investment_attribution cost --ledger out/ledger.json
+          code=$?
+          test "$code" = "2"
+
       - name: Stage-not-ready contract
         shell: bash
         run: |
           set +e
-          python -m investment_attribution cost --method fifo
+          python -m investment_attribution corporate-actions --ledger out/ledger.json
           code=$?
           test "$code" = "3"

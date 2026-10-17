@@ -30,13 +30,14 @@ import tempfile
 import zipfile
 from dataclasses import dataclass, field
 from decimal import Decimal, ROUND_HALF_UP
+from fractions import Fraction
 from pathlib import Path
 from xml.sax.saxutils import escape
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
 DEFAULT_DATA_DIR = REPO_ROOT / "data"
 GENERATOR_TOOL = "tools/gen_data.py"
-CONTRACT_VERSION = "0.2.0-m1"
+CONTRACT_VERSION = "0.3.0-m2"
 SEED = 0x9E3779B97F4A7C15  # splitmix64 标准增量常量，作为固定种子
 MASK64 = (1 << 64) - 1
 
@@ -62,6 +63,7 @@ ACCOUNTS = {
     "Y0000001": ("示例账户一", "A000000001"),
     "Y0000002": ("示例账户二", "A000000002"),
     "Y0000003": ("示例账户三", "A000000003"),
+    "Y0000004": ("示例账户四", "A000000004"),
 }
 
 # 白名单内但**未登记**到 accounts.json 的账号：用于验证"未登记落待确认"。
@@ -71,7 +73,7 @@ UNREGISTERED_ACCOUNTS = {
 
 LONG_NOTE = "示例备注：" + "本字段用于验证超长备注在导入层的读取、保留与回放，" * 10
 
-# 30 个覆盖度形态（与 data/rules/manifest.json 的 surfaces 顺序一致）
+# 31 个覆盖度形态（与 data/rules/manifest.json 的 surfaces 顺序一致）
 SURFACE_ORDER = (
     "import.htsec_xlsx",
     "import.huaxi_xls_tab_gb18030",
@@ -87,6 +89,7 @@ SURFACE_ORDER = (
     "cost.clear_then_rebuy",
     "cost.after_split_sell",
     "cost.fifo_vs_wavg_divergence",
+    "cost.fee_not_itemized",
     "corporate_action.dividend",
     "corporate_action.stock_dividend",
     "corporate_action.rights_issue",
@@ -150,6 +153,12 @@ COVERAGE = {
     ],
     "cost.fifo_vs_wavg_divergence": [
         evidence("htsec-demo-001.xlsx", "699001 两批买入后部分卖出，FIFO 与加权成本不同")
+    ],
+    "cost.fee_not_itemized": [
+        evidence(
+            "generic-demo-015-no-fee-columns.csv",
+            "费用四列缺席，仅能由发生金额反推并标注 derived_from_settlement",
+        )
     ],
     "corporate_action.dividend": [
         evidence("htsec-demo-001.xlsx", "2025-05-20 红利入账 699002")
@@ -433,7 +442,7 @@ def attach_balances(rows):
 
 
 # ---------------------------------------------------------------------------
-# 账户流水（刻意注入 30 形态所需场景）
+# 账户流水（刻意注入 31 形态所需场景）
 # ---------------------------------------------------------------------------
 
 TRANSFER_CONTRACT = "TR-A-B-0001"
@@ -609,6 +618,12 @@ GENERIC_ZH_COLUMNS = [
 ]
 
 GENERIC_ZH_NOTE_COLUMNS = GENERIC_ZH_COLUMNS + [("备注", "note")]
+
+# 通用中文列 + 资金/股份余额：成本场景里的账户三、四需要余额才能做 T+1 勾稽。
+GENERIC_ZH_BALANCE_COLUMNS = GENERIC_ZH_COLUMNS + [
+    ("资金本次余额", "cash_balance"),
+    ("股份本次余额", "share_balance"),
+]
 
 GENERIC_EN_COLUMNS = [
     ("trade_date", "trade_date"),
@@ -835,6 +850,7 @@ def render_sample(spec):
 
 
 def expected_row(tx, spec, sha, line_no, row_index):
+    present = {field_name for _, field_name in spec.columns}
     extra = {}
     for _, field_name in spec.columns:
         if field_name not in EXTRA_TYPES:
@@ -873,10 +889,10 @@ def expected_row(tx, spec, sha, line_no, row_index):
         "settlement_amount": (
             fen(tx.settlement_amount) if tx.settlement_amount != "" else None
         ),
-        "commission": fen(tx.commission or "0"),
-        "stamp_tax": fen(tx.stamp_tax or "0"),
-        "transfer_fee": fen(tx.transfer_fee or "0"),
-        "other_fee": fen(tx.other_fee or "0"),
+        "commission": fen(tx.commission) if "commission" in present else None,
+        "stamp_tax": fen(tx.stamp_tax) if "stamp_tax" in present else None,
+        "transfer_fee": fen(tx.transfer_fee) if "transfer_fee" in present else None,
+        "other_fee": fen(tx.other_fee) if "other_fee" in present else None,
         "direction": tx.direction,
         "contract_no": tx.contract_no or None,
         "trade_no": tx.trade_no or None,
@@ -1255,7 +1271,8 @@ def build_manifest():
             "note": (
                 "total/sampled 逐形态登记，要求分子 = 分母。M1 的 sampled 指该形态已在样例中注入；"
                 "导入形态的逐行列值期望已写入 data/truth/import_truth.json，"
-                "成本 / 公司行为 / 归因形态的期望值随 M2–M4 追加。"
+                "成本形态的逐笔期望（双口径）已写入 data/truth/cost_truth.json（M2），"
+                "公司行为 / 归因形态的期望值随 M3–M4 追加。"
             ),
             "surfaces": surfaces,
         },
@@ -1263,8 +1280,446 @@ def build_manifest():
 
 
 # ---------------------------------------------------------------------------
-# 样例总装
+# 成本真值（B2）：独立实现，不 import 引擎
 # ---------------------------------------------------------------------------
+
+COST_SCENARIO_FILES = (
+    "htsec-demo-001.xlsx",
+    "huaxi-demo-001.xls",
+    "generic-demo-013-account-c.csv",
+    "generic-demo-015-no-fee-columns.csv",
+)
+FEE_COLUMNS = ("commission", "stamp_tax", "transfer_fee", "other_fee")
+
+
+def _frac(value):
+    return Fraction(Decimal(str(value)))
+
+
+def _half_up(value):
+    """四舍五入到整数，.5 远离零（与 Decimal ROUND_HALF_UP 同义）。"""
+    if value >= 0:
+        return (2 * value.numerator + value.denominator) // (2 * value.denominator)
+    positive = -value
+    return -((2 * positive.numerator + positive.denominator) // (2 * positive.denominator))
+
+
+def _frac_text(value):
+    """规范十进制文本（最多 4 位小数）；分母不整除 10^4 即判生成器缺陷。"""
+    scaled = value * 10000
+    if scaled.denominator != 1:
+        raise ValueError("数量精度超过 4 位小数：{}".format(value))
+    return canonical(Decimal(scaled.numerator) / Decimal(10000))
+
+
+def _row_kind(tx, amount_fen, settle_fen):
+    quantity = _frac(tx.quantity or "0")
+    if tx.direction == "buy":
+        return "trade_buy"
+    if tx.direction == "sell":
+        return "trade_sell"
+    if quantity < 0:
+        return "unclassified"
+    if quantity > 0:
+        if amount_fen:
+            if not settle_fen:
+                return "receipt_valued"
+            if settle_fen < 0:
+                return "receipt_paid"
+            return "unclassified"
+        return "receipt_free"
+    if settle_fen:
+        return "cash_event"
+    return "noop"
+
+
+def _fees_for(tx, present_fields, kind, amount_fen, settle_fen):
+    reported = {name: (fen(getattr(tx, name) or "0") if name in present_fields else None)
+                for name in FEE_COLUMNS}
+    missing = [name for name, value in reported.items() if value is None]
+    if not missing:
+        return sum(reported.values()), "as_reported", reported
+    if len(missing) == len(FEE_COLUMNS):
+        if kind in ("trade_buy", "trade_sell", "receipt_paid") and settle_fen is not None:
+            base = (-amount_fen) if kind in ("trade_buy", "receipt_paid") else amount_fen
+            implied = base - settle_fen
+            if implied >= 0:
+                return implied, "derived_from_settlement", reported
+        return 0, "not_reported", reported
+    return sum(value for value in reported.values() if value is not None), "partially_reported", reported
+
+
+class _TruthBook(object):
+    """真值侧账本：``Fraction`` 精确数量 + 整数分成本。"""
+
+    def __init__(self, method):
+        self.method = method
+        self.lots = []  # [Fraction quantity, int cost_fen]
+        self.quantity = Fraction(0)
+        self.cost_fen = 0
+
+    def add(self, quantity, cost_fen):
+        if quantity <= 0:
+            return
+        self.quantity += quantity
+        self.cost_fen += int(cost_fen)
+        if self.method == "fifo":
+            self.lots.append([quantity, int(cost_fen)])
+        else:
+            self.lots.append([quantity, int(cost_fen)])
+
+    def add_free(self, quantity):
+        if quantity <= 0:
+            return
+        if self.method == "fifo" and self.lots:
+            total = self.quantity
+            remaining = quantity
+            for index, lot in enumerate(self.lots):
+                if index == len(self.lots) - 1:
+                    part = remaining
+                else:
+                    part = Fraction((quantity * lot[0] / total * 10000) // 1, 10000)
+                lot[0] += part
+                remaining -= part
+            self.quantity += quantity
+        else:
+            self.quantity += quantity
+            self.lots.append([quantity, 0])
+
+    def take(self, quantity):
+        matched = []
+        if self.method == "fifo":
+            remaining = quantity
+            cost = 0
+            while remaining > 0 and self.lots:
+                lot = self.lots[0]
+                if lot[0] <= remaining:
+                    cost += lot[1]
+                    matched.append([_frac_text(lot[0]), int(lot[1])])
+                    remaining -= lot[0]
+                    self.lots.pop(0)
+                else:
+                    part = _half_up(Fraction(lot[1]) * remaining / lot[0])
+                    lot[0] -= remaining
+                    lot[1] -= part
+                    cost += part
+                    matched.append([_frac_text(remaining), int(part)])
+                    remaining = Fraction(0)
+            self.quantity -= quantity
+            if self.quantity < 0:
+                self.quantity = Fraction(0)
+            self.cost_fen = sum(lot[1] for lot in self.lots)
+            return cost, matched
+        held = self.quantity
+        if quantity >= held:
+            cost = self.cost_fen
+            if held > 0:
+                matched.append([_frac_text(held), int(cost)])
+            self.quantity = Fraction(0)
+            self.cost_fen = 0
+            return cost, matched
+        part = _half_up(Fraction(self.cost_fen) * quantity / held)
+        self.quantity = held - quantity
+        self.cost_fen -= part
+        matched.append([_frac_text(quantity), int(part)])
+        return part, matched
+
+
+def _scenario_rows(cost_inputs):
+    """把场景文件展开成引擎输入序（date + time + 行号）。"""
+    rows = []
+    for name in COST_SCENARIO_FILES:
+        columns, txs = cost_inputs[name]
+        present = {field_name for _, field_name in columns}
+        for index, tx in enumerate(txs):
+            amount_fen = fen(tx.amount) if tx.amount != "" else None
+            settle_fen = fen(tx.settlement_amount) if tx.settlement_amount != "" else None
+            quantity = _frac(tx.quantity or "0")
+            kind = _row_kind(tx, amount_fen, settle_fen)
+            fees_fen, fee_source, reported = _fees_for(
+                tx, present, kind, amount_fen, settle_fen
+            )
+            rows.append(
+                {
+                    "source_file": name,
+                    "source_line_no": index + 2,
+                    "account_id": tx.account_id,
+                    "symbol": tx.symbol,
+                    "business": tx.business,
+                    "trade_date": tx.trade_date,
+                    "trade_time": tx.trade_time or "",
+                    "kind": kind,
+                    "quantity": quantity,
+                    "amount_fen": amount_fen,
+                    "settlement_fen": settle_fen,
+                    "fees_fen": fees_fen,
+                    "fee_source": fee_source,
+                    "fee_detail": reported,
+                    "cash_balance_fen": (
+                        fen(tx.cash_balance) if "cash_balance" in present else None
+                    ),
+                    "share_balance": (
+                        _frac(tx.share_balance) if "share_balance" in present else None
+                    ),
+                }
+            )
+    rows.sort(key=lambda row: (row["trade_date"], row["trade_time"], row["source_line_no"], row["source_file"]))
+    return rows
+
+
+def _simulate(rows, method):
+    accounts = {}
+    events = []
+    snapshots = []
+    current_date = None
+
+    def snapshot(date):
+        if date is None:
+            return
+        positions = []
+        for account_key in sorted(accounts):
+            entry = accounts[account_key]
+            for symbol in sorted(entry["books"]):
+                book = entry["books"][symbol]
+                if book.quantity <= 0:
+                    continue
+                positions.append(
+                    {
+                        "account_id": entry["account_id"],
+                        "symbol": symbol,
+                        "quantity": _frac_text(book.quantity),
+                        "cost_fen": int(book.cost_fen),
+                    }
+                )
+        snapshots.append({"date": date, "positions": positions})
+
+    for row in rows:
+        if current_date is None:
+            current_date = row["trade_date"]
+        elif row["trade_date"] != current_date:
+            snapshot(current_date)
+            current_date = row["trade_date"]
+
+        account_key = row["account_id"] or "unregistered"
+        entry = accounts.setdefault(
+            account_key,
+            {
+                "account_id": row["account_id"],
+                "books": {},
+                "realized_net_fen": 0,
+                "fees_fen": 0,
+                "cash_in_fen": 0,
+                "cash_out_fen": 0,
+                "net_cash_flow_fen": 0,
+                "rows": 0,
+                "opening_cash_fen": None,
+                "cumulative_settle_fen": 0,
+            },
+        )
+        entry["rows"] += 1
+        book = entry["books"].get(row["symbol"])
+        if book is None and row["kind"] in (
+            "trade_buy",
+            "trade_sell",
+            "receipt_paid",
+            "receipt_valued",
+            "receipt_free",
+        ):
+            book = _TruthBook(method)
+            entry["books"][row["symbol"]] = book
+
+        before_quantity = book.quantity if book is not None else Fraction(0)
+        before_cost = book.cost_fen if book is not None else 0
+        realized = None
+        matched = []
+        if book is not None:
+            if row["kind"] in ("trade_buy", "receipt_paid"):
+                book.add(row["quantity"], (row["amount_fen"] or 0) + row["fees_fen"])
+            elif row["kind"] == "receipt_valued":
+                book.add(row["quantity"], row["amount_fen"] or 0)
+            elif row["kind"] == "receipt_free":
+                book.add_free(row["quantity"])
+            elif row["kind"] == "trade_sell":
+                cost, matched = book.take(row["quantity"])
+                realized = ((row["amount_fen"] or 0) - row["fees_fen"]) - cost
+                entry["realized_net_fen"] += realized
+
+        settle = row["settlement_fen"] or 0
+        entry["cumulative_settle_fen"] += settle
+        entry["net_cash_flow_fen"] = entry["cumulative_settle_fen"]
+        if settle > 0:
+            entry["cash_in_fen"] += settle
+        elif settle < 0:
+            entry["cash_out_fen"] += -settle
+        entry["fees_fen"] += row["fees_fen"]
+        if row["cash_balance_fen"] is not None and entry["opening_cash_fen"] is None:
+            entry["opening_cash_fen"] = row["cash_balance_fen"] - entry["cumulative_settle_fen"]
+
+        expected_cash = (
+            None
+            if entry["opening_cash_fen"] is None
+            else entry["opening_cash_fen"] + entry["cumulative_settle_fen"]
+        )
+        events.append(
+            {
+                "key": [row["source_file"], row["source_line_no"]],
+                "symbol": row["symbol"],
+                "account_id": row["account_id"],
+                "kind": row["kind"],
+                "position_before_quantity": _frac_text(before_quantity),
+                "position_before_cost_fen": int(before_cost),
+                "position_after_quantity": _frac_text(book.quantity if book is not None else Fraction(0)),
+                "position_after_cost_fen": int(book.cost_fen if book is not None else 0),
+                "realized_fen": realized,
+                "matched_lots": matched,
+                "expected_cash_balance_fen": expected_cash,
+            }
+        )
+
+    snapshot(current_date)
+
+    account_rows = []
+    positions = []
+    for account_key in sorted(accounts):
+        entry = accounts[account_key]
+        open_cost = 0
+        for symbol in sorted(entry["books"]):
+            book = entry["books"][symbol]
+            open_cost += book.cost_fen if book.quantity > 0 else 0
+            positions.append(
+                {
+                    "account_id": entry["account_id"],
+                    "symbol": symbol,
+                    "quantity": _frac_text(book.quantity),
+                    "cost_fen": int(book.cost_fen),
+                    "is_open": book.quantity > 0,
+                }
+            )
+        account_rows.append(
+            {
+                "account_id": entry["account_id"],
+                "rows": entry["rows"],
+                "realized_net_fen": int(entry["realized_net_fen"]),
+                "position_cost_fen": int(open_cost),
+                "fees_fen": int(entry["fees_fen"]),
+                "cash_in_fen": int(entry["cash_in_fen"]),
+                "cash_out_fen": int(entry["cash_out_fen"]),
+                "net_cash_flow_fen": int(entry["net_cash_flow_fen"]),
+                "opening_cash_fen": entry["opening_cash_fen"],
+            }
+        )
+
+    totals = {
+        "position_cost_fen": sum(item["position_cost_fen"] for item in account_rows),
+        "realized_net_fen": sum(item["realized_net_fen"] for item in account_rows),
+        "fees_total_fen": sum(item["fees_fen"] for item in account_rows),
+        "open_positions": sum(1 for item in positions if item["is_open"]),
+    }
+    return {
+        "events": events,
+        "accounts": account_rows,
+        "positions": positions,
+        "totals": totals,
+        "daily_snapshots": snapshots,
+    }
+
+
+COST_SURFACE_EVIDENCE = {
+    "cost.same_day_multi_fill": [
+        ["htsec-demo-001.xlsx", 3],
+        ["htsec-demo-001.xlsx", 4],
+    ],
+    "cost.partial_sell": [
+        ["htsec-demo-001.xlsx", 6],
+        ["htsec-demo-001.xlsx", 7],
+    ],
+    "cost.clear_then_rebuy": [
+        ["htsec-demo-001.xlsx", 6],
+        ["htsec-demo-001.xlsx", 7],
+        ["htsec-demo-001.xlsx", 8],
+    ],
+    "cost.after_split_sell": [
+        ["htsec-demo-001.xlsx", 15],
+        ["htsec-demo-001.xlsx", 16],
+    ],
+    "cost.fifo_vs_wavg_divergence": [
+        ["htsec-demo-001.xlsx", 3],
+        ["htsec-demo-001.xlsx", 4],
+        ["htsec-demo-001.xlsx", 6],
+        ["htsec-demo-001.xlsx", 7],
+    ],
+    "cost.fee_not_itemized": [
+        ["generic-demo-015-no-fee-columns.csv", 3],
+        ["generic-demo-015-no-fee-columns.csv", 4],
+    ],
+}
+
+
+def build_cost_truth(cost_inputs):
+    rows = _scenario_rows(cost_inputs)
+    fifo = _simulate(rows, "fifo")
+    wavg = _simulate(rows, "wavg")
+
+    fifo_events = {(tuple(e["key"])): e for e in fifo["events"]}
+    divergences = []
+    for event in wavg["events"]:
+        first = fifo_events[tuple(event["key"])]
+        if first["realized_fen"] is None and event["realized_fen"] is None:
+            continue
+        if first["realized_fen"] != event["realized_fen"]:
+            divergences.append(
+                {
+                    "source_file": event["key"][0],
+                    "source_line_no": event["key"][1],
+                    "account_id": event["account_id"],
+                    "symbol": event["symbol"],
+                    "fifo_realized_fen": first["realized_fen"],
+                    "wavg_realized_fen": event["realized_fen"],
+                    "difference_fen": event["realized_fen"] - first["realized_fen"],
+                }
+            )
+
+    row_facts = []
+    for row in rows:
+        row_facts.append(
+            {
+                "key": [row["source_file"], row["source_line_no"]],
+                "account_id": row["account_id"],
+                "symbol": row["symbol"],
+                "business": row["business"],
+                "trade_date": row["trade_date"],
+                "trade_time": row["trade_time"] or None,
+                "kind": row["kind"],
+                "quantity": _frac_text(row["quantity"]),
+                "amount_fen": row["amount_fen"],
+                "settlement_fen": row["settlement_fen"],
+                "fees_fen": row["fees_fen"],
+                "fee_source": row["fee_source"],
+                "fee_detail_fen": row["fee_detail"],
+                "cash_balance_fen": row["cash_balance_fen"],
+            }
+        )
+
+    return {
+        "format": "ia.truth.cost",
+        "format_version": 1,
+        "contract_version": CONTRACT_VERSION,
+        "generator": {"tool": GENERATOR_TOOL, "seed": SEED},
+        "note": (
+            "只存输入与期望，不含 observed_*；由 tools/gen_data.py 独立实现（Fraction 精确数量，"
+            "整数分成本），不 import 引擎。scenario.files 是成本真值的导入范围：其余样例是这些"
+            "账户的子集/副本，全部一起导入会重复计数。"
+        ),
+        "scenario": {
+            "files": list(COST_SCENARIO_FILES),
+            "row_count": len(rows),
+            "cost_methods": ["fifo", "wavg"],
+        },
+        "surface_evidence": COST_SURFACE_EVIDENCE,
+        "rows": row_facts,
+        "methods": {"fifo": fifo, "wavg": wavg},
+        "divergences": divergences,
+    }
 
 
 def build_samples(rng):
@@ -1363,7 +1818,7 @@ def build_samples(rng):
             name="generic-demo-013-account-c.csv",
             encoding="utf-8",
             delimiter=",",
-            columns=GENERIC_ZH_COLUMNS,
+            columns=GENERIC_ZH_BALANCE_COLUMNS,
             rows=account_c,
         )
     )
@@ -1376,6 +1831,7 @@ def build_samples(rng):
     outs.append(build_header_only())
     outs.append(build_undecodable())
     outs.append(build_unregistered_account())
+    outs.append(build_no_fee_columns())
 
     order = [
         "htsec-demo-001.xlsx",
@@ -1394,10 +1850,47 @@ def build_samples(rng):
         "generic-demo-012-bom.csv",
         "generic-demo-013-account-c.csv",
         "generic-demo-014-unregistered.csv",
+        "generic-demo-015-no-fee-columns.csv",
     ]
     by_name = {out.name: out for out in outs}
     assert set(by_name) == set(order), set(by_name) ^ set(order)
-    return [by_name[name] for name in order]
+    cost_inputs = {
+        "htsec-demo-001.xlsx": (HTSEC_COLUMNS, account_a),
+        "huaxi-demo-001.xls": (HUAXI_COLUMNS, account_b),
+        "generic-demo-013-account-c.csv": (GENERIC_ZH_BALANCE_COLUMNS, account_c),
+        "generic-demo-015-no-fee-columns.csv": (NO_FEE_COLUMNS, no_fee_rows()),
+    }
+    return [by_name[name] for name in order], cost_inputs
+
+
+NO_FEE_COLUMNS = [pair for pair in GENERIC_ZH_BALANCE_COLUMNS if pair[1] not in FEE_COLUMNS]
+
+
+def no_fee_rows():
+    """费用四列全部缺席的行；账户用 Y0000004，自带独立资金余额链。"""
+    rows = [
+        event("2025-03-20", "09:20:00", "银证转入", "699000", "Y0000004", settle="30000.00"),
+        buy("2025-03-24", "09:40:00", "699004", 200, "100.00", "Y0000004",
+            comm="5.00", transfer="0.20"),
+        sell("2025-03-28", "10:10:00", "699004", 100, "110.00", "Y0000004",
+             comm="5.00", stamp="11.00", transfer="0.10"),
+        event("2025-04-02", "09:30:00", "红利入账", "699004", "Y0000004", settle="50.00"),
+    ]
+    number_rows(rows, "GX-NF", SplitMix64(SEED ^ 0x0F))
+    attach_balances(rows)
+    return rows
+
+
+def build_no_fee_columns():
+    """费用列缺席：四项费用全为 ``None``，费用只能由发生金额反推并标注来源。"""
+    spec = SampleSpec(
+        name="generic-demo-015-no-fee-columns.csv",
+        encoding="utf-8",
+        delimiter=",",
+        columns=NO_FEE_COLUMNS,
+        rows=no_fee_rows(),
+    )
+    return sample_out(spec)
 
 
 def build_unregistered_account():
@@ -1491,7 +1984,7 @@ def generate(data_dir):
         (data_dir / sub).mkdir(parents=True, exist_ok=True)
 
     rng = SplitMix64(SEED)
-    samples = build_samples(rng)
+    samples, cost_inputs = build_samples(rng)
     validate_model(samples)
 
     rules = {
@@ -1523,6 +2016,11 @@ def generate(data_dir):
     path = data_dir / "truth" / "import_truth.json"
     path.write_bytes(truth_payload)
     written.append((path, truth_payload))
+
+    cost_truth_payload = json_bytes(build_cost_truth(cost_inputs))
+    path = data_dir / "truth" / "cost_truth.json"
+    path.write_bytes(cost_truth_payload)
+    written.append((path, cost_truth_payload))
 
     return written
 
@@ -1755,6 +2253,89 @@ def shape_check(data_dir):
             if text is not None:
                 issues += scan_privacy(text, name)
 
+    issues += _shape_check_cost_truth(data_dir, truth)
+
+    return issues
+
+
+def _shape_check_cost_truth(data_dir, import_truth):
+    """M2 真值纪律：双口径齐全、逐笔可复算、费用来源合法、无 observed_*。"""
+    issues = []
+    path = data_dir / "truth" / "cost_truth.json"
+    if not path.is_file():
+        return ["缺少文件 truth/cost_truth.json"]
+    try:
+        payload = json.loads(path.read_text(encoding="utf-8"))
+    except ValueError as exc:
+        return ["truth/cost_truth.json 不是合法 JSON：{}".format(exc)]
+
+    if payload.get("format") != "ia.truth.cost":
+        issues.append("cost_truth.format 不匹配")
+    scenario = payload.get("scenario") or {}
+    files = scenario.get("files") or []
+    if not files:
+        issues.append("cost_truth.scenario.files 为空")
+    for name in files:
+        if not (data_dir / "samples" / name).is_file():
+            issues.append("cost 真值引用的样例不存在 {}".format(name))
+    methods = payload.get("methods") or {}
+    if sorted(methods) != ["fifo", "wavg"]:
+        issues.append("cost_truth.methods 必须同时含 fifo 与 wavg")
+    for name, data in sorted(methods.items()):
+        rows = payload.get("rows") or []
+        if len(data.get("events", [])) != len(rows):
+            issues.append("cost_truth.{}: events 数 {} != rows 数 {}".format(
+                name, len(data.get("events", [])), len(rows)))
+        positions = data.get("positions") or []
+        open_cost = sum(item["cost_fen"] for item in positions if item["is_open"])
+        if open_cost != data.get("totals", {}).get("position_cost_fen"):
+            issues.append("cost_truth.{}: 未平仓成本之和不等于 totals".format(name))
+        realized = sum(item["realized_net_fen"] for item in data.get("accounts", []))
+        if realized != data.get("totals", {}).get("realized_net_fen"):
+            issues.append("cost_truth.{}: 分账户已实现之和不等于 totals".format(name))
+        for event in data.get("events", []):
+            if event["kind"] == "trade_sell" and event["realized_fen"] is None:
+                issues.append("cost_truth.{}: 卖出 {} 缺 realized".format(name, event["key"]))
+            if event["position_after_cost_fen"] < 0:
+                issues.append("cost_truth.{}: 持仓成本为负 {}".format(name, event["key"]))
+
+    for row in payload.get("rows") or []:
+        if row["fee_source"] not in (
+            "as_reported",
+            "derived_from_settlement",
+            "partially_reported",
+            "not_reported",
+        ):
+            issues.append("cost_truth: 非法 fee_source {}".format(row["fee_source"]))
+        if row["fee_source"] in ("as_reported", "partially_reported"):
+            detail = row["fee_detail_fen"]
+            if sum(value for value in detail.values() if value is not None) != row["fees_fen"]:
+                issues.append("cost_truth: 费用明细之和与 fees_fen 不符 {}".format(row["key"]))
+        expected = row.get("cash_balance_fen")
+        if expected is not None and not isinstance(expected, int):
+            issues.append("cost_truth: cash_balance_fen 非整数 {}".format(row["key"]))
+
+    # 每个成本形态必须指向真实存在的行，否则"逐笔期望"只是口头承诺
+    keys = {tuple(row["key"]) for row in payload.get("rows") or []}
+    evidence = payload.get("surface_evidence") or {}
+    for surface in SURFACE_ORDER:
+        if not surface.startswith("cost."):
+            continue
+        entries = evidence.get(surface) or []
+        if not entries:
+            issues.append("cost_truth.surface_evidence 缺 {}".format(surface))
+            continue
+        for key in entries:
+            if tuple(key) not in keys:
+                issues.append(
+                    "cost_truth.surface_evidence {} 指向不存在的行 {}".format(surface, key)
+                )
+
+    if import_truth is not None:
+        known = {entry["source_file"] for entry in import_truth.get("files", [])}
+        for name in files:
+            if name not in known:
+                issues.append("cost 真值引用的样例未登记进导入真值 {}".format(name))
     return issues
 
 

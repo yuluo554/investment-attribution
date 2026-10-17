@@ -6,9 +6,9 @@
     "transfer_offset_tolerance_cny": 0.01,
     "xirr_relative_tolerance": 0.0001
   },
-  "contract_version": "0.2.0-m1",
+  "contract_version": "0.3.0-m2",
   "coverage": {
-    "note": "total/sampled 逐形态登记，要求分子 = 分母。M1 的 sampled 指该形态已在样例中注入；导入形态的逐行列值期望已写入 data/truth/import_truth.json，成本 / 公司行为 / 归因形态的期望值随 M2–M4 追加。",
+    "note": "total/sampled 逐形态登记，要求分子 = 分母。M1 的 sampled 指该形态已在样例中注入；导入形态的逐行列值期望已写入 data/truth/import_truth.json，成本形态的逐笔期望（双口径）已写入 data/truth/cost_truth.json（M2），公司行为 / 归因形态的期望值随 M3–M4 追加。",
     "surfaces": [
       {
         "evidence": [
@@ -170,6 +170,17 @@
         ],
         "sampled": 1,
         "surface": "cost.fifo_vs_wavg_divergence",
+        "total": 1
+      },
+      {
+        "evidence": [
+          {
+            "note": "费用四列缺席，仅能由发生金额反推并标注 derived_from_settlement",
+            "sample": "generic-demo-015-no-fee-columns.csv"
+          }
+        ],
+        "sampled": 1,
+        "surface": "cost.fee_not_itemized",
         "total": 1
       },
       {

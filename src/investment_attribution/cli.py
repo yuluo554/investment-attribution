@@ -19,6 +19,7 @@ from .exit_codes import (
     EXIT_STAGE_NOT_READY,
 )
 from .paths import resolve_data_dir
+from .pipeline.cost_cmd import describe_holdings, run_cost, run_pnl
 from .pipeline.import_cmd import exit_code_for, run_import
 from .selftest import run_selftest
 from .serialize import dumps_json, write_atomic, write_json_atomic
@@ -74,8 +75,9 @@ def build_parser():
     for name in ("cost", "pnl"):
         p = sub.add_parser(name, help="成本台账 / 已实现未实现收益")
         p.add_argument("--method", choices=("fifo", "wavg"), default=None, help="成本口径（必填，无默认值）")
-        p.add_argument("--ledger", default=None, help="统一流水输入路径")
+        p.add_argument("--ledger", default=None, help="统一流水输入路径（必填）")
         p.add_argument("--out", default=None, help="产物输出路径")
+        p.add_argument("--out-dir", default=None, help="产物输出目录（默认名见 README）")
         p.add_argument("--fees", action="store_true", help="拆分费用三件套")
 
     p = sub.add_parser("corporate-actions", help="公司行为还原与人工确认队列")
@@ -166,6 +168,61 @@ def _cmd_import(args):
     return exit_code_for(result)
 
 
+def _cmd_cost(args):
+    """成本台账：成功 0 / 检出勾稽问题 1 / 用法或输入不可用 2。"""
+    result = run_cost(
+        args.method,
+        ledger_path=args.ledger,
+        data_dir=args.data_dir,
+        out=args.out,
+        out_dir=args.out_dir,
+        include_fees=args.fees,
+    )
+    for line in describe_holdings(result):
+        sys.stderr.write(line + "\n")
+    return result.exit_code
+
+
+def _cmd_pnl(args):
+    """收益台账：失败原因口径同 ``cost``。"""
+    result, payload = run_pnl(
+        args.method,
+        ledger_path=args.ledger,
+        data_dir=args.data_dir,
+        out=args.out,
+        out_dir=args.out_dir,
+        include_fees=args.fees,
+    )
+    holdings = result.holdings
+    totals = holdings["totals"]
+    sys.stderr.write(
+        "收益台账完成（{}）：已实现净收益 {:.2f} 元 / 未平仓成本 {:.2f} 元 / {} 条问题\n".format(
+            holdings["method_label"],
+            payload["realized"]["net_fen"] / 100.0,
+            payload["open_positions"]["cost_fen"] / 100.0,
+            totals["invalid"],
+        )
+    )
+    if payload.get("fee_detail") is not None:
+        fees = payload["fees"]["by_type_fen"]
+        sys.stderr.write(
+            "  费用拆列：佣金 {:.2f} / 印花税 {:.2f} / 过户费 {:.2f} / 其他 {:.2f} / 未分列 {:.2f}\n".format(
+                fees["commission"] / 100.0,
+                fees["stamp_tax"] / 100.0,
+                fees["transfer_fee"] / 100.0,
+                fees["other_fee"] / 100.0,
+                fees["unallocated"] / 100.0,
+            )
+        )
+    for item in holdings["invalid"][:10]:
+        sys.stderr.write(
+            "  问题 {} {}:{} {}\n".format(
+                item["code"], item["source_file"], item["source_line_no"], item["message"]
+            )
+        )
+    return result.exit_code
+
+
 def _cmd_stage_not_ready(command):
     require_ready(command)
     # 走到这里说明登记表与分派不一致，属实现缺陷，不能静默返回成功。
@@ -177,6 +234,8 @@ def _cmd_stage_not_ready(command):
 
 HANDLERS = {
     "import": _cmd_import,
+    "cost": _cmd_cost,
+    "pnl": _cmd_pnl,
     "selftest": _cmd_selftest,
 }
 

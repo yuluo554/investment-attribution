@@ -41,7 +41,7 @@ def test_unknown_command_is_usage_error(capsys):
 
 
 def test_stage_not_ready_commands_return_three(capsys):
-    for command in ("cost", "pnl", "corporate-actions", "attribution", "merge", "report", "run", "bench"):
+    for command in ("corporate-actions", "attribution", "merge", "report", "run", "bench"):
         argv = [command]
         if command == "run":
             argv.append("x.csv")
@@ -49,6 +49,24 @@ def test_stage_not_ready_commands_return_three(capsys):
         captured = capsys.readouterr()
         assert code == EXIT_STAGE_NOT_READY, command
         assert "STAGE_NOT_READY" in captured.err
+
+
+def test_cost_and_pnl_are_no_longer_stage_blocked(capsys):
+    """M2 退役 cost / pnl 的退出码 3：缺口径必须是 2，不是 3，更不是 0。"""
+    for command in ("cost", "pnl"):
+        code = cli.main([command, "--ledger", "does-not-exist.json"])
+        captured = capsys.readouterr()
+        assert code == EXIT_INPUT, command
+        assert "STAGE_NOT_READY" not in captured.err
+        assert "COST_METHOD_REQUIRED" in captured.err
+
+
+def test_cost_without_method_is_usage_error(tmp_path, capsys):
+    """K7：成本口径无默认值——不传 ``--method`` 必须 exit 2。"""
+    code = cli.main(["cost", "--ledger", str(tmp_path / "ledger.json")])
+    captured = capsys.readouterr()
+    assert code == EXIT_INPUT
+    assert "COST_METHOD_REQUIRED" in captured.err
 
 
 def test_import_is_no_longer_stage_blocked(capsys):
