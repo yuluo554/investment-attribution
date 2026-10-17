@@ -18,6 +18,9 @@ TRUTH = json.loads(
 COST_TRUTH = json.loads(
     (DATA_DIR / "truth" / "cost_truth.json").read_text(encoding="utf-8")
 )
+ACTIONS_TRUTH = json.loads(
+    (DATA_DIR / "truth" / "actions_truth.json").read_text(encoding="utf-8")
+)
 
 
 def run_generator(*args):
@@ -299,3 +302,109 @@ def test_every_cost_surface_points_at_real_rows():
         assert evidence[surface], surface
         for key in evidence[surface]:
             assert tuple(key) in keys, (surface, key)
+
+
+# ---------------------------------------------------------------------------
+# M3 公司行为真值（B3）
+# ---------------------------------------------------------------------------
+
+
+def test_actions_truth_is_generated_not_imported_from_engine():
+    """真值纪律：生成器不得 import 引擎，否则"独立复算"变成自己比自己。"""
+    source = GEN_DATA.read_text(encoding="utf-8")
+    assert "investment_attribution" not in source
+    assert ACTIONS_TRUTH["format"] == "ia.truth.actions"
+    assert sorted(ACTIONS_TRUTH["methods"]) == ["fifo", "wavg"]
+
+
+def test_actions_truth_has_no_observed_fields():
+    def keys(obj):
+        if isinstance(obj, dict):
+            for key, value in obj.items():
+                yield key
+                for item in keys(value):
+                    yield item
+        elif isinstance(obj, list):
+            for value in obj:
+                for item in keys(value):
+                    yield item
+
+    offenders = [key for key in keys(ACTIONS_TRUTH) if key.startswith("observed")]
+    assert offenders == []
+
+
+def test_actions_truth_scenario_matches_cost_scenario():
+    """两份真值必须同范围：否则"同一次导入"下的结论无法互相印证。"""
+    assert ACTIONS_TRUTH["scenario"]["files"] == COST_TRUTH["scenario"]["files"]
+    assert ACTIONS_TRUTH["scenario"]["row_count"] == COST_TRUTH["scenario"]["row_count"]
+
+
+def test_actions_truth_covers_all_five_event_types():
+    expected = {
+        "dividend",
+        "stock_dividend",
+        "rights_issue",
+        "split",
+        "reinvested_dividend",
+    }
+    for method, data in ACTIONS_TRUTH["methods"].items():
+        counts = {item["event_type"]: item["count"] for item in data["by_event_type"]}
+        assert expected <= set(counts), (method, counts)
+        assert counts["dividend"] >= 2, (method, counts)
+
+
+def test_actions_truth_always_has_a_pending_row():
+    """"无法识别必须进待确认"在真值里必须可见，否则该纪律无法断言。"""
+    for method, data in ACTIONS_TRUTH["methods"].items():
+        assert data["pending"], method
+        assert any(item["reason"] == "NO_RULE_MATCH" for item in data["pending"]), method
+
+
+def test_actions_truth_adjustments_are_reversible():
+    """before + 行形态增量 == after；零成本份额总成本守恒。"""
+    for method, data in ACTIONS_TRUTH["methods"].items():
+        for event in data["events"]:
+            before, after = event["before"], event["after"]
+            if event["kind"] == "receipt_free":
+                assert after["cost_fen"] == before["cost_fen"], (method, event["key"])
+                assert float(after["quantity"]) > float(before["quantity"])
+            elif event["kind"] == "cash_event":
+                assert before == after, (method, event["key"])
+            elif event["kind"] in ("receipt_paid", "receipt_valued"):
+                assert after["cost_fen"] > before["cost_fen"], (method, event["key"])
+
+
+def test_every_corporate_action_surface_points_at_real_rows():
+    keys = set()
+    pending_keys = set()
+    for data in ACTIONS_TRUTH["methods"].values():
+        keys |= {tuple(event["key"]) for event in data["events"]}
+        pending_keys |= {
+            (item["source_file"], item["source_line_no"]) for item in data["pending"]
+        }
+    manifest = json.loads(
+        (DATA_DIR / "rules" / "manifest.json").read_text(encoding="utf-8")
+    )
+    surfaces = [
+        item["surface"]
+        for item in manifest["coverage"]["surfaces"]
+        if item["surface"].startswith("corporate_action.")
+    ]
+    evidence = ACTIONS_TRUTH["surface_evidence"]
+    assert set(surfaces) == set(evidence)
+    for surface in surfaces:
+        assert evidence[surface], surface
+        known = pending_keys if surface.endswith("unrecognized_pending") else keys
+        for key in evidence[surface]:
+            assert tuple(key) in known, (surface, key)
+
+
+def test_rules_pack_declares_non_action_patterns():
+    rules = json.loads(
+        (DATA_DIR / "rules" / "corporate_actions.json").read_text(encoding="utf-8")
+    )
+    assert rules["non_action_patterns"]
+    assert "内部划转" in rules["non_action_patterns"]
+    for rule in rules["rules"]:
+        assert rule["expected_kinds"]
+        assert rule["cash_effect"] in ("inflow", "outflow", "none")

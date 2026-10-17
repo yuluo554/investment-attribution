@@ -6,10 +6,11 @@
 > **不做投资建议，只做账。** 所有输出均为历史核算结果，不构成任何投资建议。
 > 纯本地、零上传、零遥测、不登录券商、不联网行情。断网可跑完整链路。
 
-**状态：M2 成本引擎（2026-10-17）。** 当前仓库提供可运行的 CLI 契约、
+**状态：M3 公司行为（2026-10-17）。** 当前仓库提供可运行的 CLI 契约、
 `import` 子命令（海通 xlsx / 华西 Tab+GB18030 两类真实格式 + 通用 CSV/TSV）、
 `cost` / `pnl` 子命令（FIFO / 移动加权双口径、费用入账、资金与股份余额勾稽、
-每日持仓快照）、确定性合成数据生成器（`tools/gen_data.py --check` 双层守门）、
+每日持仓快照）、`corporate-actions` 子命令（规则表匹配 + 人工确认队列 +
+调整前后可逆复算）、确定性合成数据生成器（`tools/gen_data.py --check` 双层守门）、
 可证伪自检、零上传静态门禁与确定性写盘；其余业务子命令按里程碑逐个落地，
 未落地时以退出码 `3` 显式拦截，**不输出伪造结果**。
 
@@ -71,7 +72,7 @@ python -m pytest
 | `import` | 多券商交割单导入 → 统一流水 + 行级错误台账 | M1 ✅ |
 | `cost --method fifo\|wavg` | 持仓成本台账（口径必填，无默认值） | M2 ✅ |
 | `pnl [--fees]` | 已实现/未实现收益与费用三件套 | M2 ✅ |
-| `corporate-actions` | 公司行为事件台账 + 人工确认队列 | M3 |
+| `corporate-actions --method fifo\|wavg` | 公司行为事件台账 + 人工确认队列（口径必填） | M3 ✅ |
 | `attribution [--xirr] [--twr]` | XIRR / TWR / 收益分解 | M4 |
 | `merge` | 多账户合并与账户间划转抵消 | M5 |
 | `report` | 单文件本地 HTML 报告 + `report_data.json` | M5 |
@@ -139,6 +140,34 @@ python -m investment_attribution pnl --method fifo \
 口径切换**不修改原始流水**：流水只读，成本 = 流水 + 口径参数的派生视图，
 测试断言 `ledger.json` 字节前后一致。
 
+### `corporate-actions` 用法与退出码
+
+```bash
+# 口径同样必填：调整前后两组数要落到某个成本口径上
+python -m investment_attribution corporate-actions --method fifo \
+    --ledger out/ledger.json --out-dir out/ca/
+
+# 用人工确认记录把"规则表认不出"的行入账（记录必须可追溯）
+python -m investment_attribution corporate-actions --method fifo \
+    --ledger out/ledger.json --out out/ca/actions.json --confirm my-confirmations.json
+```
+
+产物（全部经 `serialize.write_json_atomic` 落盘）：
+
+| 文件 | 内容 |
+|---|---|
+| `actions.json` | 事件台账（`rule_id` + 命中模式 + 原始行证据 + before/after 调整）+ 待确认段 + 非行为段 + 规则包页眉 |
+| `pending.json` | 待确认队列（原始行、行形态、现金方向、候选规则、原因码） |
+
+`corporate-actions` 退出码：`0` 全部 `other` 行被唯一确定或明确判为非行为；
+`1` 数据可用但有待确认行或调整问题；`2` 用法或输入不可用
+（**未指定 `--method`**、`--ledger` 缺失、规则包损坏、确认记录非法）。
+
+规则表能确定的自动入账并逐条挂依据；不能确定的一律进待确认队列，
+**"跳过"不是默认路径**。每条事件都记 `before` / `after` 的份额、总成本与单位成本，
+断言 `before + 声明增量 == after`；调整只作用于派生台账，
+`ledger.json` 字节前后一致。
+
 ## 退出码语义
 
 | 退出码 | 含义 |
@@ -150,7 +179,8 @@ python -m investment_attribution pnl --method fifo \
 
 `3` 是骨架期的临时语义，随模块落地逐个退役；退役时同步常量表、CLI 分派、
 本表、决策记录与测试。**M1 已退役 `import`**（现为 0 / 1 / 2 三档），
-**M2 已退役 `cost` / `pnl`**（同为 0 / 1 / 2 三档），其余子命令仍返回 `3`。
+**M2 已退役 `cost` / `pnl`**（同为 0 / 1 / 2 三档），
+**M3 已退役 `corporate-actions`**（同为 0 / 1 / 2 三档），其余子命令仍返回 `3`。
 
 ## 数据目录
 
@@ -229,10 +259,11 @@ python tools/gen_data.py --check    # 形态校验 + 重生成逐字节比对（
 src/investment_attribution/   CLI、基础设施层与业务模块
 src/investment_attribution/ingest/   导入适配层（编码 / 壳清洗 / 列名归一 / 行级台账）
 src/investment_attribution/ledger/   成本引擎（FIFO / 移动加权 / 勾稽 / 快照 / B2 比对）
-src/investment_attribution/pipeline/ 编排层（import / cost / pnl）
+src/investment_attribution/actions/  公司行为（规则表匹配 / 待确认队列 / 调整可逆 / B3 比对）
+src/investment_attribution/pipeline/ 编排层（import / cost / pnl / corporate-actions）
 data/rules/                   契约清单 + 冻结规则包（别名 / 参数 / 公司行为 / 行业 / 账户）
 data/samples/                 合成交割单样例（多格式多编码，含刻意缺陷）
-data/truth/                   真值台账（导入 + 成本；只存输入 + 期望）
+data/truth/                   真值台账（导入 + 成本 + 公司行为；只存输入 + 期望）
 data/README.md                依据查证、数据纪律、数值口径（唯一来源）
 plan/                         计划文档与里程碑留档
 tests/                        契约、自检、零上传门禁、确定性写盘、导入层、成本引擎与真值对齐

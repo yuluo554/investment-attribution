@@ -4,4 +4,5 @@ CLI 只做参数解析与退出码转译，业务语义在这里。直调与 CLI
 （plan/02 §二 编排层唯一业务入口）。
 """
 
+from .actions_cmd import run_corporate_actions  # noqa: F401
 from .import_cmd import run_import  # noqa: F401

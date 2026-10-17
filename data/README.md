@@ -90,7 +90,7 @@
   - **已知 XIRR**：每个账户与合并视图在各估值日的 XIRR 期望值（由生成器用同一算法定义算出的**参考值**，并另附一份**独立手工算例**作为第二判据）；
   - **已知划转**：账户间资金划转清单（合并视图必须抵消）。
 - **真值库只存"输入 + 期望"，观测由基准运行时实算**——把观测也冻进真值库，评测会退化成"比对两个冻结字典"，引擎坏掉也全绿。
-- **分文件登记**：导入层在 `data/truth/import_truth.json`；成本层在 `data/truth/cost_truth.json`（M2 追加）。两份都由生成器产出，**生成器不 import 引擎**——成本真值用 `Fraction` 精确数量 + 整数分独立复算，与引擎是两套实现。
+- **分文件登记**：导入层在 `data/truth/import_truth.json`；成本层在 `data/truth/cost_truth.json`（M2 追加）；公司行为层在 `data/truth/actions_truth.json`（M3 追加）。三份都由生成器产出，**生成器不 import 引擎**——成本真值用 `Fraction` 精确数量 + 整数分独立复算，公司行为真值同样用 `Fraction` + 整数分独立复算，与引擎是两套实现。
 - **成本真值的场景范围**：`cost_truth.scenario.files` 显式列出参与成本场景的 4 份样例。其余样例是这些账户的子集 / 副本，**全部一起导入会重复计数**，所以真值把范围写死，而不是"把所有样例都算进去"。
 - **覆盖度双登记**：真值台账的 `coverage` 段逐形态登记 `total / sampled`，分子必须等于分母（测试锁定）；形态至少覆盖——
   - 导入：两类真实格式（海通 xlsx / 华西 tab+GB18030）各至少 1 份、UTF-8 CSV、GB18030 CSV、`="..."` 单元格、缺列、错位列、空文件、仅表头、超长备注、千分位金额；
@@ -137,6 +137,31 @@
 | 每日快照 | 按**有流水的交易日**生成（不补空自然日）；只记数量 > 0 的持仓；日期升序、账户与标的名升序 | `_snapshot` |
 | 分账户 | 已登记账户按 `account_id` 分组；未登记账户按 `source_file + 股东账号` 单独成组，**不并入任何默认账户** | `model.account_key` |
 | 退出码 | 0 = 无勾稽问题；1 = 有 `invalid` 或有未登记账户；2 = 缺口径 / 流水缺失 / 形态不符 | `pipeline/cost_cmd.py` |
+
+#### 4.1.2 M3 落地的细则（公司行为还原的唯一定义处）
+
+> 规则表 = `data/rules/corporate_actions.json`（冻结产物）。**引擎代码里没有第二份业务名表**：
+> 业务名模式、允许的行形态（`expected_kinds`）、现金方向（`cash_effect`）、
+> 是否需人工确认（`requires_manual_confirm`）全部由规则包声明。
+> 规则表**叠在 M2 的 `kind` 之上**，不回头给 `kind` 加业务名分支。
+
+| 项 | 定义 | 实现位置 |
+|---|---|---|
+| 匹配范围 | 只匹配 `direction == "other"` 的行；买 / 卖行直接按 M2 行形态推进账本 | `actions/engine.py` |
+| 业务名匹配 | `business == pattern` 或 `pattern in business`（子串；与 M1 方向识别同源）。模式在规则包内不得重复，重复即 `CA_PATTERN_DUPLICATE` | `actions/rules.py` |
+| 能确定 = 自动入账 | 命中**唯一**一条规则、行形态 ∈ `expected_kinds`、现金方向 == `cash_effect`、且规则不要求人工确认 → 入事件台账，挂 `rule_id` + `matched_pattern` + `source_file` + `source_line_no` | `_classify_other` |
+| 不能确定 = 待确认 | 五种原因全部进待确认队列，附原始行、`kind`、`candidates`（命中规则候选）：`NO_RULE_MATCH` / `AMBIGUOUS_RULES` / `KIND_NOT_EXPECTED` / `CASH_EFFECT_MISMATCH` / `RULE_REQUIRES_CONFIRM`。**没有"跳过"这条默认路径** | `_pending` |
+| 非公司行为的资金划转 | 一条规则都不中、但命中 `non_action_patterns`（银证转入/转出、内部划转…）→ 落 `non_actions`，不进待确认、不进事件台账、不当收入 | `_classify_other` |
+| 无法归类行 | M2 判为 `UNCLASSIFIED_ROW` 的 `other` 行不参与规则匹配，原样进待确认（`UNCLASSIFIED_ROW`） | `_classify_other` |
+| 五类事件的动作 | 分红 = `cash_only`（只动资金，不动持仓）；送股 / 拆分 = `free_shares`（零成本份额，总成本不变）；配股 = `paid_acquisition`（对价 + 费用计入成本）；红利再投 = `valued_acquisition`（按对价计入成本，无现金流出） | `ACTION_BY_KIND` |
+| 调整可逆 | 每条事件记 `before` / `after` 的份额、总成本（整数分）、单位成本（6 位小数展示值），并记 `quantity_delta` / `cost_delta_fen`；断言 `before + delta == after`，不闭合即落 `ADJUSTMENT_NOT_REVERSIBLE` | `_event` / `_reversible` |
+| 不回写原始流水 | `ledger.json` 只读；调整只作用于派生台账，测试断言运行前后字节一致 | `build_actions` |
+| 人工确认记录 | `--confirm` 指向 `{"format": "ia.confirmations", "confirmations": [...]}`；每条必须有 `rule_id` / `decided_by` / `decided_at` / `basis`。确认只能用于规则表**未能**自动识别的行；行形态或现金方向与所选规则不符、指向已自动识别的行、或指向不存在的行，均 `exit 2` | `load_confirmations` / `_handle_confirmation` |
+| 待确认行的持仓影响 | 仍按 M2 行形态推进（份额 / 成本是交割单的机械事实）；"待确认"只表示**事件类型未定**，不代表份额未发生。因此调整后台账恒等于 M2 `holdings.json` 的持仓，`test_adjusted_positions_equal_m2_holdings` 锁定 | `_classify_other` |
+| 分桶守恒 | `action_events + pending + non_action_rows == other_rows`，不等即落 `ACTION_BUCKETS_UNBALANCED`（保证 other 行没有一条被吞掉） | `_build_result` |
+| 产物页眉 | 必带 `method` / `method_label` / `method_notice` / `rule_pack`（含 `sha256`、`rule_count`、`rule_ids`、`unmatched_policy`）/ `inputs.ledger_sha256` | `_build_result` |
+| 退出码 | 0 = 全部 other 行自动归类且无问题；1 = 有待确认行或调整问题；2 = 缺口径 / 流水缺失 / 规则包损坏 / 确认记录非法 | `pipeline/actions_cmd.py` |
+| 真值 | `data/truth/actions_truth.json`（双口径、逐事件 before/after、待确认集合、非行为集合），由生成器用 `Fraction` + 整数分独立复算，**不 import 引擎** | `tools/gen_data.py` |
 
 ### 4.2 XIRR 定义与算法
 

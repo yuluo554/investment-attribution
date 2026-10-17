@@ -33,6 +33,23 @@ def test_import_is_never_stage_blocked_again():
     assert "import" in HANDLERS
 
 
+def test_cost_and_pnl_are_never_stage_blocked_again():
+    """防复活断言：cost / pnl 已于 M2 落地。"""
+    for command in ("cost", "pnl"):
+        assert command not in stages.STAGE_NOT_READY
+        assert command in HANDLERS
+
+
+def test_corporate_actions_is_never_stage_blocked_again():
+    """防复活断言：corporate-actions 已于 M3 落地。"""
+    assert "corporate-actions" not in stages.STAGE_NOT_READY
+    assert "corporate-actions" in HANDLERS
+
+
+def test_require_ready_returns_none_for_corporate_actions():
+    assert stages.require_ready("corporate-actions") is None
+
+
 def test_require_ready_returns_none_for_selftest():
     assert stages.require_ready("selftest") is None
 

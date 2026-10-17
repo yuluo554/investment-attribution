@@ -1,7 +1,14 @@
 {
-  "contract_version": "0.3.0-m2",
+  "contract_version": "0.4.0-m3",
   "format": "ia.corporate_actions",
   "format_version": 1,
+  "non_action_patterns": [
+    "银证转入",
+    "银证转出",
+    "内部划转",
+    "银行转证券",
+    "证券转银行"
+  ],
   "rules": [
     {
       "business_name_patterns": [
@@ -9,9 +16,13 @@
         "股息入账",
         "现金红利"
       ],
+      "cash_effect": "inflow",
       "cash_per_share": null,
       "event_type": "dividend",
-      "evidence_hint": "data/README.md §4.1 费用按交割单实际列值",
+      "evidence_hint": "现金红利只动资金余额，不改持仓；金额取交割单发生金额列",
+      "expected_kinds": [
+        "cash_event"
+      ],
       "requires_manual_confirm": false,
       "rule_id": "ca.dividend",
       "share_factor": null,
@@ -22,9 +33,13 @@
         "送股入账",
         "送股"
       ],
+      "cash_effect": "none",
       "cash_per_share": null,
       "event_type": "stock_dividend",
-      "evidence_hint": "份额增量取交割单数量列",
+      "evidence_hint": "份额增量取交割单数量列；零成本份额，总成本不变",
+      "expected_kinds": [
+        "receipt_free"
+      ],
       "requires_manual_confirm": false,
       "rule_id": "ca.stock_dividend",
       "share_factor": null,
@@ -34,9 +49,13 @@
       "business_name_patterns": [
         "配股"
       ],
+      "cash_effect": "outflow",
       "cash_per_share": null,
       "event_type": "rights_issue",
-      "evidence_hint": "配股价格取交割单成交价格列",
+      "evidence_hint": "配股价格取交割单成交价格列；对价 + 费用计入成本",
+      "expected_kinds": [
+        "receipt_paid"
+      ],
       "requires_manual_confirm": false,
       "rule_id": "ca.rights_issue",
       "share_factor": null,
@@ -47,9 +66,13 @@
         "拆分",
         "份额折算"
       ],
+      "cash_effect": "none",
       "cash_per_share": null,
       "event_type": "split",
-      "evidence_hint": "拆分比例取交割单数量增量",
+      "evidence_hint": "拆分比例取交割单数量增量；零成本份额，总成本不变",
+      "expected_kinds": [
+        "receipt_free"
+      ],
       "requires_manual_confirm": false,
       "rule_id": "ca.split",
       "share_factor": null,
@@ -60,9 +83,13 @@
         "红利再投",
         "分红再投"
       ],
+      "cash_effect": "none",
       "cash_per_share": null,
       "event_type": "reinvested_dividend",
-      "evidence_hint": "再投价格取交割单成交价格列",
+      "evidence_hint": "再投价格取交割单成交价格列；按对价计入成本，无现金流出",
+      "expected_kinds": [
+        "receipt_valued"
+      ],
       "requires_manual_confirm": false,
       "rule_id": "ca.reinvested_dividend",
       "share_factor": null,

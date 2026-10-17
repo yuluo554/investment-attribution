@@ -56,10 +56,33 @@ jobs:
           code=$?
           test "$code" = "2"
 
-      - name: Stage-not-ready contract
+      - name: Corporate-actions smoke (both methods; exit 1 = pending queue)
+        shell: bash
+        run: |
+          set +e
+          python -m investment_attribution corporate-actions --method fifo \
+            --ledger out/ledger.json --out-dir out/ca-fifo
+          code=$?
+          test "$code" = "1"
+          python -m investment_attribution corporate-actions --method wavg \
+            --ledger out/ledger.json --out-dir out/ca-wavg
+          code=$?
+          test "$code" = "1"
+          test -f out/ca-fifo/actions.json
+          test -f out/ca-fifo/pending.json
+
+      - name: Corporate-actions method is mandatory (exit 2)
         shell: bash
         run: |
           set +e
           python -m investment_attribution corporate-actions --ledger out/ledger.json
+          code=$?
+          test "$code" = "2"
+
+      - name: Stage-not-ready contract
+        shell: bash
+        run: |
+          set +e
+          python -m investment_attribution attribution
           code=$?
           test "$code" = "3"

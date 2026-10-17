@@ -19,6 +19,7 @@ from .exit_codes import (
     EXIT_STAGE_NOT_READY,
 )
 from .paths import resolve_data_dir
+from .pipeline.actions_cmd import describe_actions, run_corporate_actions
 from .pipeline.cost_cmd import describe_holdings, run_cost, run_pnl
 from .pipeline.import_cmd import exit_code_for, run_import
 from .selftest import run_selftest
@@ -81,8 +82,11 @@ def build_parser():
         p.add_argument("--fees", action="store_true", help="拆分费用三件套")
 
     p = sub.add_parser("corporate-actions", help="公司行为还原与人工确认队列")
+    p.add_argument("--method", choices=("fifo", "wavg"), default=None, help="成本口径（必填，无默认值）")
     p.add_argument("--ledger", default=None, help="统一流水输入路径")
     p.add_argument("--out", default=None, help="事件台账输出路径")
+    p.add_argument("--out-dir", default=None, help="产物输出目录（默认名见 README）")
+    p.add_argument("--pending-out", default=None, help="待确认队列输出路径")
     p.add_argument("--confirm", default=None, help="人工确认记录输入路径")
 
     p = sub.add_parser("attribution", help="XIRR / TWR / 收益分解")
@@ -223,6 +227,22 @@ def _cmd_pnl(args):
     return result.exit_code
 
 
+def _cmd_corporate_actions(args):
+    """公司行为：成功 0 / 有待确认或调整问题 1 / 用法或输入不可用 2。"""
+    result = run_corporate_actions(
+        args.method,
+        ledger_path=args.ledger,
+        data_dir=args.data_dir,
+        out=args.out,
+        out_dir=args.out_dir,
+        pending_out=args.pending_out,
+        confirm=args.confirm,
+    )
+    for line in describe_actions(result):
+        sys.stderr.write(line + "\n")
+    return result.exit_code
+
+
 def _cmd_stage_not_ready(command):
     require_ready(command)
     # 走到这里说明登记表与分派不一致，属实现缺陷，不能静默返回成功。
@@ -236,6 +256,7 @@ HANDLERS = {
     "import": _cmd_import,
     "cost": _cmd_cost,
     "pnl": _cmd_pnl,
+    "corporate-actions": _cmd_corporate_actions,
     "selftest": _cmd_selftest,
 }
 

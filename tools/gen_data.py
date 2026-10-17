@@ -37,7 +37,7 @@ from xml.sax.saxutils import escape
 REPO_ROOT = Path(__file__).resolve().parent.parent
 DEFAULT_DATA_DIR = REPO_ROOT / "data"
 GENERATOR_TOOL = "tools/gen_data.py"
-CONTRACT_VERSION = "0.3.0-m2"
+CONTRACT_VERSION = "0.4.0-m3"
 SEED = 0x9E3779B97F4A7C15  # splitmix64 标准增量常量，作为固定种子
 MASK64 = (1 << 64) - 1
 
@@ -1157,56 +1157,67 @@ def build_corporate_actions():
         "format_version": 1,
         "contract_version": CONTRACT_VERSION,
         "unmatched_policy": "pending_confirmation",
+        "non_action_patterns": ["银证转入", "银证转出", "内部划转", "银行转证券", "证券转银行"],
         "rules": [
             {
                 "rule_id": "ca.dividend",
                 "business_name_patterns": ["红利入账", "股息入账", "现金红利"],
                 "event_type": "dividend",
+                "expected_kinds": ["cash_event"],
+                "cash_effect": "inflow",
                 "share_factor": None,
                 "cash_per_share": None,
                 "tax_rule": "as_reported",
                 "requires_manual_confirm": False,
-                "evidence_hint": "data/README.md §4.1 费用按交割单实际列值",
+                "evidence_hint": "现金红利只动资金余额，不改持仓；金额取交割单发生金额列",
             },
             {
                 "rule_id": "ca.stock_dividend",
                 "business_name_patterns": ["送股入账", "送股"],
                 "event_type": "stock_dividend",
+                "expected_kinds": ["receipt_free"],
+                "cash_effect": "none",
                 "share_factor": None,
                 "cash_per_share": None,
                 "tax_rule": "as_reported",
                 "requires_manual_confirm": False,
-                "evidence_hint": "份额增量取交割单数量列",
+                "evidence_hint": "份额增量取交割单数量列；零成本份额，总成本不变",
             },
             {
                 "rule_id": "ca.rights_issue",
                 "business_name_patterns": ["配股"],
                 "event_type": "rights_issue",
+                "expected_kinds": ["receipt_paid"],
+                "cash_effect": "outflow",
                 "share_factor": None,
                 "cash_per_share": None,
                 "tax_rule": "as_reported",
                 "requires_manual_confirm": False,
-                "evidence_hint": "配股价格取交割单成交价格列",
+                "evidence_hint": "配股价格取交割单成交价格列；对价 + 费用计入成本",
             },
             {
                 "rule_id": "ca.split",
                 "business_name_patterns": ["拆分", "份额折算"],
                 "event_type": "split",
+                "expected_kinds": ["receipt_free"],
+                "cash_effect": "none",
                 "share_factor": None,
                 "cash_per_share": None,
                 "tax_rule": "none",
                 "requires_manual_confirm": False,
-                "evidence_hint": "拆分比例取交割单数量增量",
+                "evidence_hint": "拆分比例取交割单数量增量；零成本份额，总成本不变",
             },
             {
                 "rule_id": "ca.reinvested_dividend",
                 "business_name_patterns": ["红利再投", "分红再投"],
                 "event_type": "reinvested_dividend",
+                "expected_kinds": ["receipt_valued"],
+                "cash_effect": "none",
                 "share_factor": None,
                 "cash_per_share": None,
                 "tax_rule": "as_reported",
                 "requires_manual_confirm": False,
-                "evidence_hint": "再投价格取交割单成交价格列",
+                "evidence_hint": "再投价格取交割单成交价格列；按对价计入成本，无现金流出",
             },
         ],
     }
@@ -1272,7 +1283,8 @@ def build_manifest():
                 "total/sampled 逐形态登记，要求分子 = 分母。M1 的 sampled 指该形态已在样例中注入；"
                 "导入形态的逐行列值期望已写入 data/truth/import_truth.json，"
                 "成本形态的逐笔期望（双口径）已写入 data/truth/cost_truth.json（M2），"
-                "公司行为 / 归因形态的期望值随 M3–M4 追加。"
+                "公司行为形态的逐事件期望（含 before/after 与待确认集合）已写入 "
+                "data/truth/actions_truth.json（M3），归因形态的期望值随 M4 追加。"
             ),
             "surfaces": surfaces,
         },
@@ -1722,6 +1734,294 @@ def build_cost_truth(cost_inputs):
     }
 
 
+# ---------------------------------------------------------------------------
+# 公司行为真值（B3）：独立实现，不 import 引擎
+# ---------------------------------------------------------------------------
+
+ACTIONS_SCENARIO_FILES = (
+    "htsec-demo-001.xlsx",
+    "huaxi-demo-001.xls",
+    "generic-demo-013-account-c.csv",
+    "generic-demo-015-no-fee-columns.csv",
+)
+
+# 规则表语义的第二份声明？不——这里只是**真值侧**的独立解释：
+# 期望值必须能由「规则包内容 + 行形态」独立推出，而不是读引擎输出。
+ACTION_RULES = (
+    {
+        "rule_id": "ca.dividend",
+        "event_type": "dividend",
+        "patterns": ("红利入账", "股息入账", "现金红利"),
+        "expected_kinds": ("cash_event",),
+        "cash_effect": "inflow",
+        "action": "cash_only",
+    },
+    {
+        "rule_id": "ca.stock_dividend",
+        "event_type": "stock_dividend",
+        "patterns": ("送股入账", "送股"),
+        "expected_kinds": ("receipt_free",),
+        "cash_effect": "none",
+        "action": "free_shares",
+    },
+    {
+        "rule_id": "ca.rights_issue",
+        "event_type": "rights_issue",
+        "patterns": ("配股",),
+        "expected_kinds": ("receipt_paid",),
+        "cash_effect": "outflow",
+        "action": "paid_acquisition",
+    },
+    {
+        "rule_id": "ca.split",
+        "event_type": "split",
+        "patterns": ("拆分", "份额折算"),
+        "expected_kinds": ("receipt_free",),
+        "cash_effect": "none",
+        "action": "free_shares",
+    },
+    {
+        "rule_id": "ca.reinvested_dividend",
+        "event_type": "reinvested_dividend",
+        "patterns": ("红利再投", "分红再投"),
+        "expected_kinds": ("receipt_valued",),
+        "cash_effect": "none",
+        "action": "valued_acquisition",
+    },
+)
+
+NON_ACTION_PATTERNS = ("银证转入", "银证转出", "内部划转", "银行转证券", "证券转银行")
+
+ACTIONS_SURFACE_EVIDENCE = {
+    "corporate_action.dividend": [
+        ["htsec-demo-001.xlsx", 11],
+        ["huaxi-demo-001.xls", 9],
+        ["generic-demo-015-no-fee-columns.csv", 5],
+    ],
+    "corporate_action.stock_dividend": [["htsec-demo-001.xlsx", 12]],
+    "corporate_action.rights_issue": [["htsec-demo-001.xlsx", 14]],
+    "corporate_action.split": [["htsec-demo-001.xlsx", 15]],
+    "corporate_action.reinvested_dividend": [["htsec-demo-001.xlsx", 13]],
+    "corporate_action.unrecognized_pending": [["htsec-demo-001.xlsx", 17]],
+}
+
+
+def _unit_cost_text(cost_fen, quantity):
+    """展示值：6 位小数四舍五入；权威值仍是整数分。"""
+    if quantity <= 0:
+        return None
+    value = Fraction(cost_fen, 1) / quantity
+    scaled = _half_up(value * 1000000)
+    text = canonical(Decimal(scaled) / Decimal(1000000))
+    return text
+
+
+def _match_actions(business):
+    text = business or ""
+    matched = []
+    for rule in ACTION_RULES:
+        for pattern in rule["patterns"]:
+            if text == pattern or pattern in text:
+                matched.append((rule, pattern))
+                break
+    return matched
+
+
+def _non_action(business):
+    text = business or ""
+    for pattern in NON_ACTION_PATTERNS:
+        if text == pattern or pattern in text:
+            return pattern
+    return None
+
+
+def _cash_effect_of(settle_fen):
+    if settle_fen and settle_fen > 0:
+        return "inflow"
+    if settle_fen and settle_fen < 0:
+        return "outflow"
+    return "none"
+
+
+def _truth_apply(book, kind, quantity, amount_fen, fees_fen):
+    if kind in ("trade_buy", "receipt_paid"):
+        book.add(quantity, (amount_fen or 0) + fees_fen)
+    elif kind == "receipt_valued":
+        book.add(quantity, amount_fen or 0)
+    elif kind == "receipt_free":
+        book.add_free(quantity)
+    elif kind == "trade_sell":
+        book.take(quantity)
+
+
+def _state(book):
+    quantity = book.quantity if book is not None else Fraction(0)
+    cost = int(book.cost_fen) if book is not None else 0
+    return {
+        "quantity": _frac_text(quantity),
+        "cost_fen": cost,
+        "unit_cost": _unit_cost_text(cost, quantity),
+    }
+
+
+def _build_actions_truth_for(rows, method):
+    """真值侧逐行复算：规则匹配 + 行形态推进 + 调整前后两组数。"""
+    books = {}
+    events = []
+    pending = []
+    non_actions = []
+    by_type = {}
+    other_rows = 0
+
+    for row in rows:
+        key = (row["account_id"], row["symbol"])
+        if row["kind"] in ("trade_buy", "trade_sell", "receipt_paid",
+                           "receipt_valued", "receipt_free"):
+            book = books.get(key)
+            if book is None:
+                book = _TruthBook(method)
+                books[key] = book
+        else:
+            book = books.get(key)
+
+        if row["kind"] in ("trade_buy", "trade_sell"):
+            _truth_apply(book, row["kind"], row["quantity"],
+                         row["amount_fen"], row["fees_fen"])
+            continue
+
+        other_rows += 1
+        before = _state(book)
+        _truth_apply(book, row["kind"], row["quantity"],
+                     row["amount_fen"], row["fees_fen"])
+        after = _state(book)
+        cash_effect = _cash_effect_of(row["settlement_fen"])
+        matches = _match_actions(row["business"])
+        item_key = [row["source_file"], row["source_line_no"]]
+
+        if not matches:
+            pattern = _non_action(row["business"])
+            if pattern is not None:
+                non_actions.append(
+                    {
+                        "source_file": row["source_file"],
+                        "source_line_no": row["source_line_no"],
+                        "business": row["business"],
+                        "matched_pattern": pattern,
+                    }
+                )
+            else:
+                pending.append(
+                    {
+                        "source_file": row["source_file"],
+                        "source_line_no": row["source_line_no"],
+                        "reason": "NO_RULE_MATCH",
+                        "kind": row["kind"],
+                        "business": row["business"],
+                    }
+                )
+            continue
+
+        if len(matches) > 1:
+            pending.append(
+                {
+                    "source_file": row["source_file"],
+                    "source_line_no": row["source_line_no"],
+                    "reason": "AMBIGUOUS_RULES",
+                    "kind": row["kind"],
+                    "business": row["business"],
+                }
+            )
+            continue
+
+        rule, pattern = matches[0]
+        if row["kind"] not in rule["expected_kinds"]:
+            pending.append(
+                {
+                    "source_file": row["source_file"],
+                    "source_line_no": row["source_line_no"],
+                    "reason": "KIND_NOT_EXPECTED",
+                    "kind": row["kind"],
+                    "business": row["business"],
+                }
+            )
+            continue
+        if cash_effect != rule["cash_effect"]:
+            pending.append(
+                {
+                    "source_file": row["source_file"],
+                    "source_line_no": row["source_line_no"],
+                    "reason": "CASH_EFFECT_MISMATCH",
+                    "kind": row["kind"],
+                    "business": row["business"],
+                }
+            )
+            continue
+
+        by_type[rule["event_type"]] = by_type.get(rule["event_type"], 0) + 1
+        events.append(
+            {
+                "key": item_key,
+                "rule_id": rule["rule_id"],
+                "event_type": rule["event_type"],
+                "kind": row["kind"],
+                "business": row["business"],
+                "cash_effect": cash_effect,
+                "source_file": row["source_file"],
+                "source_line_no": row["source_line_no"],
+                "before": before,
+                "after": after,
+            }
+        )
+
+    adjusted_positions = []
+    for key in sorted(books):
+        book = books[key]
+        adjusted_positions.append(
+            {
+                "account_key": key[0],
+                "symbol": key[1],
+                "quantity": _frac_text(book.quantity),
+                "cost_fen": int(book.cost_fen),
+            }
+        )
+
+    return {
+        "events": events,
+        "pending": pending,
+        "non_actions": non_actions,
+        "adjusted_positions": adjusted_positions,
+        "by_event_type": [
+            {"event_type": name, "count": by_type[name]} for name in sorted(by_type)
+        ],
+        "other_rows": other_rows,
+    }
+
+
+def build_actions_truth(cost_inputs):
+    rows = _scenario_rows(cost_inputs)
+    fifo = _build_actions_truth_for(rows, "fifo")
+    wavg = _build_actions_truth_for(rows, "wavg")
+
+    return {
+        "format": "ia.truth.actions",
+        "format_version": 1,
+        "contract_version": CONTRACT_VERSION,
+        "generator": {"tool": GENERATOR_TOOL, "seed": SEED},
+        "note": (
+            "只存输入与期望，不含 observed_*；由 tools/gen_data.py 独立实现（Fraction 精确数量，"
+            "整数分成本），不 import 引擎。scenario.files 与 cost_truth 同源，避免重复计数。"
+            "pending 是**必须**进人工确认队列的行；non_actions 是规则表明确判定为非公司行为的资金划转。"
+        ),
+        "scenario": {
+            "files": list(ACTIONS_SCENARIO_FILES),
+            "row_count": len(rows),
+            "cost_methods": ["fifo", "wavg"],
+        },
+        "surface_evidence": ACTIONS_SURFACE_EVIDENCE,
+        "methods": {"fifo": fifo, "wavg": wavg},
+    }
+
+
 def build_samples(rng):
     account_a = build_account_a()
     account_b = build_account_b()
@@ -1949,7 +2249,7 @@ def build_truth(sample_outs):
         "generator": {"tool": GENERATOR_TOOL, "seed": SEED},
         "note": (
             "只存输入与期望，不含 observed_*；本文件由 tools/gen_data.py 与样例同源生成。"
-            "M1 覆盖导入层；成本 / 公司行为 / 归因期望随 M2–M4 追加。"
+            "M1 覆盖导入层；成本 / 公司行为期望随 M2–M3 追加，归因随 M4 追加。"
         ),
         "files": files,
     }
@@ -2021,6 +2321,11 @@ def generate(data_dir):
     path = data_dir / "truth" / "cost_truth.json"
     path.write_bytes(cost_truth_payload)
     written.append((path, cost_truth_payload))
+
+    actions_truth_payload = json_bytes(build_actions_truth(cost_inputs))
+    path = data_dir / "truth" / "actions_truth.json"
+    path.write_bytes(actions_truth_payload)
+    written.append((path, actions_truth_payload))
 
     return written
 
@@ -2211,6 +2516,23 @@ def shape_check(data_dir):
                 issues.append("公司行为规则缺 event_type {}".format(required))
         if actions.get("unmatched_policy") != "pending_confirmation":
             issues.append("未识别公司行为必须进待确认队列")
+        if not actions.get("non_action_patterns"):
+            issues.append("公司行为规则缺 non_action_patterns（资金划转无法与非行为区分）")
+        seen_patterns = {}
+        for rule in actions.get("rules", []):
+            rule_id = rule.get("rule_id")
+            if not rule.get("expected_kinds"):
+                issues.append("规则 {} 缺 expected_kinds".format(rule_id))
+            if rule.get("cash_effect") not in ("inflow", "outflow", "none"):
+                issues.append("规则 {} 的 cash_effect 非法".format(rule_id))
+            for pattern in rule.get("business_name_patterns", []):
+                if pattern in seen_patterns:
+                    issues.append(
+                        "业务名模式 {} 同时属于 {} 与 {}".format(
+                            pattern, seen_patterns[pattern], rule_id
+                        )
+                    )
+                seen_patterns[pattern] = rule_id
 
     truth = load_json("truth/import_truth.json")
     if truth is not None:
@@ -2254,6 +2576,7 @@ def shape_check(data_dir):
                 issues += scan_privacy(text, name)
 
     issues += _shape_check_cost_truth(data_dir, truth)
+    issues += _shape_check_actions_truth(data_dir, truth)
 
     return issues
 
@@ -2336,6 +2659,100 @@ def _shape_check_cost_truth(data_dir, import_truth):
         for name in files:
             if name not in known:
                 issues.append("cost 真值引用的样例未登记进导入真值 {}".format(name))
+    return issues
+
+
+def _shape_check_actions_truth(data_dir, import_truth):
+    """M3 真值纪律：五类事件齐全、调整前后可逆、待确认 100% 落库、无 observed_*。"""
+    issues = []
+    path = data_dir / "truth" / "actions_truth.json"
+    if not path.is_file():
+        return ["缺少文件 truth/actions_truth.json"]
+    try:
+        payload = json.loads(path.read_text(encoding="utf-8"))
+    except ValueError as exc:
+        return ["truth/actions_truth.json 不是合法 JSON：{}".format(exc)]
+
+    if payload.get("format") != "ia.truth.actions":
+        issues.append("actions_truth.format 不匹配")
+    scenario = payload.get("scenario") or {}
+    files = scenario.get("files") or []
+    if not files:
+        issues.append("actions_truth.scenario.files 为空")
+    for name in files:
+        if not (data_dir / "samples" / name).is_file():
+            issues.append("actions 真值引用的样例不存在 {}".format(name))
+    methods = payload.get("methods") or {}
+    if sorted(methods) != ["fifo", "wavg"]:
+        issues.append("actions_truth.methods 必须同时含 fifo 与 wavg")
+
+    required_types = {rule["event_type"] for rule in ACTION_RULES}
+    for name, data in sorted(methods.items()):
+        counts = {item["event_type"]: item["count"] for item in data.get("by_event_type", [])}
+        missing = sorted(required_types - set(counts))
+        if missing:
+            issues.append(
+                "actions_truth.{}: 缺事件类型 {}".format(name, ", ".join(missing))
+            )
+        seen = set()
+        for event in data.get("events", []):
+            key = tuple(event["key"])
+            if key in seen:
+                issues.append("actions_truth.{}: 事件重复 {}".format(name, key))
+            seen.add(key)
+            before = event["before"]
+            after = event["after"]
+            if Decimal(before["quantity"]) > Decimal(after["quantity"]) and event["kind"] == "receipt_free":
+                issues.append(
+                    "actions_truth.{}: 零成本份额却减少数量 {}".format(name, key)
+                )
+            for side in ("before", "after"):
+                state = event[side]
+                if state["cost_fen"] < 0:
+                    issues.append(
+                        "actions_truth.{}: {} 成本为负 {}".format(name, side, key)
+                    )
+        pending = data.get("pending") or []
+        if not pending:
+            issues.append(
+                "actions_truth.{}: 待确认队列为空——样例必须注入无法识别的行".format(name)
+            )
+        for item in pending:
+            if not item.get("reason"):
+                issues.append("actions_truth.{}: 待确认项缺 reason".format(name))
+
+    # 每个公司行为形态必须指向真实存在的行：五类事件指向 events，
+    # ``unrecognized_pending`` 指向 pending（待确认队列本身就是它的证据）。
+    event_keys = set()
+    pending_keys = set()
+    for data in methods.values():
+        event_keys |= {tuple(event["key"]) for event in data.get("events", [])}
+        pending_keys |= {
+            (item["source_file"], item["source_line_no"])
+            for item in data.get("pending", [])
+        }
+    evidence = payload.get("surface_evidence") or {}
+    for surface in SURFACE_ORDER:
+        if not surface.startswith("corporate_action."):
+            continue
+        entries = evidence.get(surface) or []
+        if not entries:
+            issues.append("actions_truth.surface_evidence 缺 {}".format(surface))
+            continue
+        known = pending_keys if surface.endswith("unrecognized_pending") else event_keys
+        for key in entries:
+            if tuple(key) not in known:
+                issues.append(
+                    "actions_truth.surface_evidence {} 指向不存在的行 {}".format(
+                        surface, key
+                    )
+                )
+
+    if import_truth is not None:
+        known = {entry["source_file"] for entry in import_truth.get("files", [])}
+        for name in files:
+            if name not in known:
+                issues.append("actions 真值引用的样例未登记进导入真值 {}".format(name))
     return issues
 
 

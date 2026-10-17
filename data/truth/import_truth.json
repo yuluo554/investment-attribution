@@ -1,5 +1,5 @@
 {
-  "contract_version": "0.3.0-m2",
+  "contract_version": "0.4.0-m3",
   "files": [
     {
       "delimiter": null,
@@ -2258,5 +2258,5 @@
     "seed": 11400714819323198485,
     "tool": "tools/gen_data.py"
   },
-  "note": "只存输入与期望，不含 observed_*；本文件由 tools/gen_data.py 与样例同源生成。M1 覆盖导入层；成本 / 公司行为 / 归因期望随 M2–M4 追加。"
+  "note": "只存输入与期望，不含 observed_*；本文件由 tools/gen_data.py 与样例同源生成。M1 覆盖导入层；成本 / 公司行为期望随 M2–M3 追加，归因随 M4 追加。"
 }

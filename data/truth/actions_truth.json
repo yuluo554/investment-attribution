@@ -1,0 +1,689 @@
+{
+  "contract_version": "0.4.0-m3",
+  "format": "ia.truth.actions",
+  "format_version": 1,
+  "generator": {
+    "seed": 11400714819323198485,
+    "tool": "tools/gen_data.py"
+  },
+  "methods": {
+    "fifo": {
+      "adjusted_positions": [
+        {
+          "account_key": "Y0000001",
+          "cost_fen": 487254,
+          "quantity": "500",
+          "symbol": "699001"
+        },
+        {
+          "account_key": "Y0000001",
+          "cost_fen": 0,
+          "quantity": "0",
+          "symbol": "699002"
+        },
+        {
+          "account_key": "Y0000001",
+          "cost_fen": 420354,
+          "quantity": "7000",
+          "symbol": "699003"
+        },
+        {
+          "account_key": "Y0000001",
+          "cost_fen": 1055511,
+          "quantity": "100",
+          "symbol": "699004"
+        },
+        {
+          "account_key": "Y0000002",
+          "cost_fen": 0,
+          "quantity": "0",
+          "symbol": "699001"
+        },
+        {
+          "account_key": "Y0000002",
+          "cost_fen": 0,
+          "quantity": "0",
+          "symbol": "699005"
+        },
+        {
+          "account_key": "Y0000002",
+          "cost_fen": 0,
+          "quantity": "0",
+          "symbol": "699006"
+        },
+        {
+          "account_key": "Y0000002",
+          "cost_fen": 0,
+          "quantity": "0",
+          "symbol": "699007"
+        },
+        {
+          "account_key": "Y0000003",
+          "cost_fen": 0,
+          "quantity": "0",
+          "symbol": "699005"
+        },
+        {
+          "account_key": "Y0000004",
+          "cost_fen": 1000260,
+          "quantity": "100",
+          "symbol": "699004"
+        }
+      ],
+      "by_event_type": [
+        {
+          "count": 3,
+          "event_type": "dividend"
+        },
+        {
+          "count": 1,
+          "event_type": "reinvested_dividend"
+        },
+        {
+          "count": 1,
+          "event_type": "rights_issue"
+        },
+        {
+          "count": 1,
+          "event_type": "split"
+        },
+        {
+          "count": 1,
+          "event_type": "stock_dividend"
+        }
+      ],
+      "events": [
+        {
+          "after": {
+            "cost_fen": 1000260,
+            "quantity": "100",
+            "unit_cost": "10002.6"
+          },
+          "before": {
+            "cost_fen": 1000260,
+            "quantity": "100",
+            "unit_cost": "10002.6"
+          },
+          "business": "红利入账",
+          "cash_effect": "inflow",
+          "event_type": "dividend",
+          "key": [
+            "generic-demo-015-no-fee-columns.csv",
+            5
+          ],
+          "kind": "cash_event",
+          "rule_id": "ca.dividend",
+          "source_file": "generic-demo-015-no-fee-columns.csv",
+          "source_line_no": 5
+        },
+        {
+          "after": {
+            "cost_fen": 1300513,
+            "quantity": "2000",
+            "unit_cost": "650.2565"
+          },
+          "before": {
+            "cost_fen": 1300513,
+            "quantity": "2000",
+            "unit_cost": "650.2565"
+          },
+          "business": "红利入账",
+          "cash_effect": "inflow",
+          "event_type": "dividend",
+          "key": [
+            "htsec-demo-001.xlsx",
+            11
+          ],
+          "kind": "cash_event",
+          "rule_id": "ca.dividend",
+          "source_file": "htsec-demo-001.xlsx",
+          "source_line_no": 11
+        },
+        {
+          "after": {
+            "cost_fen": 1300513,
+            "quantity": "2200",
+            "unit_cost": "591.142273"
+          },
+          "before": {
+            "cost_fen": 1300513,
+            "quantity": "2000",
+            "unit_cost": "650.2565"
+          },
+          "business": "送股入账",
+          "cash_effect": "none",
+          "event_type": "stock_dividend",
+          "key": [
+            "htsec-demo-001.xlsx",
+            12
+          ],
+          "kind": "receipt_free",
+          "rule_id": "ca.stock_dividend",
+          "source_file": "htsec-demo-001.xlsx",
+          "source_line_no": 12
+        },
+        {
+          "after": {
+            "cost_fen": 879508,
+            "quantity": "900",
+            "unit_cost": "977.231111"
+          },
+          "before": {
+            "cost_fen": 784508,
+            "quantity": "800",
+            "unit_cost": "980.635"
+          },
+          "business": "红利再投",
+          "cash_effect": "none",
+          "event_type": "reinvested_dividend",
+          "key": [
+            "htsec-demo-001.xlsx",
+            13
+          ],
+          "kind": "receipt_valued",
+          "rule_id": "ca.reinvested_dividend",
+          "source_file": "htsec-demo-001.xlsx",
+          "source_line_no": 13
+        },
+        {
+          "after": {
+            "cost_fen": 1474513,
+            "quantity": "2500",
+            "unit_cost": "589.8052"
+          },
+          "before": {
+            "cost_fen": 1300513,
+            "quantity": "2200",
+            "unit_cost": "591.142273"
+          },
+          "business": "配股",
+          "cash_effect": "outflow",
+          "event_type": "rights_issue",
+          "key": [
+            "htsec-demo-001.xlsx",
+            14
+          ],
+          "kind": "receipt_paid",
+          "rule_id": "ca.rights_issue",
+          "source_file": "htsec-demo-001.xlsx",
+          "source_line_no": 14
+        },
+        {
+          "after": {
+            "cost_fen": 396500,
+            "quantity": "200",
+            "unit_cost": "1982.5"
+          },
+          "before": {
+            "cost_fen": 396500,
+            "quantity": "200",
+            "unit_cost": "1982.5"
+          },
+          "business": "红利入账",
+          "cash_effect": "inflow",
+          "event_type": "dividend",
+          "key": [
+            "huaxi-demo-001.xls",
+            9
+          ],
+          "kind": "cash_event",
+          "rule_id": "ca.dividend",
+          "source_file": "huaxi-demo-001.xls",
+          "source_line_no": 9
+        },
+        {
+          "after": {
+            "cost_fen": 600506,
+            "quantity": "10000",
+            "unit_cost": "60.0506"
+          },
+          "before": {
+            "cost_fen": 600506,
+            "quantity": "5000",
+            "unit_cost": "120.1012"
+          },
+          "business": "拆分",
+          "cash_effect": "none",
+          "event_type": "split",
+          "key": [
+            "htsec-demo-001.xlsx",
+            15
+          ],
+          "kind": "receipt_free",
+          "rule_id": "ca.split",
+          "source_file": "htsec-demo-001.xlsx",
+          "source_line_no": 15
+        }
+      ],
+      "non_actions": [
+        {
+          "business": "银证转入",
+          "matched_pattern": "银证转入",
+          "source_file": "htsec-demo-001.xlsx",
+          "source_line_no": 2
+        },
+        {
+          "business": "银证转入",
+          "matched_pattern": "银证转入",
+          "source_file": "huaxi-demo-001.xls",
+          "source_line_no": 2
+        },
+        {
+          "business": "银证转入",
+          "matched_pattern": "银证转入",
+          "source_file": "generic-demo-013-account-c.csv",
+          "source_line_no": 2
+        },
+        {
+          "business": "银证转入",
+          "matched_pattern": "银证转入",
+          "source_file": "generic-demo-015-no-fee-columns.csv",
+          "source_line_no": 2
+        },
+        {
+          "business": "银证转入",
+          "matched_pattern": "银证转入",
+          "source_file": "huaxi-demo-001.xls",
+          "source_line_no": 12
+        },
+        {
+          "business": "银证转入",
+          "matched_pattern": "银证转入",
+          "source_file": "htsec-demo-001.xlsx",
+          "source_line_no": 18
+        },
+        {
+          "business": "内部划转",
+          "matched_pattern": "内部划转",
+          "source_file": "huaxi-demo-001.xls",
+          "source_line_no": 13
+        },
+        {
+          "business": "内部划转",
+          "matched_pattern": "内部划转",
+          "source_file": "htsec-demo-001.xlsx",
+          "source_line_no": 20
+        }
+      ],
+      "other_rows": 16,
+      "pending": [
+        {
+          "business": "其他业务甲",
+          "kind": "cash_event",
+          "reason": "NO_RULE_MATCH",
+          "source_file": "htsec-demo-001.xlsx",
+          "source_line_no": 17
+        }
+      ]
+    },
+    "wavg": {
+      "adjusted_positions": [
+        {
+          "account_key": "Y0000001",
+          "cost_fen": 488616,
+          "quantity": "500",
+          "symbol": "699001"
+        },
+        {
+          "account_key": "Y0000001",
+          "cost_fen": 0,
+          "quantity": "0",
+          "symbol": "699002"
+        },
+        {
+          "account_key": "Y0000001",
+          "cost_fen": 420354,
+          "quantity": "7000",
+          "symbol": "699003"
+        },
+        {
+          "account_key": "Y0000001",
+          "cost_fen": 1055511,
+          "quantity": "100",
+          "symbol": "699004"
+        },
+        {
+          "account_key": "Y0000002",
+          "cost_fen": 0,
+          "quantity": "0",
+          "symbol": "699001"
+        },
+        {
+          "account_key": "Y0000002",
+          "cost_fen": 0,
+          "quantity": "0",
+          "symbol": "699005"
+        },
+        {
+          "account_key": "Y0000002",
+          "cost_fen": 0,
+          "quantity": "0",
+          "symbol": "699006"
+        },
+        {
+          "account_key": "Y0000002",
+          "cost_fen": 0,
+          "quantity": "0",
+          "symbol": "699007"
+        },
+        {
+          "account_key": "Y0000003",
+          "cost_fen": 0,
+          "quantity": "0",
+          "symbol": "699005"
+        },
+        {
+          "account_key": "Y0000004",
+          "cost_fen": 1000260,
+          "quantity": "100",
+          "symbol": "699004"
+        }
+      ],
+      "by_event_type": [
+        {
+          "count": 3,
+          "event_type": "dividend"
+        },
+        {
+          "count": 1,
+          "event_type": "reinvested_dividend"
+        },
+        {
+          "count": 1,
+          "event_type": "rights_issue"
+        },
+        {
+          "count": 1,
+          "event_type": "split"
+        },
+        {
+          "count": 1,
+          "event_type": "stock_dividend"
+        }
+      ],
+      "events": [
+        {
+          "after": {
+            "cost_fen": 1000260,
+            "quantity": "100",
+            "unit_cost": "10002.6"
+          },
+          "before": {
+            "cost_fen": 1000260,
+            "quantity": "100",
+            "unit_cost": "10002.6"
+          },
+          "business": "红利入账",
+          "cash_effect": "inflow",
+          "event_type": "dividend",
+          "key": [
+            "generic-demo-015-no-fee-columns.csv",
+            5
+          ],
+          "kind": "cash_event",
+          "rule_id": "ca.dividend",
+          "source_file": "generic-demo-015-no-fee-columns.csv",
+          "source_line_no": 5
+        },
+        {
+          "after": {
+            "cost_fen": 1300513,
+            "quantity": "2000",
+            "unit_cost": "650.2565"
+          },
+          "before": {
+            "cost_fen": 1300513,
+            "quantity": "2000",
+            "unit_cost": "650.2565"
+          },
+          "business": "红利入账",
+          "cash_effect": "inflow",
+          "event_type": "dividend",
+          "key": [
+            "htsec-demo-001.xlsx",
+            11
+          ],
+          "kind": "cash_event",
+          "rule_id": "ca.dividend",
+          "source_file": "htsec-demo-001.xlsx",
+          "source_line_no": 11
+        },
+        {
+          "after": {
+            "cost_fen": 1300513,
+            "quantity": "2200",
+            "unit_cost": "591.142273"
+          },
+          "before": {
+            "cost_fen": 1300513,
+            "quantity": "2000",
+            "unit_cost": "650.2565"
+          },
+          "business": "送股入账",
+          "cash_effect": "none",
+          "event_type": "stock_dividend",
+          "key": [
+            "htsec-demo-001.xlsx",
+            12
+          ],
+          "kind": "receipt_free",
+          "rule_id": "ca.stock_dividend",
+          "source_file": "htsec-demo-001.xlsx",
+          "source_line_no": 12
+        },
+        {
+          "after": {
+            "cost_fen": 879508,
+            "quantity": "900",
+            "unit_cost": "977.231111"
+          },
+          "before": {
+            "cost_fen": 784508,
+            "quantity": "800",
+            "unit_cost": "980.635"
+          },
+          "business": "红利再投",
+          "cash_effect": "none",
+          "event_type": "reinvested_dividend",
+          "key": [
+            "htsec-demo-001.xlsx",
+            13
+          ],
+          "kind": "receipt_valued",
+          "rule_id": "ca.reinvested_dividend",
+          "source_file": "htsec-demo-001.xlsx",
+          "source_line_no": 13
+        },
+        {
+          "after": {
+            "cost_fen": 1474513,
+            "quantity": "2500",
+            "unit_cost": "589.8052"
+          },
+          "before": {
+            "cost_fen": 1300513,
+            "quantity": "2200",
+            "unit_cost": "591.142273"
+          },
+          "business": "配股",
+          "cash_effect": "outflow",
+          "event_type": "rights_issue",
+          "key": [
+            "htsec-demo-001.xlsx",
+            14
+          ],
+          "kind": "receipt_paid",
+          "rule_id": "ca.rights_issue",
+          "source_file": "htsec-demo-001.xlsx",
+          "source_line_no": 14
+        },
+        {
+          "after": {
+            "cost_fen": 402143,
+            "quantity": "200",
+            "unit_cost": "2010.715"
+          },
+          "before": {
+            "cost_fen": 402143,
+            "quantity": "200",
+            "unit_cost": "2010.715"
+          },
+          "business": "红利入账",
+          "cash_effect": "inflow",
+          "event_type": "dividend",
+          "key": [
+            "huaxi-demo-001.xls",
+            9
+          ],
+          "kind": "cash_event",
+          "rule_id": "ca.dividend",
+          "source_file": "huaxi-demo-001.xls",
+          "source_line_no": 9
+        },
+        {
+          "after": {
+            "cost_fen": 600506,
+            "quantity": "10000",
+            "unit_cost": "60.0506"
+          },
+          "before": {
+            "cost_fen": 600506,
+            "quantity": "5000",
+            "unit_cost": "120.1012"
+          },
+          "business": "拆分",
+          "cash_effect": "none",
+          "event_type": "split",
+          "key": [
+            "htsec-demo-001.xlsx",
+            15
+          ],
+          "kind": "receipt_free",
+          "rule_id": "ca.split",
+          "source_file": "htsec-demo-001.xlsx",
+          "source_line_no": 15
+        }
+      ],
+      "non_actions": [
+        {
+          "business": "银证转入",
+          "matched_pattern": "银证转入",
+          "source_file": "htsec-demo-001.xlsx",
+          "source_line_no": 2
+        },
+        {
+          "business": "银证转入",
+          "matched_pattern": "银证转入",
+          "source_file": "huaxi-demo-001.xls",
+          "source_line_no": 2
+        },
+        {
+          "business": "银证转入",
+          "matched_pattern": "银证转入",
+          "source_file": "generic-demo-013-account-c.csv",
+          "source_line_no": 2
+        },
+        {
+          "business": "银证转入",
+          "matched_pattern": "银证转入",
+          "source_file": "generic-demo-015-no-fee-columns.csv",
+          "source_line_no": 2
+        },
+        {
+          "business": "银证转入",
+          "matched_pattern": "银证转入",
+          "source_file": "huaxi-demo-001.xls",
+          "source_line_no": 12
+        },
+        {
+          "business": "银证转入",
+          "matched_pattern": "银证转入",
+          "source_file": "htsec-demo-001.xlsx",
+          "source_line_no": 18
+        },
+        {
+          "business": "内部划转",
+          "matched_pattern": "内部划转",
+          "source_file": "huaxi-demo-001.xls",
+          "source_line_no": 13
+        },
+        {
+          "business": "内部划转",
+          "matched_pattern": "内部划转",
+          "source_file": "htsec-demo-001.xlsx",
+          "source_line_no": 20
+        }
+      ],
+      "other_rows": 16,
+      "pending": [
+        {
+          "business": "其他业务甲",
+          "kind": "cash_event",
+          "reason": "NO_RULE_MATCH",
+          "source_file": "htsec-demo-001.xlsx",
+          "source_line_no": 17
+        }
+      ]
+    }
+  },
+  "note": "只存输入与期望，不含 observed_*；由 tools/gen_data.py 独立实现（Fraction 精确数量，整数分成本），不 import 引擎。scenario.files 与 cost_truth 同源，避免重复计数。pending 是**必须**进人工确认队列的行；non_actions 是规则表明确判定为非公司行为的资金划转。",
+  "scenario": {
+    "cost_methods": [
+      "fifo",
+      "wavg"
+    ],
+    "files": [
+      "htsec-demo-001.xlsx",
+      "huaxi-demo-001.xls",
+      "generic-demo-013-account-c.csv",
+      "generic-demo-015-no-fee-columns.csv"
+    ],
+    "row_count": 46
+  },
+  "surface_evidence": {
+    "corporate_action.dividend": [
+      [
+        "htsec-demo-001.xlsx",
+        11
+      ],
+      [
+        "huaxi-demo-001.xls",
+        9
+      ],
+      [
+        "generic-demo-015-no-fee-columns.csv",
+        5
+      ]
+    ],
+    "corporate_action.reinvested_dividend": [
+      [
+        "htsec-demo-001.xlsx",
+        13
+      ]
+    ],
+    "corporate_action.rights_issue": [
+      [
+        "htsec-demo-001.xlsx",
+        14
+      ]
+    ],
+    "corporate_action.split": [
+      [
+        "htsec-demo-001.xlsx",
+        15
+      ]
+    ],
+    "corporate_action.stock_dividend": [
+      [
+        "htsec-demo-001.xlsx",
+        12
+      ]
+    ],
+    "corporate_action.unrecognized_pending": [
+      [
+        "htsec-demo-001.xlsx",
+        17
+      ]
+    ]
+  }
+}

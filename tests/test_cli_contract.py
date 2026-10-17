@@ -41,7 +41,7 @@ def test_unknown_command_is_usage_error(capsys):
 
 
 def test_stage_not_ready_commands_return_three(capsys):
-    for command in ("corporate-actions", "attribution", "merge", "report", "run", "bench"):
+    for command in ("attribution", "merge", "report", "run", "bench"):
         argv = [command]
         if command == "run":
             argv.append("x.csv")
@@ -49,6 +49,15 @@ def test_stage_not_ready_commands_return_three(capsys):
         captured = capsys.readouterr()
         assert code == EXIT_STAGE_NOT_READY, command
         assert "STAGE_NOT_READY" in captured.err
+
+
+def test_corporate_actions_is_no_longer_stage_blocked(capsys):
+    """M3 退役 corporate-actions 的退出码 3：缺口径必须是 2，不是 3，更不是 0。"""
+    code = cli.main(["corporate-actions", "--ledger", "does-not-exist.json"])
+    captured = capsys.readouterr()
+    assert code == EXIT_INPUT
+    assert "STAGE_NOT_READY" not in captured.err
+    assert "COST_METHOD_REQUIRED" in captured.err
 
 
 def test_cost_and_pnl_are_no_longer_stage_blocked(capsys):
