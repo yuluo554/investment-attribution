@@ -205,7 +205,9 @@ CI 步骤（24 步）覆盖：安装 → 全量测试 → **脱敏四面扫描**
 |---|---|
 | tag 指向的 commit | `7da7c269aba3289726fdd982c1bf76c106659dd7`（`M6 发布留档：RELEASE-M6.md 落盘（tag 前）+ plan 回写`） |
 | tag tagger 邮箱 | `yuluo554 <282769740+yuluo554@users.noreply.github.com>`——与全部 commit 的 author / committer 同源，非个人邮箱 |
-| 推送事件 | **3 次推送 → 3 条 run**：`8e9b9e6`(main) / `7da7c26`(main) / `v1.0.0`(tag)，事件数 = run 数 |
+| 推送事件 | tag 时刻 **3 次推送 → 3 条 run**（`8e9b9e6` / `7da7c26` / tag `v1.0.0`）；发布后再推 2 次（`8d46d79` / `05310d2`，即 §7.2 的修复与 §7.4 的复核），当前**共 5 次推送 → 5 条 run**，事件数 = run 数，全绿 |
+| run · `8d46d79` | <https://github.com/yuluo554/investment-attribution/actions/runs/39037261082> — 四矩阵全绿（这条 run 起 CI 已含 `Restore annotated tag objects`，历史面**真的扫到了标注 tag 对象**且 0 命中） |
+| run · `05310d2` | <https://github.com/yuluo554/investment-attribution/actions/runs/39037559045> — 四矩阵全绿 |
 | run · `8e9b9e6` | <https://github.com/yuluo554/investment-attribution/actions/runs/39035251944> — 四矩阵全绿（py3.8/ubuntu 30s、py3.8/windows 1m32s、py3.12/windows 43s、py3.12/ubuntu 26s） |
 | run · `7da7c26` | <https://github.com/yuluo554/investment-attribution/actions/runs/39036102893> — 四矩阵全绿（1m25s） |
 | run · tag `v1.0.0` | <https://github.com/yuluo554/investment-attribution/actions/runs/39036251965> — 四矩阵全绿（py3.8/ubuntu 39s、py3.8/windows 1m15s、py3.12/windows 52s、py3.12/ubuntu 25s） |

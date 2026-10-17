@@ -3,7 +3,7 @@
 仓库 `10-17-investment-attribution`（券商交割单收益归因工作台）出题阶段总览。v1（2026-10-17，出题阶段 4 骨架完成）。
 **M6 已完成（2026-10-17）**：公开仓库 `yuluo554/investment-attribution` 已发布 **v1.0.0**——
 GitHub Release 附手工源码包 + `SHA256SUMS`（下载后 sha256 与留档一致、与本地留档件逐字节相同）、
-CI 三个推送事件三条 run 全绿（含 tag run）、干净 clone 双路按 README 逐条跑通、
+CI 五个推送事件五条 run 全绿（4 条 main + 1 条 tag）、干净 clone 双路按 README 逐条跑通、
 脱敏四面扫描 0 命中。完整留档见 `plan/RELEASE-M6.md`。
 M1–M5 业务模块（导入 / 成本 / 公司行为 / 归因 / 合并与报告）已全部填充，十条子命令全部可用。
 
@@ -149,7 +149,7 @@ M1–M5 业务模块（导入 / 成本 / 公司行为 / 归因 / 合并与报告
 | **M3 公司行为** | 分红 / 送转 / 配股 / 拆分 / 基金分红再投的规则表 + 人工确认队列；除权后成本与份额调整 | B3 逐类事件对齐真值；构造的"无法识别"行 100% 进待确认队列且报告可见；调整可逆可追溯 | ✅ 完成（2026-10-17，本地等价校验） |
 | **M4 归因** | XIRR / TWR / 已实现未实现拆分 / 费用拖累 / 按标的·行业·账户·年度分解；可选基准本地 CSV | B4 与 Excel 手工对照达标；同名输入双跑字节一致；无基准 CSV 时仍成功退出；零网络库导入门禁 + socket 探针 | ✅ 完成（2026-10-17，本地等价校验） |
 | **M5 报告** | 多账户合并 + 划转抵消 + 单文件 HTML 报告 + 机读 `report_data.json` + 报告阶段打码 | B5 合并前后总收益不变；0 外链扫描；零网络全流程；报告字节确定性；每个汇总数可下钻到原始行；`run` 与逐命令逐字节一致；渲染层零判定门禁 | ✅ 完成（2026-10-17，本地等价校验） |
-| **M6 发布** | 发布 **GitHub 公开仓库**（署名 `yuluo554`） | **三件套：① git tag ② GitHub Release 附产物（≥1 个手工上传附件；本地留产物副本 + sha256 可复验）③ 发布留档（`plan/RELEASE-M6.md`，须在 tag 之前进 tag 树）**；缺任一项即未达成。另：干净环境 clone 按 README 跑通；提交面脱敏（含 tag tagger 邮箱） | ✅ 完成（2026-10-17）：tag `v1.0.0` + Release 附产物（手工源码包 + `SHA256SUMS`，下载复核一致）+ `plan/RELEASE-M6.md` 三件套齐；脱敏四面 0 命中、干净 clone 双路 429 passed、CI 三次推送三条 run 全绿 |
+| **M6 发布** | 发布 **GitHub 公开仓库**（署名 `yuluo554`） | **三件套：① git tag ② GitHub Release 附产物（≥1 个手工上传附件；本地留产物副本 + sha256 可复验）③ 发布留档（`plan/RELEASE-M6.md`，须在 tag 之前进 tag 树）**；缺任一项即未达成。另：干净环境 clone 按 README 跑通；提交面脱敏（含 tag tagger 邮箱） | ✅ 完成（2026-10-17）：tag `v1.0.0` + Release 附产物（手工源码包 + `SHA256SUMS`，下载复核一致、与 tag 树逐字节相同）+ `plan/RELEASE-M6.md` 三件套齐；脱敏四面 0 命中、干净 clone 双路按 README 跑通、CI 五个推送事件五条 run 全绿 |
 
 ## 五、纪律
 
@@ -158,7 +158,7 @@ M1–M5 业务模块（导入 / 成本 / 公司行为 / 归因 / 合并与报告
 - **冻结产物禁手改**（列名别名表、公司行为规则表、参数包、真值台账）：改需求走生成器整目录重生成 + `--check` 位级守门。
 - **诚实口径**：未推送 = 未跑 CI；DoD 中的"CI 绿"在无远端时必须写成"本地等价校验，待首推验证"。
   **当前状态（M6，2026-10-17）**：**已接远端，CI 是真跑的**——
-  公开仓库 `yuluo554/investment-attribution`，三次推送三条 run 全绿（首条 push run <https://github.com/yuluo554/investment-attribution/actions/runs/39035251944> 四矩阵
+  公开仓库 `yuluo554/investment-attribution`，五个推送事件五条 run 全绿（首条 push run <https://github.com/yuluo554/investment-attribution/actions/runs/39035251944> 四矩阵
   （`{windows,ubuntu} × {3.8,3.12}`）全绿，共 24 步/腿，含全量 pytest、
   **脱敏四面扫描**、两种入口的 `selftest --strict`、`gen_data.py --check`、六个子命令的
   冒烟与"口径必填 = exit 2"负断言、报告零外链与打码 grep、`run` 全链路（断言 exit 1 且
