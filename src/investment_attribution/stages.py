@@ -4,15 +4,15 @@
 落地后：① 从 ``STAGE_NOT_READY`` 删条目；② 改 CLI 分派；③ 改 README 退出码表；
 ④ 记决策记录；⑤ 改测试（含防复活负断言）。
 
-``selftest`` / ``import`` / ``cost`` / ``pnl`` / ``corporate-actions`` 不在此表内
-——前者是 M0 就必须真实可证伪的命令；``import`` 于 M1 落地，``cost`` / ``pnl``
-于 M2 落地，``corporate-actions`` 于 M3 落地。
+``selftest`` / ``import`` / ``cost`` / ``pnl`` / ``corporate-actions`` /
+``attribution`` 不在此表内——前者是 M0 就必须真实可证伪的命令；``import``
+于 M1 落地，``cost`` / ``pnl`` 于 M2 落地，``corporate-actions`` 于 M3 落地，
+``attribution`` 于 M4 落地。
 """
 
 from .errors import StageNotReady
 
 STAGE_NOT_READY = {
-    "attribution": "M4",
     "merge": "M5",
     "report": "M5",
     "run": "M5",

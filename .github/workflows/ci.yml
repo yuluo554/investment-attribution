@@ -79,10 +79,46 @@ jobs:
           code=$?
           test "$code" = "2"
 
-      - name: Stage-not-ready contract
+      - name: Attribution smoke (both methods x both TWR bases; no benchmark -> exit 0)
+        shell: bash
+        run: |
+          # 估值样例覆盖"成本场景四件套"，故归因演示必须导入同一组流水
+          python -m investment_attribution import \
+            data/samples/htsec-demo-001.xlsx data/samples/huaxi-demo-001.xls \
+            data/samples/generic-demo-013-account-c.csv \
+            data/samples/generic-demo-015-no-fee-columns.csv --out-dir out/attr-src/
+          python -m investment_attribution attribution --method fifo \
+            --ledger out/attr-src/ledger.json \
+            --valuation data/samples/valuation-demo-001.csv --out-dir out/attr-fifo
+          test -f out/attr-fifo/attribution.json
+          python -m investment_attribution attribution --method wavg \
+            --ledger out/attr-src/ledger.json \
+            --valuation data/samples/valuation-demo-001.csv \
+            --twr-basis daily --xirr --twr --out out/attr-wavg/attribution.json
+          test -f out/attr-wavg/attribution.json
+
+      - name: Attribution method and inputs are mandatory (exit 2)
         shell: bash
         run: |
           set +e
-          python -m investment_attribution attribution
-          code=$?
-          test "$code" = "3"
+          python -m investment_attribution attribution --ledger out/attr-src/ledger.json \
+            --valuation data/samples/valuation-demo-001.csv
+          test "$?" = "2"
+          python -m investment_attribution attribution --method fifo \
+            --ledger out/attr-src/ledger.json
+          test "$?" = "2"
+          python -m investment_attribution attribution --method fifo \
+            --ledger out/attr-src/ledger.json \
+            --valuation data/samples/valuation-demo-001.csv --twr-basis monthly
+          test "$?" = "2"
+
+      - name: Stage-not-ready contract (M5 commands only)
+        shell: bash
+        run: |
+          set +e
+          for sub in "merge" "report" "bench" "run x.csv"; do
+            # shellcheck disable=SC2086
+            python -m investment_attribution $sub
+            code=$?
+            test "$code" = "3" || { echo "$sub returned $code"; exit 1; }
+          done

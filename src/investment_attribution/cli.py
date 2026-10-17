@@ -20,6 +20,7 @@ from .exit_codes import (
 )
 from .paths import resolve_data_dir
 from .pipeline.actions_cmd import describe_actions, run_corporate_actions
+from .pipeline.attribution_cmd import describe_attribution, run_attribution
 from .pipeline.cost_cmd import describe_holdings, run_cost, run_pnl
 from .pipeline.import_cmd import exit_code_for, run_import
 from .selftest import run_selftest
@@ -90,11 +91,15 @@ def build_parser():
     p.add_argument("--confirm", default=None, help="人工确认记录输入路径")
 
     p = sub.add_parser("attribution", help="XIRR / TWR / 收益分解")
-    p.add_argument("--xirr", action="store_true", help="输出 XIRR")
+    p.add_argument("--method", choices=("fifo", "wavg"), default=None, help="成本口径（必填，无默认值）")
+    p.add_argument("--ledger", default=None, help="统一流水输入路径（必填）")
+    p.add_argument("--valuation", default=None, help="估值序列表（必填；给价，数量做交叉核对）")
+    p.add_argument("--xirr", action="store_true", help="输出 XIRR（与 --twr 都不给时两者都算）")
     p.add_argument("--twr", action="store_true", help="输出 TWR 净值曲线")
-    p.add_argument("--twr-basis", choices=("cashflow", "daily"), default=None, help="TWR 估值点口径")
-    p.add_argument("--benchmark", default=None, help="本地基准 CSV（可选）")
+    p.add_argument("--twr-basis", choices=("cashflow", "daily"), default=None, help="TWR 估值点口径（缺省取参数包 default_basis）")
+    p.add_argument("--benchmark", default=None, help="本地基准 CSV（可选；缺了不显示超额列）")
     p.add_argument("--out", default=None, help="产物输出路径")
+    p.add_argument("--out-dir", default=None, help="产物输出目录（默认名见 README）")
 
     p = sub.add_parser("merge", help="多账户合并与划转抵消")
     p.add_argument("--accounts", default=None, help="账户登记表")
@@ -243,6 +248,30 @@ def _cmd_corporate_actions(args):
     return result.exit_code
 
 
+def _cmd_attribution(args):
+    """收益归因：成功 0 / 检出问题（无解、缺价、不守恒）1 / 用法或输入不可用 2。"""
+    if args.xirr or args.twr:
+        sections = tuple(
+            name for name, wanted in (("xirr", args.xirr), ("twr", args.twr)) if wanted
+        )
+    else:
+        sections = ("xirr", "twr")
+    result = run_attribution(
+        args.method,
+        ledger_path=args.ledger,
+        data_dir=args.data_dir,
+        valuation_path=args.valuation,
+        benchmark_path=args.benchmark,
+        twr_basis=args.twr_basis,
+        sections=sections,
+        out=args.out,
+        out_dir=args.out_dir,
+    )
+    for line in describe_attribution(result):
+        sys.stderr.write(line + "\n")
+    return result.exit_code
+
+
 def _cmd_stage_not_ready(command):
     require_ready(command)
     # 走到这里说明登记表与分派不一致，属实现缺陷，不能静默返回成功。
@@ -257,6 +286,7 @@ HANDLERS = {
     "cost": _cmd_cost,
     "pnl": _cmd_pnl,
     "corporate-actions": _cmd_corporate_actions,
+    "attribution": _cmd_attribution,
     "selftest": _cmd_selftest,
 }
 
@@ -270,11 +300,16 @@ def main(argv=None):
         parser.print_help(sys.stderr)
         return EXIT_INPUT
 
+    # 运行期零上传探针（四层审计第三层）：整套命令在武装状态下执行，
+    # 一旦真的有网络调用会被拦截并记账；engine 会把记账数写进产物。
+    from .netguard import armed_runtime_probe
+
     handler = HANDLERS.get(args.command)
     try:
-        if handler is not None:
-            return handler(args)
-        return _cmd_stage_not_ready(args.command)
+        with armed_runtime_probe():
+            if handler is not None:
+                return handler(args)
+            return _cmd_stage_not_ready(args.command)
     except IAError as exc:
         sys.stderr.write("{} [{}]: {}\n".format(type(exc).__name__, exc.code, exc))
         return exc.exit_code

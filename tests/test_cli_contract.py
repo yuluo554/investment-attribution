@@ -41,7 +41,7 @@ def test_unknown_command_is_usage_error(capsys):
 
 
 def test_stage_not_ready_commands_return_three(capsys):
-    for command in ("attribution", "merge", "report", "run", "bench"):
+    for command in ("merge", "report", "run", "bench"):
         argv = [command]
         if command == "run":
             argv.append("x.csv")
@@ -49,6 +49,15 @@ def test_stage_not_ready_commands_return_three(capsys):
         captured = capsys.readouterr()
         assert code == EXIT_STAGE_NOT_READY, command
         assert "STAGE_NOT_READY" in captured.err
+
+
+def test_attribution_is_no_longer_stage_blocked(capsys):
+    """M4 退役 attribution 的退出码 3：缺口径/缺流水必须是 2，不是 3，更不是 0。"""
+    code = cli.main(["attribution", "--ledger", "does-not-exist.json"])
+    captured = capsys.readouterr()
+    assert code == EXIT_INPUT
+    assert "STAGE_NOT_READY" not in captured.err
+    assert "COST_METHOD_REQUIRED" in captured.err
 
 
 def test_corporate_actions_is_no_longer_stage_blocked(capsys):

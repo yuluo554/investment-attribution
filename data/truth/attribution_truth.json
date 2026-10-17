@@ -1,0 +1,844 @@
+{
+  "contract_version": "0.5.0-m4",
+  "format": "ia.truth.attribution",
+  "format_version": 1,
+  "generator": {
+    "seed": 11400714819323198485,
+    "tool": "tools/gen_data.py"
+  },
+  "manual_examples": [
+    {
+      "cash_flows": [
+        [
+          "2025-01-01",
+          -1000000
+        ],
+        [
+          "2026-01-01",
+          1100000
+        ]
+      ],
+      "derivation": "投入 10000.00 元、365 天后收回 11000.00 元：(1+r)^(365/365) = 1.1 → r = 10.000000000000%",
+      "expected_rate": "0.1",
+      "name": "one_year_plus_10pct"
+    },
+    {
+      "cash_flows": [
+        [
+          "2025-01-01",
+          -1000000
+        ],
+        [
+          "2027-01-01",
+          1210000
+        ]
+      ],
+      "derivation": "投入 10000.00 元、730 天后收回 12100.00 元：(1+r)^(730/365) = 1.21 → r = 10.000000000000%",
+      "expected_rate": "0.1",
+      "name": "two_year_plus_10pct"
+    },
+    {
+      "cash_flows": [
+        [
+          "2025-01-01",
+          -1000000
+        ],
+        [
+          "2026-01-01",
+          900000
+        ]
+      ],
+      "derivation": "投入 10000.00 元、365 天后收回 9000.00 元：r = 9000/10000 - 1 = -10.000000000000%",
+      "expected_rate": "-0.1",
+      "name": "one_year_minus_10pct"
+    },
+    {
+      "cash_flows": [
+        [
+          "2025-01-01",
+          -1000000
+        ],
+        [
+          "2026-01-01",
+          1000000
+        ]
+      ],
+      "derivation": "投入与收回相等且恰好 365 天：r = 0",
+      "expected_rate": "0",
+      "name": "one_year_zero"
+    }
+  ],
+  "methods": {
+    "fifo": {
+      "accounts": [
+        {
+          "account_id": "Y0000001",
+          "account_key": "Y0000001",
+          "dividend_income_fen": 30000,
+          "fees_fen": 11346,
+          "other_income_fen": 1234,
+          "realized_sells_fen": 474273,
+          "realized_total_fen": 600507,
+          "reinvested_income_fen": 95000,
+          "total_return_fen": 682388,
+          "unrealized_fen": 81881
+        },
+        {
+          "account_id": "Y0000002",
+          "account_key": "Y0000002",
+          "dividend_income_fen": 25000,
+          "fees_fen": 9605,
+          "other_income_fen": 0,
+          "realized_sells_fen": -110605,
+          "realized_total_fen": -85605,
+          "reinvested_income_fen": 0,
+          "total_return_fen": -85605,
+          "unrealized_fen": 0
+        },
+        {
+          "account_id": "Y0000003",
+          "account_key": "Y0000003",
+          "dividend_income_fen": 0,
+          "fees_fen": 1215,
+          "other_income_fen": 0,
+          "realized_sells_fen": 18785,
+          "realized_total_fen": 18785,
+          "reinvested_income_fen": 0,
+          "total_return_fen": 18785,
+          "unrealized_fen": 0
+        },
+        {
+          "account_id": "Y0000004",
+          "account_key": "Y0000004",
+          "dividend_income_fen": 5000,
+          "fees_fen": 2130,
+          "other_income_fen": 0,
+          "realized_sells_fen": 98130,
+          "realized_total_fen": 103130,
+          "reinvested_income_fen": 0,
+          "total_return_fen": 182870,
+          "unrealized_fen": 79740
+        }
+      ],
+      "decomposition": {
+        "by_account": [
+          {
+            "account_key": "Y0000001",
+            "income_fen": 126234,
+            "realized_fen": 600507,
+            "total_fen": 682388,
+            "unrealized_fen": 81881
+          },
+          {
+            "account_key": "Y0000002",
+            "income_fen": 25000,
+            "realized_fen": -85605,
+            "total_fen": -85605,
+            "unrealized_fen": 0
+          },
+          {
+            "account_key": "Y0000003",
+            "income_fen": 0,
+            "realized_fen": 18785,
+            "total_fen": 18785,
+            "unrealized_fen": 0
+          },
+          {
+            "account_key": "Y0000004",
+            "income_fen": 5000,
+            "realized_fen": 103130,
+            "total_fen": 182870,
+            "unrealized_fen": 79740
+          }
+        ],
+        "by_industry": [
+          {
+            "income_fen": 95000,
+            "industry": "信息技术",
+            "realized_fen": 220962,
+            "total_fen": 338708,
+            "unrealized_fen": 22746
+          },
+          {
+            "income_fen": 0,
+            "industry": "医药",
+            "realized_fen": -178075,
+            "total_fen": -178075,
+            "unrealized_fen": 0
+          },
+          {
+            "income_fen": 0,
+            "industry": "基金",
+            "realized_fen": 5160,
+            "total_fen": 39806,
+            "unrealized_fen": 34646
+          },
+          {
+            "income_fen": 0,
+            "industry": "材料",
+            "realized_fen": 0,
+            "total_fen": 0,
+            "unrealized_fen": 0
+          },
+          {
+            "income_fen": 25000,
+            "industry": "能源",
+            "realized_fen": 87885,
+            "total_fen": 112885,
+            "unrealized_fen": 0
+          },
+          {
+            "income_fen": 5000,
+            "industry": "转债",
+            "realized_fen": 98130,
+            "total_fen": 207359,
+            "unrealized_fen": 104229
+          },
+          {
+            "income_fen": 31234,
+            "industry": "银行",
+            "realized_fen": 246521,
+            "total_fen": 277755,
+            "unrealized_fen": 0
+          }
+        ],
+        "by_symbol": [
+          {
+            "income_fen": 95000,
+            "industry": "信息技术",
+            "realized_fen": 220962,
+            "symbol": "699001",
+            "total_fen": 338708,
+            "unrealized_fen": 22746
+          },
+          {
+            "income_fen": 31234,
+            "industry": "银行",
+            "realized_fen": 246521,
+            "symbol": "699002",
+            "total_fen": 277755,
+            "unrealized_fen": 0
+          },
+          {
+            "income_fen": 0,
+            "industry": "基金",
+            "realized_fen": 5160,
+            "symbol": "699003",
+            "total_fen": 39806,
+            "unrealized_fen": 34646
+          },
+          {
+            "income_fen": 5000,
+            "industry": "转债",
+            "realized_fen": 98130,
+            "symbol": "699004",
+            "total_fen": 207359,
+            "unrealized_fen": 104229
+          },
+          {
+            "income_fen": 25000,
+            "industry": "能源",
+            "realized_fen": 87885,
+            "symbol": "699005",
+            "total_fen": 112885,
+            "unrealized_fen": 0
+          },
+          {
+            "income_fen": 0,
+            "industry": "医药",
+            "realized_fen": -178075,
+            "symbol": "699006",
+            "total_fen": -178075,
+            "unrealized_fen": 0
+          },
+          {
+            "income_fen": 0,
+            "industry": "材料",
+            "realized_fen": 0,
+            "symbol": "699007",
+            "total_fen": 0,
+            "unrealized_fen": 0
+          }
+        ],
+        "by_year": [
+          {
+            "income_fen": 156234,
+            "realized_fen": 480583,
+            "total_fen": 798438,
+            "unrealized_fen": 161621,
+            "year": "2025"
+          }
+        ]
+      },
+      "fees": {
+        "total_fen": 24296
+      },
+      "merged": {
+        "account_key": "merged",
+        "dividend_income_fen": 60000,
+        "fees_fen": 24296,
+        "other_income_fen": 1234,
+        "realized_sells_fen": 480583,
+        "realized_total_fen": 636817,
+        "reinvested_income_fen": 95000,
+        "total_return_fen": 798438,
+        "unrealized_fen": 161621
+      }
+    },
+    "wavg": {
+      "accounts": [
+        {
+          "account_id": "Y0000001",
+          "account_key": "Y0000001",
+          "dividend_income_fen": 30000,
+          "fees_fen": 11346,
+          "other_income_fen": 1234,
+          "realized_sells_fen": 475635,
+          "realized_total_fen": 601869,
+          "reinvested_income_fen": 95000,
+          "total_return_fen": 682388,
+          "unrealized_fen": 80519
+        },
+        {
+          "account_id": "Y0000002",
+          "account_key": "Y0000002",
+          "dividend_income_fen": 25000,
+          "fees_fen": 9605,
+          "other_income_fen": 0,
+          "realized_sells_fen": -110605,
+          "realized_total_fen": -85605,
+          "reinvested_income_fen": 0,
+          "total_return_fen": -85605,
+          "unrealized_fen": 0
+        },
+        {
+          "account_id": "Y0000003",
+          "account_key": "Y0000003",
+          "dividend_income_fen": 0,
+          "fees_fen": 1215,
+          "other_income_fen": 0,
+          "realized_sells_fen": 18785,
+          "realized_total_fen": 18785,
+          "reinvested_income_fen": 0,
+          "total_return_fen": 18785,
+          "unrealized_fen": 0
+        },
+        {
+          "account_id": "Y0000004",
+          "account_key": "Y0000004",
+          "dividend_income_fen": 5000,
+          "fees_fen": 2130,
+          "other_income_fen": 0,
+          "realized_sells_fen": 98130,
+          "realized_total_fen": 103130,
+          "reinvested_income_fen": 0,
+          "total_return_fen": 182870,
+          "unrealized_fen": 79740
+        }
+      ],
+      "decomposition": {
+        "by_account": [
+          {
+            "account_key": "Y0000001",
+            "income_fen": 126234,
+            "realized_fen": 601869,
+            "total_fen": 682388,
+            "unrealized_fen": 80519
+          },
+          {
+            "account_key": "Y0000002",
+            "income_fen": 25000,
+            "realized_fen": -85605,
+            "total_fen": -85605,
+            "unrealized_fen": 0
+          },
+          {
+            "account_key": "Y0000003",
+            "income_fen": 0,
+            "realized_fen": 18785,
+            "total_fen": 18785,
+            "unrealized_fen": 0
+          },
+          {
+            "account_key": "Y0000004",
+            "income_fen": 5000,
+            "realized_fen": 103130,
+            "total_fen": 182870,
+            "unrealized_fen": 79740
+          }
+        ],
+        "by_industry": [
+          {
+            "income_fen": 95000,
+            "industry": "信息技术",
+            "realized_fen": 222324,
+            "total_fen": 338708,
+            "unrealized_fen": 21384
+          },
+          {
+            "income_fen": 0,
+            "industry": "医药",
+            "realized_fen": -178075,
+            "total_fen": -178075,
+            "unrealized_fen": 0
+          },
+          {
+            "income_fen": 0,
+            "industry": "基金",
+            "realized_fen": 5160,
+            "total_fen": 39806,
+            "unrealized_fen": 34646
+          },
+          {
+            "income_fen": 0,
+            "industry": "材料",
+            "realized_fen": 0,
+            "total_fen": 0,
+            "unrealized_fen": 0
+          },
+          {
+            "income_fen": 25000,
+            "industry": "能源",
+            "realized_fen": 87885,
+            "total_fen": 112885,
+            "unrealized_fen": 0
+          },
+          {
+            "income_fen": 5000,
+            "industry": "转债",
+            "realized_fen": 98130,
+            "total_fen": 207359,
+            "unrealized_fen": 104229
+          },
+          {
+            "income_fen": 31234,
+            "industry": "银行",
+            "realized_fen": 246521,
+            "total_fen": 277755,
+            "unrealized_fen": 0
+          }
+        ],
+        "by_symbol": [
+          {
+            "income_fen": 95000,
+            "industry": "信息技术",
+            "realized_fen": 222324,
+            "symbol": "699001",
+            "total_fen": 338708,
+            "unrealized_fen": 21384
+          },
+          {
+            "income_fen": 31234,
+            "industry": "银行",
+            "realized_fen": 246521,
+            "symbol": "699002",
+            "total_fen": 277755,
+            "unrealized_fen": 0
+          },
+          {
+            "income_fen": 0,
+            "industry": "基金",
+            "realized_fen": 5160,
+            "symbol": "699003",
+            "total_fen": 39806,
+            "unrealized_fen": 34646
+          },
+          {
+            "income_fen": 5000,
+            "industry": "转债",
+            "realized_fen": 98130,
+            "symbol": "699004",
+            "total_fen": 207359,
+            "unrealized_fen": 104229
+          },
+          {
+            "income_fen": 25000,
+            "industry": "能源",
+            "realized_fen": 87885,
+            "symbol": "699005",
+            "total_fen": 112885,
+            "unrealized_fen": 0
+          },
+          {
+            "income_fen": 0,
+            "industry": "医药",
+            "realized_fen": -178075,
+            "symbol": "699006",
+            "total_fen": -178075,
+            "unrealized_fen": 0
+          },
+          {
+            "income_fen": 0,
+            "industry": "材料",
+            "realized_fen": 0,
+            "symbol": "699007",
+            "total_fen": 0,
+            "unrealized_fen": 0
+          }
+        ],
+        "by_year": [
+          {
+            "income_fen": 156234,
+            "realized_fen": 481945,
+            "total_fen": 798438,
+            "unrealized_fen": 160259,
+            "year": "2025"
+          }
+        ]
+      },
+      "fees": {
+        "total_fen": 24296
+      },
+      "merged": {
+        "account_key": "merged",
+        "dividend_income_fen": 60000,
+        "fees_fen": 24296,
+        "other_income_fen": 1234,
+        "realized_sells_fen": 481945,
+        "realized_total_fen": 638179,
+        "reinvested_income_fen": 95000,
+        "total_return_fen": 798438,
+        "unrealized_fen": 160259
+      }
+    }
+  },
+  "note": "只存输入与期望，不含 observed_*；由 tools/gen_data.py 独立实现（Decimal 高精度；XIRR 纯二分，与引擎的牛顿迭代互为判据）。口径：组合 = 证券持仓；外部现金流 = 银证转入/转出与内部划转（投入为负、收回为正）；期末价值 = 估值日证券市值；成交与分红是组合内部动作，不进现金流。",
+  "scenario": {
+    "cost_methods": [
+      "fifo",
+      "wavg"
+    ],
+    "files": [
+      "htsec-demo-001.xlsx",
+      "huaxi-demo-001.xls",
+      "generic-demo-013-account-c.csv",
+      "generic-demo-015-no-fee-columns.csv"
+    ],
+    "flow_convention": "external_capital_flow_investor_signed",
+    "method_independent": [
+      "xirr",
+      "twr",
+      "terminal_value",
+      "cash_flows"
+    ],
+    "row_count": 46,
+    "split_convention": "realized_including_income_plus_unrealized",
+    "twr_bases": [
+      "cashflow",
+      "daily"
+    ],
+    "valuation": "valuation-demo-001.csv",
+    "valuation_date": "2025-12-31"
+  },
+  "surface_evidence": {
+    "attribution.dca": {
+      "expect": {
+        "account_id": "Y0000002",
+        "buy_count": 5,
+        "buy_dates": [
+          "2025-01-15",
+          "2025-02-03",
+          "2025-03-03",
+          "2025-03-12",
+          "2025-11-11"
+        ],
+        "symbol": "699005"
+      },
+      "keys": [
+        [
+          "huaxi-demo-001.xls",
+          3
+        ],
+        [
+          "huaxi-demo-001.xls",
+          4
+        ],
+        [
+          "huaxi-demo-001.xls",
+          5
+        ],
+        [
+          "huaxi-demo-001.xls",
+          15
+        ]
+      ]
+    },
+    "attribution.lump_sum": {
+      "expect": {
+        "account_id": "Y0000002",
+        "buy_count": 2,
+        "first_buy": {
+          "amount_fen": 1200000,
+          "date": "2025-04-01",
+          "fees_fen": 500,
+          "quantity": "1000",
+          "source_line_no": 6
+        },
+        "symbol": "699006"
+      },
+      "keys": [
+        [
+          "huaxi-demo-001.xls",
+          6
+        ]
+      ]
+    },
+    "attribution.midterm_redemption": {
+      "expect": {
+        "account_id": "Y0000002",
+        "first_sell": {
+          "amount_fen": 1100000,
+          "date": "2025-06-20",
+          "quantity": "500",
+          "source_line_no": 8
+        },
+        "sell_count": 3,
+        "symbol": "699005"
+      },
+      "keys": [
+        [
+          "huaxi-demo-001.xls",
+          8
+        ]
+      ]
+    },
+    "attribution.negative_return": {
+      "expect": {
+        "account_id": "Y0000002",
+        "buy_count": 2,
+        "realized_fen": -178075,
+        "sell_count": 1,
+        "symbol": "699006"
+      },
+      "keys": [
+        [
+          "huaxi-demo-001.xls",
+          6
+        ],
+        [
+          "huaxi-demo-001.xls",
+          17
+        ]
+      ]
+    },
+    "attribution.zero_return": {
+      "expect": {
+        "account_id": "Y0000002",
+        "buy_count": 1,
+        "realized_fen": 0,
+        "sell_count": 1,
+        "symbol": "699007"
+      },
+      "keys": [
+        [
+          "huaxi-demo-001.xls",
+          11
+        ],
+        [
+          "huaxi-demo-001.xls",
+          14
+        ]
+      ]
+    },
+    "attribution.zero_terminal_value": {
+      "expect": {
+        "account_id": "Y0000002",
+        "terminal_cash_fen": 12914395,
+        "terminal_securities_fen": 0,
+        "unrealized_fen": 0
+      },
+      "keys": [
+        [
+          "huaxi-demo-001.xls",
+          16
+        ],
+        [
+          "huaxi-demo-001.xls",
+          17
+        ],
+        [
+          "huaxi-demo-001.xls",
+          18
+        ]
+      ]
+    }
+  },
+  "views": {
+    "accounts": [
+      {
+        "account_id": "Y0000001",
+        "account_key": "Y0000001",
+        "cash_flows": [
+          [
+            "2025-01-02",
+            -10000000
+          ],
+          [
+            "2025-09-02",
+            -5000000
+          ],
+          [
+            "2025-10-10",
+            2000000
+          ],
+          [
+            "2025-12-31",
+            13682388
+          ]
+        ],
+        "contributions_fen": 15000000,
+        "net_contribution_fen": 13000000,
+        "opening_cash_fen": 0,
+        "terminal_cash_fen": 11637388,
+        "terminal_securities_fen": 2045000,
+        "terminal_total_fen": 13682388,
+        "twr": {
+          "cashflow": "0.069148962371",
+          "daily": "0.069148962371"
+        },
+        "withdrawals_fen": 2000000,
+        "xirr": "0.061389833920"
+      },
+      {
+        "account_id": "Y0000002",
+        "account_key": "Y0000002",
+        "cash_flows": [
+          [
+            "2025-01-10",
+            -8000000
+          ],
+          [
+            "2025-09-02",
+            -3000000
+          ],
+          [
+            "2025-10-10",
+            -2000000
+          ],
+          [
+            "2025-12-31",
+            12914395
+          ]
+        ],
+        "contributions_fen": 13000000,
+        "net_contribution_fen": 13000000,
+        "opening_cash_fen": 0,
+        "terminal_cash_fen": 12914395,
+        "terminal_securities_fen": 0,
+        "terminal_total_fen": 12914395,
+        "twr": {
+          "cashflow": "-0.007425430631",
+          "daily": "-0.007425430631"
+        },
+        "withdrawals_fen": 0,
+        "xirr": "-0.009282547173"
+      },
+      {
+        "account_id": "Y0000003",
+        "account_key": "Y0000003",
+        "cash_flows": [
+          [
+            "2025-02-20",
+            -2000000
+          ],
+          [
+            "2025-12-31",
+            2018785
+          ]
+        ],
+        "contributions_fen": 2000000,
+        "net_contribution_fen": 2000000,
+        "opening_cash_fen": 0,
+        "terminal_cash_fen": 2018785,
+        "terminal_securities_fen": 0,
+        "terminal_total_fen": 2018785,
+        "twr": {
+          "cashflow": "0.009392500000",
+          "daily": "0.009392500000"
+        },
+        "withdrawals_fen": 0,
+        "xirr": "0.010926339616"
+      },
+      {
+        "account_id": "Y0000004",
+        "account_key": "Y0000004",
+        "cash_flows": [
+          [
+            "2025-03-20",
+            -3000000
+          ],
+          [
+            "2025-12-31",
+            3182870
+          ]
+        ],
+        "contributions_fen": 3000000,
+        "net_contribution_fen": 3000000,
+        "opening_cash_fen": 0,
+        "terminal_cash_fen": 2102870,
+        "terminal_securities_fen": 1080000,
+        "terminal_total_fen": 3182870,
+        "twr": {
+          "cashflow": "0.060956666667",
+          "daily": "0.060956666667"
+        },
+        "withdrawals_fen": 0,
+        "xirr": "0.078439898704"
+      }
+    ],
+    "merged": {
+      "account_id": null,
+      "account_key": "merged",
+      "cash_flows": [
+        [
+          "2025-01-02",
+          -10000000
+        ],
+        [
+          "2025-01-10",
+          -8000000
+        ],
+        [
+          "2025-02-20",
+          -2000000
+        ],
+        [
+          "2025-03-20",
+          -3000000
+        ],
+        [
+          "2025-09-02",
+          -3000000
+        ],
+        [
+          "2025-09-02",
+          -5000000
+        ],
+        [
+          "2025-10-10",
+          -2000000
+        ],
+        [
+          "2025-10-10",
+          2000000
+        ],
+        [
+          "2025-12-31",
+          31798438
+        ]
+      ],
+      "contributions_fen": 33000000,
+      "net_contribution_fen": 31000000,
+      "opening_cash_fen": 0,
+      "terminal_cash_fen": 28673438,
+      "terminal_securities_fen": 3125000,
+      "terminal_total_fen": 31798438,
+      "twr": {
+        "cashflow": "0.039444016905",
+        "daily": "0.039444016905"
+      },
+      "withdrawals_fen": 2000000,
+      "xirr": "0.032746269719"
+    }
+  }
+}

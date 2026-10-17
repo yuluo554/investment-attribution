@@ -46,6 +46,23 @@ def test_corporate_actions_is_never_stage_blocked_again():
     assert "corporate-actions" in HANDLERS
 
 
+def test_attribution_is_never_stage_blocked_again():
+    """防复活断言：attribution 已于 M4 落地。"""
+    assert "attribution" not in stages.STAGE_NOT_READY
+    assert "attribution" in HANDLERS
+
+
+def test_require_ready_returns_none_for_attribution():
+    assert stages.require_ready("attribution") is None
+
+
+def test_merge_and_report_are_still_stage_blocked():
+    """M5 的两条命令必须仍被显式拦截（不能提前放行）。"""
+    for command in ("merge", "report", "run", "bench"):
+        assert command in stages.STAGE_NOT_READY, command
+        assert command not in HANDLERS, command
+
+
 def test_require_ready_returns_none_for_corporate_actions():
     assert stages.require_ready("corporate-actions") is None
 

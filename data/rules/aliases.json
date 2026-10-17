@@ -136,7 +136,7 @@
     "share_balance",
     "note"
   ],
-  "contract_version": "0.4.0-m3",
+  "contract_version": "0.5.0-m4",
   "direction_patterns": {
     "buy": [
       "证券买入",

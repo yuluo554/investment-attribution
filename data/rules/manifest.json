@@ -6,9 +6,9 @@
     "transfer_offset_tolerance_cny": 0.01,
     "xirr_relative_tolerance": 0.0001
   },
-  "contract_version": "0.4.0-m3",
+  "contract_version": "0.5.0-m4",
   "coverage": {
-    "note": "total/sampled 逐形态登记，要求分子 = 分母。M1 的 sampled 指该形态已在样例中注入；导入形态的逐行列值期望已写入 data/truth/import_truth.json，成本形态的逐笔期望（双口径）已写入 data/truth/cost_truth.json（M2），公司行为形态的逐事件期望（含 before/after 与待确认集合）已写入 data/truth/actions_truth.json（M3），归因形态的期望值随 M4 追加。",
+    "note": "total/sampled 逐形态登记，要求分子 = 分母。M1 的 sampled 指该形态已在样例中注入；导入形态的逐行列值期望已写入 data/truth/import_truth.json，成本形态的逐笔期望（双口径）已写入 data/truth/cost_truth.json（M2），公司行为形态的逐事件期望（含 before/after 与待确认集合）已写入 data/truth/actions_truth.json（M3），归因形态的期望值（每账户/合并视图的 XIRR、TWR 两种估值点口径、拆分与四维分解）已写入 data/truth/attribution_truth.json（M4）。",
     "surfaces": [
       {
         "evidence": [

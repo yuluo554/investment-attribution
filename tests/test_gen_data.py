@@ -21,6 +21,9 @@ COST_TRUTH = json.loads(
 ACTIONS_TRUTH = json.loads(
     (DATA_DIR / "truth" / "actions_truth.json").read_text(encoding="utf-8")
 )
+ATTRIBUTION_TRUTH = json.loads(
+    (DATA_DIR / "truth" / "attribution_truth.json").read_text(encoding="utf-8")
+)
 
 
 def run_generator(*args):
@@ -408,3 +411,141 @@ def test_rules_pack_declares_non_action_patterns():
     for rule in rules["rules"]:
         assert rule["expected_kinds"]
         assert rule["cash_effect"] in ("inflow", "outflow", "none")
+
+
+# ---------------------------------------------------------------------------
+# M4 收益归因真值（B4）
+# ---------------------------------------------------------------------------
+
+
+def test_attribution_truth_is_generated_not_imported_from_engine():
+    """真值纪律：生成器不得 import 引擎，否则"独立复算"变成自己比自己。"""
+    source = GEN_DATA.read_text(encoding="utf-8")
+    assert "investment_attribution" not in source
+    assert ATTRIBUTION_TRUTH["format"] == "ia.truth.attribution"
+    assert sorted(ATTRIBUTION_TRUTH["methods"]) == ["fifo", "wavg"]
+
+
+def test_attribution_truth_has_no_observed_fields():
+    def keys(obj):
+        if isinstance(obj, dict):
+            for key, value in obj.items():
+                yield key
+                for item in keys(value):
+                    yield item
+        elif isinstance(obj, list):
+            for value in obj:
+                for item in keys(value):
+                    yield item
+
+    offenders = [key for key in keys(ATTRIBUTION_TRUTH) if key.startswith("observed")]
+    assert offenders == []
+
+
+def test_attribution_truth_scenario_matches_cost_scenario():
+    assert ATTRIBUTION_TRUTH["scenario"]["files"] == COST_TRUTH["scenario"]["files"]
+    assert ATTRIBUTION_TRUTH["scenario"]["row_count"] == COST_TRUTH["scenario"]["row_count"]
+    assert sorted(ATTRIBUTION_TRUTH["scenario"]["cost_methods"]) == ["fifo", "wavg"]
+    assert sorted(ATTRIBUTION_TRUTH["scenario"]["twr_bases"]) == ["cashflow", "daily"]
+
+
+def test_attribution_truth_registers_every_view_with_xirr_and_twr():
+    """每账户与合并视图都要有 XIRR 与两种估值点口径的 TWR 期望值。"""
+    views = ATTRIBUTION_TRUTH["views"]
+    accounts = views["accounts"]
+    assert len(accounts) == len(COST_TRUTH["scenario"]["files"])
+    for item in accounts + [views["merged"]]:
+        assert item["xirr"] is not None, item["account_key"]
+        assert item["twr"]["cashflow"] is not None, item["account_key"]
+        assert item["twr"]["daily"] is not None, item["account_key"]
+        assert len(item["cash_flows"]) >= 2
+
+
+def test_attribution_truth_conservation_is_exact():
+    """期末总资产 − 净投入 == 已实现（含分红）+ 未实现，逐账户成立。"""
+    for method, block in ATTRIBUTION_TRUTH["methods"].items():
+        accounts = {item["account_id"]: item for item in block["accounts"]}
+        for view in ATTRIBUTION_TRUTH["views"]["accounts"]:
+            item = accounts[view["account_id"]]
+            total = view["terminal_cash_fen"] + view["terminal_securities_fen"]
+            assert total - view["net_contribution_fen"] == item["total_return_fen"], (
+                method,
+                view["account_id"],
+            )
+            assert (
+                item["realized_total_fen"] + item["unrealized_fen"]
+                == item["total_return_fen"]
+            )
+
+
+def test_attribution_truth_decomposition_sums_to_total():
+    for method, block in ATTRIBUTION_TRUTH["methods"].items():
+        merged_total = block["merged"]["total_return_fen"]
+        for dimension in ("by_symbol", "by_industry", "by_account", "by_year"):
+            rows = block["decomposition"][dimension]
+            assert rows, (method, dimension)
+            assert sum(item["total_fen"] for item in rows) == merged_total, (
+                method,
+                dimension,
+            )
+
+
+def test_every_attribution_surface_points_at_real_rows_and_carries_expectations():
+    """形态证据必须指向真实行（用成本真值的行键当行库），且带逐项期望值。"""
+    keys = {tuple(row["key"]) for row in COST_TRUTH["rows"]}
+    evidence = ATTRIBUTION_TRUTH["surface_evidence"]
+    manifest = json.loads(
+        (DATA_DIR / "rules" / "manifest.json").read_text(encoding="utf-8")
+    )
+    surfaces = [
+        item["surface"]
+        for item in manifest["coverage"]["surfaces"]
+        if item["surface"].startswith("attribution.")
+    ]
+    assert set(surfaces) == set(evidence)
+    assert len(surfaces) == 6
+    for surface in surfaces:
+        assert evidence[surface]["keys"], surface
+        assert evidence[surface]["expect"], surface
+        for key in evidence[surface]["keys"]:
+            assert tuple(key) in keys, (surface, key)
+
+
+def test_attribution_surface_expectations_are_concrete():
+    evidence = ATTRIBUTION_TRUTH["surface_evidence"]
+    assert evidence["attribution.negative_return"]["expect"]["realized_fen"] < 0
+    assert evidence["attribution.zero_return"]["expect"]["realized_fen"] == 0
+    assert evidence["attribution.zero_terminal_value"]["expect"]["terminal_securities_fen"] == 0
+    assert evidence["attribution.lump_sum"]["expect"]["first_buy"]["quantity"] == "1000"
+    assert evidence["attribution.negative_return"]["expect"]["symbol"] == "699006"
+    assert evidence["attribution.zero_return"]["expect"]["symbol"] == "699007"
+    assert evidence["attribution.dca"]["expect"]["buy_count"] >= 3
+    assert evidence["attribution.midterm_redemption"]["expect"]["sell_count"] >= 1
+
+
+def test_attribution_manual_examples_are_closed_form():
+    """手工算例：闭式解可验（一年 10%、两年 10%、一年 -10%、零收益）。"""
+    examples = {item["name"]: item for item in ATTRIBUTION_TRUTH["manual_examples"]}
+    assert len(examples) >= 3
+    assert examples["one_year_plus_10pct"]["expected_rate"] == "0.1"
+    assert examples["two_year_plus_10pct"]["expected_rate"] == "0.1"
+    assert examples["one_year_minus_10pct"]["expected_rate"] == "-0.1"
+    assert examples["one_year_zero"]["expected_rate"] == "0"
+    for item in examples.values():
+        assert item["derivation"]
+
+
+def test_valuation_sample_matches_ledger_end_state():
+    """估值表最后一日必须覆盖场景的期末持仓（数量与台账一致）。"""
+    rows = (DATA_DIR / "samples" / "valuation-demo-001.csv").read_text(
+        encoding="utf-8"
+    ).splitlines()
+    header, body = rows[0], rows[1:]
+    assert header == "date,symbol,name,quantity,price"
+    terminal = {}
+    for line in body:
+        date, symbol, _name, quantity, price = line.split(",")
+        assert float(price) > 0
+        if date == ATTRIBUTION_TRUTH["scenario"]["valuation_date"]:
+            terminal[symbol] = quantity
+    assert terminal == {"699001": "500", "699003": "7000", "699004": "200"}

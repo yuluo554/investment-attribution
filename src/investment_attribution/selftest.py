@@ -11,10 +11,15 @@
 """
 
 import os
+import sys
 
 from . import __version__
 from .manifest import load_manifest, manifest_path
-from .netguard import scan_network_imports
+from .netguard import (
+    NetworkAccessBlocked,
+    runtime_probe,
+    scan_network_imports,
+)
 from .errors import DataError
 from .paths import find_repo_root
 
@@ -82,6 +87,49 @@ def run_selftest(data_dir):
         return "0 network imports in package sources"
 
     checks.append(_check("no_network_imports", _no_network_imports))
+
+    def _no_runtime_network():
+        """运行期探针（四层审计的第三层）：正/负对照都在同一条检查里。
+
+        - 阳性对照：武装探针后触发 socket 审计事件，必须被拦截并记账；
+        - 阴性对照：卸下武装后同一事件必须放行，且不得留下记账。
+
+        缺任一侧这条检查就只是话术：只测拦截会漏掉"探针根本没装上"，
+        只测放行会漏掉"探针装上了但不拦"。
+        """
+        probe = runtime_probe()
+        probe.armed = True
+        probe.reset()
+        try:
+            sys.audit("socket.getaddrinfo", "selftest.invalid", 80)
+        except NetworkAccessBlocked:
+            blocked = True
+        else:
+            blocked = False
+        recorded = len(probe.attempts)
+        probe.armed = False
+        if not blocked:
+            raise DataError(
+                "运行期探针未拦截 socket 审计事件", code="PROBE_NOT_BLOCKING"
+            )
+        if recorded < 1:
+            raise DataError(
+                "运行期探针拦截了事件但未记账", code="PROBE_NOT_RECORDING"
+            )
+        probe.reset()
+        try:
+            sys.audit("socket.getaddrinfo", "selftest.invalid", 80)
+        except NetworkAccessBlocked:
+            raise DataError(
+                "探针已解除武装却仍在拦截", code="PROBE_STILL_BLOCKING"
+            )
+        if probe.attempts:
+            raise DataError(
+                "探针已解除武装却仍在记账", code="PROBE_STILL_RECORDING"
+            )
+        return "blocked=1 recorded={} disarm_ok=True".format(recorded)
+
+    checks.append(_check("runtime_socket_probe", _no_runtime_network))
 
     def _repo_root_resolvable():
         root = find_repo_root()

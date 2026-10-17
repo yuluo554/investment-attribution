@@ -19,6 +19,7 @@
 from __future__ import annotations
 
 import argparse
+import bisect
 import csv
 import hashlib
 import io
@@ -29,7 +30,7 @@ import sys
 import tempfile
 import zipfile
 from dataclasses import dataclass, field
-from decimal import Decimal, ROUND_HALF_UP
+from decimal import Decimal, ROUND_HALF_UP, localcontext
 from fractions import Fraction
 from pathlib import Path
 from xml.sax.saxutils import escape
@@ -37,7 +38,7 @@ from xml.sax.saxutils import escape
 REPO_ROOT = Path(__file__).resolve().parent.parent
 DEFAULT_DATA_DIR = REPO_ROOT / "data"
 GENERATOR_TOOL = "tools/gen_data.py"
-CONTRACT_VERSION = "0.4.0-m3"
+CONTRACT_VERSION = "0.5.0-m4"
 SEED = 0x9E3779B97F4A7C15  # splitmix64 标准增量常量，作为固定种子
 MASK64 = (1 << 64) - 1
 
@@ -1284,7 +1285,9 @@ def build_manifest():
                 "导入形态的逐行列值期望已写入 data/truth/import_truth.json，"
                 "成本形态的逐笔期望（双口径）已写入 data/truth/cost_truth.json（M2），"
                 "公司行为形态的逐事件期望（含 before/after 与待确认集合）已写入 "
-                "data/truth/actions_truth.json（M3），归因形态的期望值随 M4 追加。"
+                "data/truth/actions_truth.json（M3），归因形态的期望值（每账户/合并视图的 "
+                "XIRR、TWR 两种估值点口径、拆分与四维分解）已写入 "
+                "data/truth/attribution_truth.json（M4）。"
             ),
             "surfaces": surfaces,
         },
@@ -2022,6 +2025,1069 @@ def build_actions_truth(cost_inputs):
     }
 
 
+# ---------------------------------------------------------------------------
+# M4 估值序列（TWR 估值点 + 期末市值）与收益归因真值（B4）
+# ---------------------------------------------------------------------------
+
+VALUATION_DATE = "2025-12-31"
+#: 期末估值日仍在手标的的价格（写进样例，也写进真值）。
+TERMINAL_PRICES = {
+    "699001": "10.20",
+    "699003": "0.65",
+    "699004": "108.00",
+}
+#: 真值侧 XIRR 用**独立算法**（纯二分 + Decimal），与引擎的牛顿迭代互为判据。
+TRUTH_BISECTION_LOWER = Decimal("-0.999999")
+TRUTH_BISECTION_UPPER = Decimal("1000000")
+TRUTH_NPV_TOLERANCE = Decimal("0.000001")  # 元
+TRUTH_RATE_TOLERANCE = Decimal("0.000000000000001")
+
+ATTRIBUTION_SURFACE_ORDER = (
+    "attribution.lump_sum",
+    "attribution.dca",
+    "attribution.midterm_redemption",
+    "attribution.negative_return",
+    "attribution.zero_return",
+    "attribution.zero_terminal_value",
+)
+
+
+def _frac_dec(value):
+    """``Fraction → Decimal``（数量最多 4 位小数，可精确表示）。"""
+    return Decimal(value.numerator) / Decimal(value.denominator)
+
+
+def _price_text(value):
+    quantized = Decimal(value).quantize(Decimal("0.0001"), rounding=ROUND_HALF_UP)
+    return canonical(quantized)
+
+
+def _rate_text(value, places=12):
+    quantized = Decimal(value).quantize(
+        Decimal(1).scaleb(-places), rounding=ROUND_HALF_UP
+    )
+    return format(quantized, "f")
+
+
+def _money_fen(quantity, price):
+    """数量 × 价格 → 整数分（与引擎同一舍入规则：四舍五入到分）。"""
+    value = _frac_dec(quantity) * Decimal(price) * Decimal(100)
+    return int(value.quantize(Decimal("1"), rounding=ROUND_HALF_UP))
+
+
+def _ordinal(date_text):
+    from datetime import date as _date
+
+    return _date.fromisoformat(date_text).toordinal()
+
+
+def _walk_txs(cost_inputs):
+    """场景行按引擎排序键展开：``(date, time, line, file, tx)``。"""
+    ordered = []
+    for name in COST_SCENARIO_FILES:
+        _columns, txs = cost_inputs[name]
+        for index, tx in enumerate(txs):
+            ordered.append((tx.trade_date, tx.trade_time or "", index + 2, name, tx))
+    ordered.sort(key=lambda item: (item[0], item[1], item[2], item[3]))
+    return ordered
+
+
+def _price_inputs(cost_inputs):
+    """成交价锚点 + 无偿股份因子。
+
+    锚点只取**真实成交价**（买 / 卖 / 红利再投）；配股的认购价不是市场价，
+    不进价格路径。无偿股份（送股 / 拆分）改变每股代表的权益，因此记下因子
+    （变化后份额 / 变化前份额）：早于该日的价格在"复权空间"里除以因子，
+    份额与价格在除权日同步跳变、市值连续——否则 TWR 会凭空多出一次 100%
+    的"收益"，把整条净值曲线带偏。
+    """
+    anchors = {}
+    factors = {}
+    holdings = {}
+    for date, _time, _line, _name, tx in _walk_txs(cost_inputs):
+        symbol = tx.symbol
+        quantity = _frac(tx.quantity or "0")
+        amount_fen = fen(tx.amount) if tx.amount != "" else None
+        settle_fen = fen(tx.settlement_amount) if tx.settlement_amount != "" else None
+        kind = _row_kind(tx, amount_fen, settle_fen)
+        before = holdings.get(symbol, Fraction(0))
+        if kind == "receipt_free":
+            if before > 0 and quantity > 0:
+                factors.setdefault(symbol, []).append(
+                    (date, _frac_dec((before + quantity) / before))
+                )
+            holdings[symbol] = before + quantity
+            continue
+        if kind in ("trade_buy", "receipt_paid", "receipt_valued"):
+            holdings[symbol] = before + quantity
+        elif kind == "trade_sell":
+            holdings[symbol] = max(before - quantity, Fraction(0))
+        if tx.price in (None, "") or kind not in (
+            "trade_buy",
+            "trade_sell",
+            "receipt_valued",
+        ):
+            continue
+        anchors.setdefault(symbol, {})[date] = Decimal(tx.price)
+    return anchors, factors
+
+
+def _adjusted_anchors(cost_inputs, held_symbols):
+    """把锚点换算到"期末股本"口径，并保留因子链用于还原当日报价。"""
+    anchors, factors = _price_inputs(cost_inputs)
+    for symbol in held_symbols:
+        terminal = TERMINAL_PRICES.get(symbol)
+        if terminal is not None:
+            anchors.setdefault(symbol, {})[VALUATION_DATE] = Decimal(terminal)
+    adjusted = {}
+    for symbol in sorted(anchors):
+        events = sorted(factors.get(symbol, ()))
+        points = []
+        for date in sorted(anchors[symbol]):
+            remaining = Decimal(1)
+            for event_date, event_factor in events:
+                if event_date > date:
+                    remaining *= event_factor
+            points.append((_ordinal(date), anchors[symbol][date] / remaining))
+        adjusted[symbol] = points
+    return adjusted, factors
+
+
+def _price_at_date(symbol, date, adjusted, factors):
+    """复权空间线性插值 → 乘回因子 → 当日报价（生成器行为，引擎不插值）。"""
+    points = adjusted.get(symbol)
+    if not points:
+        raise ValueError("符号 {} 没有价格锚点".format(symbol))
+    target = _ordinal(date)
+    if target <= points[0][0]:
+        value = points[0][1]
+    elif target >= points[-1][0]:
+        value = points[-1][1]
+    else:
+        value = points[-1][1]
+        for index in range(1, len(points)):
+            left = points[index - 1]
+            right = points[index]
+            if left[0] <= target <= right[0]:
+                span = right[0] - left[0]
+                ratio = Decimal(target - left[0]) / Decimal(span)
+                value = left[1] + (right[1] - left[1]) * ratio
+                break
+    factor = Decimal(1)
+    for event_date, event_factor in factors.get(symbol, ()):
+        if event_date > date:
+            factor *= event_factor
+    return value * factor
+
+
+def build_valuation(cost_inputs):
+    """生成估值序列：``(data_bytes, rows)``。
+
+    逐交易日列出"当日收盘仍持有"的标的数量与价格，最后一日即期末估值日。
+    数量取自与真值同源的模拟（引擎会用台账数量交叉核对）；价格由成交价锚点
+    插值而来——**插值只发生在生成器里**，引擎运行期缺价即报 VALUATION_MISSING。
+    """
+    rows = _scenario_rows(cost_inputs)
+    sim = _simulate(rows, "fifo")
+    merged = {}
+    for snapshot in sim["daily_snapshots"]:
+        for position in snapshot["positions"]:
+            key = (snapshot["date"], position["symbol"])
+            merged[key] = merged.get(key, Fraction(0)) + _frac(position["quantity"])
+    for position in sim["positions"]:
+        quantity = _frac(position["quantity"])
+        if quantity <= 0:
+            continue
+        key = (VALUATION_DATE, position["symbol"])
+        merged[key] = merged.get(key, Fraction(0)) + quantity
+
+    held_symbols = sorted({symbol for _, symbol in merged})
+    adjusted, factors = _adjusted_anchors(cost_inputs, held_symbols)
+
+    lines = ["date,symbol,name,quantity,price"]
+    out_rows = []
+    for date, symbol in sorted(merged):
+        quantity = merged[(date, symbol)]
+        if quantity <= 0:
+            continue
+        price_text = _price_text(_price_at_date(symbol, date, adjusted, factors))
+        quantity_text = _frac_text(quantity)
+        lines.append(
+            "{},{},{},{},{}".format(
+                date, symbol, SYMBOLS[symbol][0], quantity_text, price_text
+            )
+        )
+        out_rows.append(
+            {
+                "date": date,
+                "symbol": symbol,
+                "name": SYMBOLS[symbol][0],
+                "quantity": quantity_text,
+                "price": price_text,
+                "price_decimal": Decimal(price_text),
+            }
+        )
+    data = ("\n".join(lines) + "\n").encode("utf-8")
+    return data, out_rows
+
+
+# ---------------------------------------------------------------------------
+# B4 真值：独立实现（Decimal 高精度；XIRR 纯二分，不复用引擎）
+# ---------------------------------------------------------------------------
+
+
+def _truth_xirr(cash_flows):
+    """独立 XIRR：纯二分 + Decimal。无解返回 ``None``（不造近似值）。"""
+    ordered = sorted(cash_flows, key=lambda item: item[0])
+    if len(ordered) < 2:
+        return None
+    amounts = [Decimal(amount) / Decimal(100) for _, amount in ordered]
+    if all(amount <= 0 for amount in amounts) or all(amount >= 0 for amount in amounts):
+        return None
+    base = _ordinal(ordered[0][0])
+    series = []
+    for (date, _amount), amount in zip(ordered, amounts):
+        series.append((Decimal(_ordinal(date) - base) / Decimal(365), amount))
+
+    with localcontext() as ctx:
+        ctx.prec = 40
+
+        def npv(rate):
+            total = Decimal(0)
+            for exponent, amount in series:
+                total += amount / ((Decimal(1) + rate) ** exponent)
+            return total
+
+        lower = TRUTH_BISECTION_LOWER
+        upper = TRUTH_BISECTION_UPPER
+        f_lower = npv(lower)
+        f_upper = npv(upper)
+        if f_lower == 0:
+            return +lower
+        if f_upper == 0:
+            return +upper
+        if f_lower * f_upper > 0:
+            return None
+        for _ in range(400):
+            midpoint = (lower + upper) / 2
+            value = npv(midpoint)
+            if abs(value) < TRUTH_NPV_TOLERANCE:
+                return +midpoint
+            if f_lower * value < 0:
+                upper = midpoint
+                f_upper = value
+            else:
+                lower = midpoint
+                f_lower = value
+            if upper - lower < TRUTH_RATE_TOLERANCE:
+                break
+        return +(lower + upper) / 2
+
+
+def _truth_twr(points):
+    """独立 TWR：高精度连乘；段起点非正返回 ``None``。"""
+    if len(points) < 2:
+        return Decimal(0)
+    with localcontext() as ctx:
+        ctx.prec = 40
+        index = Decimal(1)
+        for position in range(1, len(points)):
+            previous_value = Decimal(points[position - 1][1])
+            if previous_value <= 0:
+                return None
+            value = Decimal(points[position][1])
+            flow = Decimal(points[position][2])
+            index *= (value - flow) / previous_value
+        return index - Decimal(1)
+
+
+def _sim_snapshots(sim):
+    dates = []
+    positions = {}
+    for snapshot in sim["daily_snapshots"]:
+        dates.append(snapshot["date"])
+        for position in snapshot["positions"]:
+            positions.setdefault(snapshot["date"], {}).setdefault(
+                position["account_id"], {}
+            )[position["symbol"]] = _frac(position["quantity"])
+    return dates, positions
+
+
+def _cash_timeline(rows):
+    """逐账户逐日资金余额（**累计值**，与引擎的 cash_after_fen 同口径）。"""
+    cash = {}
+    for row in rows:
+        account = row["account_id"]
+        date = row["trade_date"]
+        settle = row["settlement_fen"] or 0
+        dates, amounts = cash.setdefault(account, ([], []))
+        if dates and dates[-1] == date:
+            amounts[-1] += settle
+        else:
+            dates.append(date)
+            amounts.append(settle)
+    for dates, amounts in cash.values():
+        running = 0
+        for index in range(len(amounts)):
+            running += amounts[index]
+            amounts[index] = running
+    return cash
+
+
+def _cash_at(cash, account, date):
+    dates, amounts = cash.get(account, ([], []))
+    index = bisect.bisect_right(dates, date)
+    return 0 if index == 0 else amounts[index - 1]
+
+
+def _positions_at(positions, dates, account, date):
+    index = bisect.bisect_right(dates, date)
+    if index == 0:
+        return {}
+    return positions.get(dates[index - 1], {}).get(account, {})
+
+
+def _accounts_at(positions, dates, date):
+    index = bisect.bisect_right(dates, date)
+    if index == 0:
+        return set()
+    return set(positions.get(dates[index - 1], {}))
+
+
+def _account_flows(rows, account):
+    """``(外部资金划转, 现金分红, 红利再投对价, 其他现金收入)``。"""
+    capital = []
+    cash_dividend = 0
+    reinvested = 0
+    other = 0
+    for row in rows:
+        if row["account_id"] != account:
+            continue
+        settlement = row["settlement_fen"] or 0
+        if row["kind"] == "cash_event":
+            if _non_action(row["business"]) is not None:
+                capital.append((row["trade_date"], settlement))
+                continue
+            matched = _match_actions(row["business"])
+            if matched and matched[0][0]["event_type"] == "dividend":
+                cash_dividend += settlement
+            else:
+                other += settlement
+        elif row["kind"] == "receipt_valued":
+            reinvested += row["amount_fen"] or 0
+    return capital, cash_dividend, reinvested, other
+
+
+def _terminal_market_value(sim, account, prices):
+    total = 0
+    for position in sim["positions"]:
+        if account is not None and position["account_id"] != account:
+            continue
+        quantity = _frac(position["quantity"])
+        if quantity <= 0:
+            continue
+        price = prices.get((VALUATION_DATE, position["symbol"]))
+        if price is None:
+            raise ValueError(
+                "估值序列缺 {} {}".format(VALUATION_DATE, position["symbol"])
+            )
+        total += _money_fen(quantity, price)
+    return total
+
+
+def _view_value(account, date, cash, snapshot_dates, positions, prices, all_accounts):
+    """某视图在 ``date`` 的总价值 = 当日资金余额 + 证券市值；缺价返回 None。
+
+    合并视图必须把**所有**账户的资金都算进来（含当日尚无持仓的账户），
+    因此账户集合来自参数，而不是"当日有持仓的账户"。
+    """
+    keys = [account] if account is not None else list(all_accounts)
+    securities = 0
+    for key in keys:
+        for symbol, quantity in _positions_at(
+            positions, snapshot_dates, key, date
+        ).items():
+            if quantity <= 0:
+                continue
+            price = prices.get((date, symbol))
+            if price is None:
+                return None
+            securities += _money_fen(quantity, price)
+    return sum(_cash_at(cash, key, date) for key in keys) + securities
+
+
+def _twr_points(capital, basis, value_of, snapshot_dates, first_date):
+    if basis == "cashflow":
+        dates = sorted({row[0] for row in capital} | {VALUATION_DATE})
+    else:
+        dates = sorted(set(snapshot_dates) | {VALUATION_DATE})
+    if first_date:
+        dates = [date for date in dates if date >= first_date]
+    flow_by_date = {}
+    for date, amount in capital:
+        flow_by_date[date] = flow_by_date.get(date, 0) + amount
+    points = []
+    for date in dates:
+        value = value_of(date)
+        if value is None:
+            return None
+        points.append((date, value, flow_by_date.get(date, 0)))
+    return points
+
+
+def _view_truth(sim, rows, prices, snapshot_dates, positions, cash, all_accounts):
+    """逐账户 + 合并视图的 XIRR / TWR / 期末价值（与成本口径无关）。"""
+    accounts = []
+    for account_row in sim["accounts"]:
+        account = account_row["account_id"]
+        capital, _dividend, _reinvested, _other = _account_flows(rows, account)
+        opening = account_row["opening_cash_fen"] or 0
+        terminal_cash = opening + account_row["net_cash_flow_fen"]
+        terminal_mv = _terminal_market_value(sim, account, prices)
+        contributions = opening + sum(amount for _, amount in capital if amount > 0)
+        withdrawals = sum(-amount for _, amount in capital if amount < 0)
+        net_contribution = contributions - withdrawals
+        first_date = capital[0][0] if capital else None
+        xirr_flows = [(date, -amount) for date, amount in capital]
+        if opening and first_date:
+            xirr_flows.append((first_date, -opening))
+        xirr_flows.append((VALUATION_DATE, terminal_cash + terminal_mv))
+        xirr = _truth_xirr(xirr_flows)
+        twr = {}
+        for basis in ("cashflow", "daily"):
+            points = _twr_points(
+                capital,
+                basis,
+                lambda date, account=account: _view_value(
+                    account, date, cash, snapshot_dates, positions, prices, all_accounts
+                ),
+                snapshot_dates,
+                first_date,
+            )
+            twr[basis] = None if points is None else _truth_twr(points)
+        accounts.append(
+            {
+                "account_id": account,
+                "account_key": account,
+                "opening_cash_fen": opening,
+                "contributions_fen": contributions,
+                "withdrawals_fen": withdrawals,
+                "net_contribution_fen": net_contribution,
+                "terminal_cash_fen": terminal_cash,
+                "terminal_securities_fen": terminal_mv,
+                "terminal_total_fen": terminal_cash + terminal_mv,
+                "xirr": None if xirr is None else _rate_text(xirr),
+                "twr": {
+                    basis: None if value is None else _rate_text(value)
+                    for basis, value in twr.items()
+                },
+                "cash_flows": [[date, -amount] for date, amount in capital]
+                + ([[first_date, -opening]] if opening and first_date else [])
+                + [[VALUATION_DATE, terminal_cash + terminal_mv]],
+            }
+        )
+
+    merged_capital = []
+    for row in rows:
+        if row["kind"] != "cash_event":
+            continue
+        if _non_action(row["business"]) is not None:
+            merged_capital.append((row["trade_date"], row["settlement_fen"] or 0))
+    merged_opening = sum(item["opening_cash_fen"] for item in accounts)
+    terminal_cash = sum(item["terminal_cash_fen"] for item in accounts)
+    terminal_mv = sum(item["terminal_securities_fen"] for item in accounts)
+    contributions = sum(item["contributions_fen"] for item in accounts)
+    withdrawals = sum(item["withdrawals_fen"] for item in accounts)
+    net_contribution = contributions - withdrawals
+    dates = [date for date, _ in merged_capital]
+    first_date = min(dates) if dates else None
+    xirr_flows = [(date, -amount) for date, amount in merged_capital]
+    if merged_opening and first_date:
+        xirr_flows.append((first_date, -merged_opening))
+    xirr_flows.append((VALUATION_DATE, terminal_cash + terminal_mv))
+    xirr = _truth_xirr(xirr_flows)
+    twr = {}
+    for basis in ("cashflow", "daily"):
+        points = _twr_points(
+            merged_capital,
+            basis,
+            lambda date: _view_value(
+                None, date, cash, snapshot_dates, positions, prices, all_accounts
+            ),
+            snapshot_dates,
+            first_date,
+        )
+        twr[basis] = None if points is None else _truth_twr(points)
+    merged = {
+        "account_id": None,
+        "account_key": "merged",
+        "opening_cash_fen": merged_opening,
+        "contributions_fen": contributions,
+        "withdrawals_fen": withdrawals,
+        "net_contribution_fen": net_contribution,
+        "terminal_cash_fen": terminal_cash,
+        "terminal_securities_fen": terminal_mv,
+        "terminal_total_fen": terminal_cash + terminal_mv,
+        "xirr": None if xirr is None else _rate_text(xirr),
+        "twr": {
+            basis: None if value is None else _rate_text(value)
+            for basis, value in twr.items()
+        },
+        "cash_flows": [[date, -amount] for date, amount in merged_capital]
+        + ([[first_date, -merged_opening]] if merged_opening and first_date else [])
+        + [[VALUATION_DATE, terminal_cash + terminal_mv]],
+    }
+    return {"accounts": accounts, "merged": merged}
+
+
+def _income_maps(rows):
+    by_account = {}
+    by_symbol = {}
+    for row in rows:
+        account = row["account_id"]
+        bucket = by_account.setdefault(
+            account,
+            {"cash_dividend_fen": 0, "reinvested_fen": 0, "other_fen": 0},
+        )
+        if row["kind"] == "cash_event":
+            if _non_action(row["business"]) is not None:
+                continue
+            matched = _match_actions(row["business"])
+            amount = row["settlement_fen"] or 0
+            if matched and matched[0][0]["event_type"] == "dividend":
+                bucket["cash_dividend_fen"] += amount
+            else:
+                bucket["other_fen"] += amount
+            by_symbol[row["symbol"]] = by_symbol.get(row["symbol"], 0) + amount
+        elif row["kind"] == "receipt_valued":
+            amount = row["amount_fen"] or 0
+            bucket["reinvested_fen"] += amount
+            by_symbol[row["symbol"]] = by_symbol.get(row["symbol"], 0) + amount
+    return by_account, by_symbol
+
+
+def _method_block(sim, rows, prices, income_by_account, income_by_symbol):
+    """单成本口径的拆分与分解（XIRR / TWR / 期末价值与口径无关，不重复登记）。"""
+    accounts = []
+    for account_row in sim["accounts"]:
+        account = account_row["account_id"]
+        income = income_by_account[account]
+        realized = account_row["realized_net_fen"]
+        unrealized = (
+            _terminal_market_value(sim, account, prices) - account_row["position_cost_fen"]
+        )
+        income_total = (
+            income["cash_dividend_fen"] + income["reinvested_fen"] + income["other_fen"]
+        )
+        accounts.append(
+            {
+                "account_id": account,
+                "account_key": account,
+                "realized_sells_fen": realized,
+                "dividend_income_fen": income["cash_dividend_fen"],
+                "reinvested_income_fen": income["reinvested_fen"],
+                "other_income_fen": income["other_fen"],
+                "realized_total_fen": realized + income_total,
+                "unrealized_fen": unrealized,
+                "total_return_fen": realized + income_total + unrealized,
+                "fees_fen": account_row["fees_fen"],
+            }
+        )
+    merged = {
+        "account_key": "merged",
+        "realized_sells_fen": sum(item["realized_sells_fen"] for item in accounts),
+        "dividend_income_fen": sum(item["dividend_income_fen"] for item in accounts),
+        "reinvested_income_fen": sum(item["reinvested_income_fen"] for item in accounts),
+        "other_income_fen": sum(item["other_income_fen"] for item in accounts),
+        "realized_total_fen": sum(item["realized_total_fen"] for item in accounts),
+        "unrealized_fen": sum(item["unrealized_fen"] for item in accounts),
+        "total_return_fen": sum(item["total_return_fen"] for item in accounts),
+        "fees_fen": sum(item["fees_fen"] for item in accounts),
+    }
+
+    per_symbol = {}
+    key_rows = {(row["source_file"], row["source_line_no"]): row for row in rows}
+    for event in sim["events"]:
+        if event["kind"] != "trade_sell" or event["realized_fen"] is None:
+            continue
+        row = key_rows[tuple(event["key"])]
+        bucket = per_symbol.setdefault(
+            row["symbol"],
+            {"symbol": row["symbol"], "realized_fen": 0, "income_fen": 0, "unrealized_fen": 0},
+        )
+        bucket["realized_fen"] += event["realized_fen"]
+    for position in sim["positions"]:
+        symbol = position["symbol"]
+        bucket = per_symbol.setdefault(
+            symbol, {"symbol": symbol, "realized_fen": 0, "income_fen": 0, "unrealized_fen": 0}
+        )
+        quantity = _frac(position["quantity"])
+        if quantity > 0:
+            price = prices.get((VALUATION_DATE, symbol))
+            if price is None:
+                raise ValueError("期末持仓 {} 缺估值价".format(symbol))
+            bucket["unrealized_fen"] += _money_fen(quantity, price) - position["cost_fen"]
+    for symbol, amount in income_by_symbol.items():
+        per_symbol.setdefault(
+            symbol, {"symbol": symbol, "realized_fen": 0, "income_fen": 0, "unrealized_fen": 0}
+        )["income_fen"] += amount
+    by_symbol = [
+        {
+            "symbol": symbol,
+            "industry": SYMBOLS.get(symbol, (None, "未分类"))[1],
+            "realized_fen": per_symbol[symbol]["realized_fen"],
+            "income_fen": per_symbol[symbol]["income_fen"],
+            "unrealized_fen": per_symbol[symbol]["unrealized_fen"],
+            "total_fen": per_symbol[symbol]["realized_fen"]
+            + per_symbol[symbol]["income_fen"]
+            + per_symbol[symbol]["unrealized_fen"],
+        }
+        for symbol in sorted(per_symbol)
+    ]
+
+    by_industry = {}
+    for item in by_symbol:
+        bucket = by_industry.setdefault(
+            item["industry"],
+            {
+                "industry": item["industry"],
+                "realized_fen": 0,
+                "income_fen": 0,
+                "unrealized_fen": 0,
+                "total_fen": 0,
+            },
+        )
+        for name in ("realized_fen", "income_fen", "unrealized_fen", "total_fen"):
+            bucket[name] += item[name]
+
+    by_account = [
+        {
+            "account_key": item["account_id"],
+            "realized_fen": item["realized_total_fen"],
+            "income_fen": item["realized_total_fen"] - item["realized_sells_fen"],
+            "unrealized_fen": item["unrealized_fen"],
+            "total_fen": item["total_return_fen"],
+        }
+        for item in accounts
+    ]
+
+    key_rows = {(row["source_file"], row["source_line_no"]): row for row in rows}
+    per_year = {}
+    for row in rows:
+        year = row["trade_date"][:4]
+        per_year.setdefault(
+            year, {"year": year, "realized_fen": 0, "income_fen": 0, "unrealized_fen": 0}
+        )
+    for event in sim["events"]:
+        if event["kind"] != "trade_sell" or event["realized_fen"] is None:
+            continue
+        row = key_rows[tuple(event["key"])]
+        year = row["trade_date"][:4]
+        per_year.setdefault(
+            year, {"year": year, "realized_fen": 0, "income_fen": 0, "unrealized_fen": 0}
+        )["realized_fen"] += event["realized_fen"]
+    for row in rows:
+        if row["kind"] == "cash_event":
+            if _non_action(row["business"]) is not None:
+                continue
+            year = row["trade_date"][:4]
+            per_year.setdefault(
+                year, {"year": year, "realized_fen": 0, "income_fen": 0, "unrealized_fen": 0}
+            )["income_fen"] += row["settlement_fen"] or 0
+        elif row["kind"] == "receipt_valued":
+            year = row["trade_date"][:4]
+            per_year.setdefault(
+                year, {"year": year, "realized_fen": 0, "income_fen": 0, "unrealized_fen": 0}
+            )["income_fen"] += row["amount_fen"] or 0
+    per_year.setdefault(
+        VALUATION_DATE[:4],
+        {"year": VALUATION_DATE[:4], "realized_fen": 0, "income_fen": 0, "unrealized_fen": 0},
+    )["unrealized_fen"] += merged["unrealized_fen"]
+    by_year = [
+        {
+            "year": year,
+            "realized_fen": per_year[year]["realized_fen"],
+            "income_fen": per_year[year]["income_fen"],
+            "unrealized_fen": per_year[year]["unrealized_fen"],
+            "total_fen": per_year[year]["realized_fen"]
+            + per_year[year]["income_fen"]
+            + per_year[year]["unrealized_fen"],
+        }
+        for year in sorted(per_year)
+    ]
+    return {
+        "accounts": accounts,
+        "merged": merged,
+        "fees": {"total_fen": merged["fees_fen"]},
+        "decomposition": {
+            "by_symbol": by_symbol,
+            "by_industry": [by_industry[name] for name in sorted(by_industry)],
+            "by_account": by_account,
+            "by_year": by_year,
+        },
+    }
+
+
+def build_attribution_truth(cost_inputs, valuation_rows):
+    """B4 真值：视图期望值（XIRR / TWR / 期末价值）+ 双口径拆分与分解。
+
+    独立实现：现金流从原始场景行重算；XIRR 用纯二分 + Decimal（不复用引擎的
+    牛顿迭代）；TWR 用高精度连乘。另附**闭式解手工算例**作为第二判据。
+    """
+    rows = _scenario_rows(cost_inputs)
+    prices = {
+        (row["date"], row["symbol"]): row["price_decimal"] for row in valuation_rows
+    }
+    sim_fifo = _simulate(rows, "fifo")
+    sim_wavg = _simulate(rows, "wavg")
+    snapshot_dates, positions = _sim_snapshots(sim_fifo)
+    cash = _cash_timeline(rows)
+    income_by_account, income_by_symbol = _income_maps(rows)
+
+    all_accounts = [item["account_id"] for item in sim_fifo["accounts"]]
+    views = _view_truth(
+        sim_fifo, rows, prices, snapshot_dates, positions, cash, all_accounts
+    )
+    fifo_block = _method_block(
+        sim_fifo, rows, prices, income_by_account, income_by_symbol
+    )
+    wavg_block = _method_block(
+        sim_wavg, rows, prices, income_by_account, income_by_symbol
+    )
+    return {
+        "format": "ia.truth.attribution",
+        "format_version": 1,
+        "contract_version": CONTRACT_VERSION,
+        "generator": {"tool": GENERATOR_TOOL, "seed": SEED},
+        "note": (
+            "只存输入与期望，不含 observed_*；由 tools/gen_data.py 独立实现"
+            "（Decimal 高精度；XIRR 纯二分，与引擎的牛顿迭代互为判据）。"
+            "口径：组合 = 证券持仓；外部现金流 = 银证转入/转出与内部划转"
+            "（投入为负、收回为正）；期末价值 = 估值日证券市值；"
+            "成交与分红是组合内部动作，不进现金流。"
+        ),
+        "scenario": {
+            "files": list(COST_SCENARIO_FILES),
+            "row_count": len(rows),
+            "valuation": "valuation-demo-001.csv",
+            "valuation_date": VALUATION_DATE,
+            "cost_methods": ["fifo", "wavg"],
+            "twr_bases": ["cashflow", "daily"],
+            "flow_convention": "external_capital_flow_investor_signed",
+            "split_convention": "realized_including_income_plus_unrealized",
+            "method_independent": ["xirr", "twr", "terminal_value", "cash_flows"],
+        },
+        "manual_examples": [
+            {
+                "name": "one_year_plus_10pct",
+                "cash_flows": [["2025-01-01", -1000000], ["2026-01-01", 1100000]],
+                "expected_rate": "0.1",
+                "derivation": (
+                    "投入 10000.00 元、365 天后收回 11000.00 元："
+                    "(1+r)^(365/365) = 1.1 → r = 10.000000000000%"
+                ),
+            },
+            {
+                "name": "two_year_plus_10pct",
+                "cash_flows": [["2025-01-01", -1000000], ["2027-01-01", 1210000]],
+                "expected_rate": "0.1",
+                "derivation": (
+                    "投入 10000.00 元、730 天后收回 12100.00 元："
+                    "(1+r)^(730/365) = 1.21 → r = 10.000000000000%"
+                ),
+            },
+            {
+                "name": "one_year_minus_10pct",
+                "cash_flows": [["2025-01-01", -1000000], ["2026-01-01", 900000]],
+                "expected_rate": "-0.1",
+                "derivation": (
+                    "投入 10000.00 元、365 天后收回 9000.00 元："
+                    "r = 9000/10000 - 1 = -10.000000000000%"
+                ),
+            },
+            {
+                "name": "one_year_zero",
+                "cash_flows": [["2025-01-01", -1000000], ["2026-01-01", 1000000]],
+                "expected_rate": "0",
+                "derivation": "投入与收回相等且恰好 365 天：r = 0",
+            },
+        ],
+        "surface_evidence": _attribution_surface_evidence(views, fifo_block, rows),
+        "views": views,
+        "methods": {"fifo": fifo_block, "wavg": wavg_block},
+    }
+
+
+def _attribution_surface_evidence(views, method_block, rows):
+    """6 个归因形态的逐项期望值：形态不是"已注入"就算了，要给出可断言的数。"""
+    account_key = "Y0000002"
+    view = next(item for item in views["accounts"] if item["account_id"] == account_key)
+    account_method = next(
+        item for item in method_block["accounts"] if item["account_id"] == account_key
+    )
+    buys = {}
+    sells = {}
+    for row in rows:
+        if row["kind"] == "trade_buy":
+            buys.setdefault(row["symbol"], []).append(
+                {
+                    "date": row["trade_date"],
+                    "quantity": _frac_text(row["quantity"]),
+                    "amount_fen": row["amount_fen"],
+                    "fees_fen": row["fees_fen"],
+                    "source_line_no": row["source_line_no"],
+                }
+            )
+        elif row["kind"] == "trade_sell":
+            sells.setdefault(row["symbol"], []).append(
+                {
+                    "date": row["trade_date"],
+                    "quantity": _frac_text(row["quantity"]),
+                    "amount_fen": row["amount_fen"],
+                    "source_line_no": row["source_line_no"],
+                }
+            )
+    realized = {
+        item["symbol"]: item["realized_fen"]
+        for item in method_block["decomposition"]["by_symbol"]
+    }
+    return {
+        "attribution.lump_sum": {
+            "keys": [["huaxi-demo-001.xls", 6]],
+            "expect": {
+                "account_id": account_key,
+                "symbol": "699006",
+                "buy_count": len(buys["699006"]),
+                "first_buy": buys["699006"][0],
+            },
+        },
+        "attribution.dca": {
+            "keys": [
+                ["huaxi-demo-001.xls", 3],
+                ["huaxi-demo-001.xls", 4],
+                ["huaxi-demo-001.xls", 5],
+                ["huaxi-demo-001.xls", 15],
+            ],
+            "expect": {
+                "account_id": account_key,
+                "symbol": "699005",
+                "buy_count": len(buys["699005"]),
+                "buy_dates": [item["date"] for item in buys["699005"]],
+            },
+        },
+        "attribution.midterm_redemption": {
+            "keys": [["huaxi-demo-001.xls", 8]],
+            "expect": {
+                "account_id": account_key,
+                "symbol": "699005",
+                "sell_count": len(sells["699005"]),
+                "first_sell": sells["699005"][0],
+            },
+        },
+        "attribution.negative_return": {
+            "keys": [["huaxi-demo-001.xls", 6], ["huaxi-demo-001.xls", 17]],
+            "expect": {
+                "account_id": account_key,
+                "symbol": "699006",
+                "buy_count": len(buys["699006"]),
+                "sell_count": len(sells["699006"]),
+                "realized_fen": realized.get("699006"),
+            },
+        },
+        "attribution.zero_return": {
+            "keys": [["huaxi-demo-001.xls", 11], ["huaxi-demo-001.xls", 14]],
+            "expect": {
+                "account_id": account_key,
+                "symbol": "699007",
+                "buy_count": len(buys["699007"]),
+                "sell_count": len(sells["699007"]),
+                "realized_fen": realized.get("699007"),
+            },
+        },
+        "attribution.zero_terminal_value": {
+            "keys": [
+                ["huaxi-demo-001.xls", 16],
+                ["huaxi-demo-001.xls", 17],
+                ["huaxi-demo-001.xls", 18],
+            ],
+            "expect": {
+                "account_id": account_key,
+                "terminal_securities_fen": view["terminal_securities_fen"],
+                "terminal_cash_fen": view["terminal_cash_fen"],
+                "unrealized_fen": account_method["unrealized_fen"],
+            },
+        },
+    }
+
+
+def _shape_check_attribution_truth(data_dir, import_truth):
+    """M4 真值纪律：视图齐全、守恒自洽、形态指向真实行、手工算例在位。"""
+    issues = []
+    path = data_dir / "truth" / "attribution_truth.json"
+    if not path.is_file():
+        return ["缺少文件 truth/attribution_truth.json"]
+    try:
+        payload = json.loads(path.read_text(encoding="utf-8"))
+    except ValueError as exc:
+        return ["truth/attribution_truth.json 不是合法 JSON：{}".format(exc)]
+
+    if payload.get("format") != "ia.truth.attribution":
+        issues.append("attribution_truth.format 不匹配")
+    scenario = payload.get("scenario") or {}
+    files = scenario.get("files") or []
+    if not files:
+        issues.append("attribution_truth.scenario.files 为空")
+    for name in files:
+        if not (data_dir / "samples" / name).is_file():
+            issues.append("归因真值引用的样例不存在 {}".format(name))
+    valuation_name = scenario.get("valuation") or ""
+    if not (data_dir / "samples" / valuation_name).is_file():
+        issues.append("归因真值引用的估值表不存在 {}".format(valuation_name))
+    if sorted((payload.get("methods") or {})) != ["fifo", "wavg"]:
+        issues.append("attribution_truth.methods 必须同时含 fifo 与 wavg")
+
+    views = payload.get("views") or {}
+    accounts = views.get("accounts") or []
+    merged = views.get("merged") or {}
+    if not accounts:
+        issues.append("attribution_truth.views.accounts 为空")
+    if not merged:
+        issues.append("attribution_truth.views.merged 缺失")
+    fifo_accounts = {
+        item["account_id"]: item
+        for item in (payload.get("methods", {}).get("fifo", {}).get("accounts") or [])
+    }
+    for item in accounts + [merged]:
+        key = item.get("account_key")
+        if item.get("xirr") is None:
+            issues.append("attribution_truth.{}: XIRR 期望值缺失".format(key))
+        for basis in ("cashflow", "daily"):
+            if (item.get("twr") or {}).get(basis) is None:
+                issues.append(
+                    "attribution_truth.{}: TWR({}) 期望值缺失".format(key, basis)
+                )
+        flows = item.get("cash_flows") or []
+        if len(flows) < 2:
+            issues.append("attribution_truth.{}: 现金流少于两笔".format(key))
+        for row in flows:
+            if not isinstance(row, list) or len(row) != 2:
+                issues.append("attribution_truth.{}: 现金流形态不合法".format(key))
+                break
+            if not isinstance(row[0], str) or not isinstance(row[1], int):
+                issues.append("attribution_truth.{}: 现金流形态不合法".format(key))
+                break
+
+    for method in ("fifo", "wavg"):
+        block = (payload.get("methods") or {}).get(method) or {}
+        for item in block.get("accounts") or []:
+            subtotal = (
+                item["realized_sells_fen"]
+                + item["dividend_income_fen"]
+                + item["reinvested_income_fen"]
+                + item["other_income_fen"]
+            )
+            if subtotal != item["realized_total_fen"]:
+                issues.append(
+                    "attribution_truth.{}.{}: 已实现分项之和 != realized_total".format(
+                        method, item.get("account_id")
+                    )
+                )
+            if (
+                item["realized_total_fen"] + item["unrealized_fen"]
+                != item["total_return_fen"]
+            ):
+                issues.append(
+                    "attribution_truth.{}.{}: 已实现+未实现 != 总收益".format(
+                        method, item.get("account_id")
+                    )
+                )
+        merged_total = (block.get("merged") or {}).get("total_return_fen")
+        decomposition = block.get("decomposition") or {}
+        for dimension in ("by_symbol", "by_industry", "by_account", "by_year"):
+            dimension_rows = decomposition.get(dimension) or []
+            if not dimension_rows:
+                issues.append("attribution_truth.{}.{} 为空".format(method, dimension))
+                continue
+            total = sum(item["total_fen"] for item in dimension_rows)
+            if total != merged_total:
+                issues.append(
+                    "attribution_truth.{}.{}: 分解之和 {} != 总收益 {}".format(
+                        method, dimension, total, merged_total
+                    )
+                )
+
+    for item in accounts:
+        method_item = fifo_accounts.get(item["account_id"]) or {}
+        difference = (
+            item["terminal_cash_fen"]
+            + item["terminal_securities_fen"]
+            - item["net_contribution_fen"]
+            - method_item.get("total_return_fen", 0)
+        )
+        if abs(difference) > 1:
+            issues.append(
+                "attribution_truth.{}: 期末总资产 − 净投入 与总收益 差 {} 分".format(
+                    item["account_id"], difference
+                )
+            )
+
+    examples = payload.get("manual_examples") or []
+    if len(examples) < 3:
+        issues.append("attribution_truth.manual_examples 少于三条（手工算例是第二判据）")
+    for example in examples:
+        if not example.get("cash_flows") or not example.get("derivation"):
+            issues.append("手工算例缺现金流或推导：{}".format(example.get("name")))
+
+    evidence = payload.get("surface_evidence") or {}
+    for surface in ATTRIBUTION_SURFACE_ORDER:
+        item = evidence.get(surface)
+        if not item:
+            issues.append("attribution_truth.surface_evidence 缺 {}".format(surface))
+            continue
+        keys = item.get("keys") or []
+        if not keys:
+            issues.append("{}: 缺证据行".format(surface))
+        for key in keys:
+            if not isinstance(key, list) or len(key) != 2:
+                issues.append("{}: 证据行形态不合法 {}".format(surface, key))
+                continue
+            name, line_no = key
+            sample = data_dir / "samples" / str(name)
+            if not sample.is_file():
+                issues.append("{}: 证据行指向不存在的样例 {}".format(surface, name))
+                continue
+            if str(name).endswith((".csv", ".tsv", ".xls")) and isinstance(line_no, int):
+                decoded = None
+                for encoding in ("utf-8-sig", "utf-8", "gb18030"):
+                    try:
+                        decoded = sample.read_bytes().decode(encoding)
+                        break
+                    except UnicodeDecodeError:
+                        decoded = None
+                if decoded is not None and decoded.count("\n") + 1 < line_no:
+                    issues.append(
+                        "{}: 证据行号 {} 超出 {} 行数".format(surface, line_no, name)
+                    )
+        if not item.get("expect"):
+            issues.append("{}: 缺逐项期望值".format(surface))
+    negative = (evidence.get("attribution.negative_return") or {}).get("expect") or {}
+    if negative.get("realized_fen") is None or negative["realized_fen"] >= 0:
+        issues.append("attribution.negative_return 期望已实现必须为负")
+    zero = (evidence.get("attribution.zero_return") or {}).get("expect") or {}
+    if zero.get("realized_fen") != 0:
+        issues.append("attribution.zero_return 期望已实现必须恰为 0")
+    terminal = (evidence.get("attribution.zero_terminal_value") or {}).get("expect") or {}
+    if terminal.get("terminal_securities_fen") != 0:
+        issues.append("attribution.zero_terminal_value 期望证券市值必须为 0")
+
+    if import_truth is not None:
+        known = {entry["source_file"] for entry in import_truth.get("files", [])}
+        for name in files:
+            if name not in known:
+                issues.append("归因真值引用的样例未登记进导入真值 {}".format(name))
+    return issues
+
+
 def build_samples(rng):
     account_a = build_account_a()
     account_b = build_account_b()
@@ -2212,17 +3278,6 @@ def build_unregistered_account():
     return sample_out(spec)
 
 
-def build_valuation():
-    header = "date,symbol,name,quantity,price"
-    rows = [
-        "2025-12-31,699001,示例科技甲,500,10.20",
-        "2025-12-31,699003,示例基金丙,2000,0.65",
-        "2025-12-31,699004,示例转债丁,100,108.00",
-    ]
-    data = ("\n".join([header] + rows) + "\n").encode("utf-8")
-    return data
-
-
 def build_truth(sample_outs):
     files = []
     for out in sample_outs:
@@ -2307,7 +3362,7 @@ def generate(data_dir):
         path.write_bytes(out.data)
         written.append((path, out.data))
 
-    valuation = build_valuation()
+    valuation, valuation_rows = build_valuation(cost_inputs)
     path = data_dir / "samples" / "valuation-demo-001.csv"
     path.write_bytes(valuation)
     written.append((path, valuation))
@@ -2326,6 +3381,13 @@ def generate(data_dir):
     path = data_dir / "truth" / "actions_truth.json"
     path.write_bytes(actions_truth_payload)
     written.append((path, actions_truth_payload))
+
+    attribution_truth_payload = json_bytes(
+        build_attribution_truth(cost_inputs, valuation_rows)
+    )
+    path = data_dir / "truth" / "attribution_truth.json"
+    path.write_bytes(attribution_truth_payload)
+    written.append((path, attribution_truth_payload))
 
     return written
 
@@ -2577,6 +3639,7 @@ def shape_check(data_dir):
 
     issues += _shape_check_cost_truth(data_dir, truth)
     issues += _shape_check_actions_truth(data_dir, truth)
+    issues += _shape_check_attribution_truth(data_dir, truth)
 
     return issues
 

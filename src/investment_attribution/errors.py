@@ -4,7 +4,7 @@
 ``except`` 抓得住、能转成既定退出码，而不是逃逸成 traceback。
 """
 
-from .exit_codes import EXIT_INPUT, EXIT_STAGE_NOT_READY
+from .exit_codes import EXIT_DEGRADED, EXIT_INPUT, EXIT_STAGE_NOT_READY
 
 
 class IAError(ValueError):
@@ -17,6 +17,18 @@ class IAError(ValueError):
         super().__init__(message)
         if code is not None:
             self.code = code
+
+
+class DegradedError(IAError):
+    """数据可用但结果本身不成立：对应退出码 1（不是 2）。
+
+    与 ``InputError`` 的区别是"输入没毛病，是结论算不出来"——例如 XIRR
+    在定义域内无解、拆分守恒被打破。把它单独成类，是为了让退出码 1 的
+    语义在异常层就能被读出，而不是靠调用方逐处判断。
+    """
+
+    code = "DEGRADED"
+    exit_code = EXIT_DEGRADED
 
 
 class UsageError(IAError):
