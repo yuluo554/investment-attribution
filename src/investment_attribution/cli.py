@@ -1,7 +1,8 @@
 """CLI 入口。
 
-七条子命令 + ``run`` / ``bench`` / ``selftest``。骨架期未落地的子命令以
-退出码 3 显式拦截，**不输出任何伪造结果**。
+十条子命令：``import`` / ``cost`` / ``pnl`` / ``corporate-actions`` /
+``attribution`` / ``merge`` / ``report`` / ``run`` / ``bench`` / ``selftest``。
+骨架期的"阶段未就绪"（退出码 3）已在 M5 全部退役，CLI 不再有那条出口。
 
 参数语义纪律：
 - None 表示"用户没传"，0 / 空串是合法值，不得用 ``or DEFAULT`` 吞掉；
@@ -16,16 +17,18 @@ from .errors import IAError, UsageError
 from .exit_codes import (
     EXIT_INPUT,
     EXIT_OK,
-    EXIT_STAGE_NOT_READY,
 )
 from .paths import resolve_data_dir
 from .pipeline.actions_cmd import describe_actions, run_corporate_actions
 from .pipeline.attribution_cmd import describe_attribution, run_attribution
+from .pipeline.bench_cmd import describe_bench, run_bench
 from .pipeline.cost_cmd import describe_holdings, run_cost, run_pnl
 from .pipeline.import_cmd import exit_code_for, run_import
+from .pipeline.merge_cmd import describe_merge, run_merge
+from .pipeline.report_cmd import describe_report, run_report
+from .pipeline.run_cmd import describe_run, run_all
 from .selftest import run_selftest
 from .serialize import dumps_json, write_atomic, write_json_atomic
-from .stages import require_ready
 
 SUBCOMMANDS = (
     "import",
@@ -101,22 +104,29 @@ def build_parser():
     p.add_argument("--out", default=None, help="产物输出路径")
     p.add_argument("--out-dir", default=None, help="产物输出目录（默认名见 README）")
 
-    p = sub.add_parser("merge", help="多账户合并与划转抵消")
-    p.add_argument("--accounts", default=None, help="账户登记表")
+    p = sub.add_parser("merge", help="多账户合并与账户间划转抵消")
+    p.add_argument("--method", choices=("fifo", "wavg"), default=None, help="成本口径（必填，无默认值）")
+    p.add_argument("--ledger", default=None, help="统一流水输入路径（必填；划转两腿要从原始行取证）")
+    p.add_argument("--attribution", default=None, help="归因产物输入路径（必填；合并视图不重算成本）")
     p.add_argument("--out", default=None, help="合并产物输出路径")
+    p.add_argument("--out-dir", default=None, help="产物输出目录（默认名见 README）")
 
-    p = sub.add_parser("report", help="生成单文件本地 HTML 报告")
-    p.add_argument("--merged", default=None, help="合并产物输入路径")
+    p = sub.add_parser("report", help="生成单文件本地 HTML 报告与机读数据")
+    p.add_argument("--merged", default=None, help="合并产物输入路径（必填；先运行 merge）")
     p.add_argument("--out", default=None, help="HTML 输出路径")
     p.add_argument("--json-out", default=None, help="机读 report_data.json 输出路径")
+    p.add_argument("--out-dir", default=None, help="两份产物的输出目录（默认名见 README）")
 
     p = sub.add_parser("run", help="一条命令跑完整链路")
     p.add_argument("input", nargs="+", help="券商导出的交割单文件")
-    p.add_argument("--cost-method", choices=("fifo", "wavg"), default=None, help="成本口径（必填）")
-    p.add_argument("--out-dir", default=None, help="全部中间产物与报告的输出目录")
+    p.add_argument("--method", choices=("fifo", "wavg"), default=None, help="成本口径（必填，无默认值）")
+    p.add_argument("--valuation", default=None, help="估值序列表（必填；归因期末市值取自它）")
+    p.add_argument("--benchmark", default=None, help="本地基准 CSV（可选；缺了不显示超额列）")
+    p.add_argument("--twr-basis", choices=("cashflow", "daily"), default=None, help="TWR 估值点口径（缺省取参数包 default_basis）")
+    p.add_argument("--out-dir", default=None, help="全部中间产物与报告的输出目录（必填）")
 
     p = sub.add_parser("bench", help="运行内置基准套件 B1–B5")
-    p.add_argument("--only", default=None, help="只跑指定套件（如 B1）")
+    p.add_argument("--only", default=None, help="只跑指定套件（如 B1 或 B1,B4；缺省全跑）")
 
     p = sub.add_parser("selftest", help="可证伪自检（离开开发机也能证明完整性）")
     p.add_argument("--json-out", default=None, help="把自检结果写入 JSON 文件")
@@ -272,13 +282,56 @@ def _cmd_attribution(args):
     return result.exit_code
 
 
-def _cmd_stage_not_ready(command):
-    require_ready(command)
-    # 走到这里说明登记表与分派不一致，属实现缺陷，不能静默返回成功。
-    raise UsageError(
-        "子命令 {} 未登记未就绪状态，但也没有实现。".format(command),
-        code="STAGE_TABLE_MISMATCH",
+def _cmd_merge(args):
+    """多账户合并：成功 0 / 检出问题（未抵消、守恒被打破）1 / 用法或输入不可用 2。"""
+    result = run_merge(
+        args.method,
+        ledger_path=args.ledger,
+        attribution_path=args.attribution,
+        data_dir=args.data_dir,
+        out=args.out,
+        out_dir=args.out_dir,
     )
+    for line in describe_merge(result):
+        sys.stderr.write(line + "\n")
+    return result.exit_code
+
+
+def _cmd_report(args):
+    """本地报告：成功 0 / 上游产物带问题 1 / 用法或输入不可用 2。"""
+    result = run_report(
+        merged_path=args.merged,
+        out=args.out,
+        json_out=args.json_out,
+        out_dir=args.out_dir,
+    )
+    for line in describe_report(result):
+        sys.stderr.write(line + "\n")
+    return result.exit_code
+
+
+def _cmd_run(args):
+    """完整链路：各步退出码的最大值；任一步用法错误即中断（2）。"""
+    result = run_all(
+        args.input,
+        method=args.method,
+        data_dir=args.data_dir,
+        valuation_path=args.valuation,
+        out_dir=args.out_dir,
+        benchmark_path=args.benchmark,
+        twr_basis=args.twr_basis,
+    )
+    for line in describe_run(result):
+        sys.stderr.write(line + "\n")
+    return result.exit_code
+
+
+def _cmd_bench(args):
+    """内置基准套件：全部达标 0 / 有套件未达标 1 / 用法或真值不可用 2。"""
+    payload = run_bench(data_dir=args.data_dir, only=args.only)
+    for line in describe_bench(payload):
+        sys.stderr.write(line + "\n")
+    return EXIT_OK if payload["ok"] else 1
 
 
 HANDLERS = {
@@ -287,6 +340,10 @@ HANDLERS = {
     "pnl": _cmd_pnl,
     "corporate-actions": _cmd_corporate_actions,
     "attribution": _cmd_attribution,
+    "merge": _cmd_merge,
+    "report": _cmd_report,
+    "run": _cmd_run,
+    "bench": _cmd_bench,
     "selftest": _cmd_selftest,
 }
 
@@ -301,7 +358,7 @@ def main(argv=None):
         return EXIT_INPUT
 
     # 运行期零上传探针（四层审计第三层）：整套命令在武装状态下执行，
-    # 一旦真的有网络调用会被拦截并记账；engine 会把记账数写进产物。
+    # 一旦真的有网络调用会被拦截并记账；引擎会把记账数写进产物。
     from .netguard import armed_runtime_probe
 
     handler = HANDLERS.get(args.command)
@@ -309,7 +366,11 @@ def main(argv=None):
         with armed_runtime_probe():
             if handler is not None:
                 return handler(args)
-            return _cmd_stage_not_ready(args.command)
+            raise UsageError(
+                "子命令 {} 已在 SUBCOMMANDS 登记却没有分派实现".format(args.command),
+                code="COMMAND_UNROUTED",
+            )
     except IAError as exc:
         sys.stderr.write("{} [{}]: {}\n".format(type(exc).__name__, exc.code, exc))
         return exc.exit_code
+

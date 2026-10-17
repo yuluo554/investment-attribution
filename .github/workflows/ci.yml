@@ -112,13 +112,65 @@ jobs:
             --valuation data/samples/valuation-demo-001.csv --twr-basis monthly
           test "$?" = "2"
 
-      - name: Stage-not-ready contract (M5 commands only)
+      - name: Merge smoke (exit 0 = transfers offset, totals conserved)
+        shell: bash
+        run: |
+          python -m investment_attribution merge --method fifo \
+            --ledger out/attr-src/ledger.json \
+            --attribution out/attr-fifo/attribution.json --out-dir out/merged
+          test -f out/merged/merged.json
+
+      - name: Report smoke (single file, zero external links, masked accounts)
+        shell: bash
+        run: |
+          python -m investment_attribution report \
+            --merged out/merged/merged.json --out-dir out/report
+          test -f out/report/report.html
+          test -f out/report/report_data.json
+          # 零外链：报告里不得出现任何外部地址引用
+          ! grep -qE 'https?:|//' out/report/report.html
+          # 报告阶段打码：HTML / JSON 不含完整账号形态
+          ! grep -qE '[YA][0-9]{7,9}' out/report/report.html
+          ! grep -qE '[YA][0-9]{7,9}' out/report/report_data.json
+
+      - name: Merge method and inputs are mandatory (exit 2)
         shell: bash
         run: |
           set +e
-          for sub in "merge" "report" "bench" "run x.csv"; do
-            # shellcheck disable=SC2086
-            python -m investment_attribution $sub
-            code=$?
-            test "$code" = "3" || { echo "$sub returned $code"; exit 1; }
+          python -m investment_attribution merge --ledger out/attr-src/ledger.json \
+            --attribution out/attr-fifo/attribution.json
+          test "$?" = "2"
+          python -m investment_attribution merge --method fifo \
+            --attribution out/attr-fifo/attribution.json
+          test "$?" = "2"
+          python -m investment_attribution merge --method fifo \
+            --ledger out/attr-src/ledger.json
+          test "$?" = "2"
+          python -m investment_attribution report
+          test "$?" = "2"
+
+      - name: Run smoke (one command, whole chain; exit 1 = pending corporate action)
+        shell: bash
+        run: |
+          set +e
+          python -m investment_attribution run \
+            data/samples/htsec-demo-001.xlsx data/samples/huaxi-demo-001.xls \
+            data/samples/generic-demo-013-account-c.csv \
+            data/samples/generic-demo-015-no-fee-columns.csv \
+            --method fifo --valuation data/samples/valuation-demo-001.csv \
+            --out-dir out/chain
+          code=$?
+          test "$code" = "1"
+          for name in ledger.json holdings.json pnl.json actions.json pending.json \
+                      attribution.json merged.json report.html report_data.json; do
+            test -f "out/chain/$name" || { echo "missing out/chain/$name"; exit 1; }
           done
+
+      - name: Bench suites B1-B5 (exit 0 = all suites meet their truth)
+        shell: bash
+        run: |
+          python -m investment_attribution bench
+          python -m investment_attribution bench --only B1
+          set +e
+          python -m investment_attribution bench --only B9
+          test "$?" = "2"

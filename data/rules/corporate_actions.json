@@ -1,5 +1,5 @@
 {
-  "contract_version": "0.5.0-m4",
+  "contract_version": "0.6.0-m5",
   "format": "ia.corporate_actions",
   "format_version": 1,
   "non_action_patterns": [
@@ -95,6 +95,9 @@
       "share_factor": null,
       "tax_rule": "as_reported"
     }
+  ],
+  "transfer_patterns": [
+    "内部划转"
   ],
   "unmatched_policy": "pending_confirmation"
 }

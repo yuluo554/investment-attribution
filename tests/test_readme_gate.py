@@ -78,10 +78,13 @@ def test_readme_extras_exist_in_pyproject():
 
 
 def test_readme_declares_exit_code_semantics():
+    """退出码表只列 0 / 1 / 2；骨架期的 3 必须写明已退役（不留活口）。"""
     text = read_text(README)
-    for token in ("`0`", "`1`", "`2`", "`3`"):
+    for token in ("`0`", "`1`", "`2`"):
         assert token in text, token
-    assert "阶段未就绪" in text
+    assert "| `3` |" not in text, "退出码表里不得再列 3"
+    assert "阶段未就绪" in text, "退役这件事本身要写清楚，不能悄悄删掉"
+    assert "退役" in text
 
 
 def test_no_placeholder_sentinels_in_sources():

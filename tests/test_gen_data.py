@@ -24,6 +24,9 @@ ACTIONS_TRUTH = json.loads(
 ATTRIBUTION_TRUTH = json.loads(
     (DATA_DIR / "truth" / "attribution_truth.json").read_text(encoding="utf-8")
 )
+MERGE_TRUTH = json.loads(
+    (DATA_DIR / "truth" / "merge_truth.json").read_text(encoding="utf-8")
+)
 
 
 def run_generator(*args):
@@ -549,3 +552,163 @@ def test_valuation_sample_matches_ledger_end_state():
         if date == ATTRIBUTION_TRUTH["scenario"]["valuation_date"]:
             terminal[symbol] = quantity
     assert terminal == {"699001": "500", "699003": "7000", "699004": "200"}
+
+
+# ---------------------------------------------------------------------------
+# M5 合并真值（B5）
+# ---------------------------------------------------------------------------
+
+
+def test_merge_truth_is_generated_not_imported_from_engine():
+    """真值纪律：生成器不得 import 引擎，否则"独立复算"变成自己比自己。"""
+    source = GEN_DATA.read_text(encoding="utf-8")
+    assert "investment_attribution" not in source
+    assert MERGE_TRUTH["format"] == "ia.truth.merge"
+    assert sorted(MERGE_TRUTH["methods"]) == ["fifo", "wavg"]
+
+
+def test_merge_truth_has_no_observed_fields():
+    def keys(obj):
+        if isinstance(obj, dict):
+            for key, value in obj.items():
+                yield key
+                for item in keys(value):
+                    yield item
+        elif isinstance(obj, list):
+            for value in obj:
+                for item in keys(value):
+                    yield item
+
+    offenders = [key for key in keys(MERGE_TRUTH) if key.startswith("observed")]
+    assert offenders == []
+
+
+def test_merge_truth_scenario_matches_cost_and_attribution_scenario():
+    assert MERGE_TRUTH["scenario"]["files"] == COST_TRUTH["scenario"]["files"]
+    assert MERGE_TRUTH["scenario"]["row_count"] == COST_TRUTH["scenario"]["row_count"]
+    assert MERGE_TRUTH["scenario"]["valuation"] == ATTRIBUTION_TRUTH["scenario"]["valuation"]
+    assert MERGE_TRUTH["scenario"]["valuation_date"] == ATTRIBUTION_TRUTH["scenario"]["valuation_date"]
+
+
+def test_merge_truth_conservation_is_exact():
+    """合并前后总收益不变：Σ 各账户 == 合并视图，逐口径成立且差恰为 0。"""
+    for method, block in MERGE_TRUTH["methods"].items():
+        checks = block["checks"]
+        before = sum(item["total_return_fen"] for item in block["accounts"])
+        assert checks["total_return_before_fen"] == before, method
+        assert checks["total_return_after_fen"] == block["merged"]["total_return_fen"], method
+        assert checks["difference_fen"] == 0, method
+        assert checks["conserved"] is True, method
+
+
+def test_merge_truth_agrees_with_attribution_truth_on_totals():
+    """两份真值必须互相印证：合并真值的合并视图 == 归因真值的合并视图。"""
+    for method, block in MERGE_TRUTH["methods"].items():
+        attribution_block = ATTRIBUTION_TRUTH["methods"][method]
+        assert block["merged"]["total_return_fen"] == attribution_block["merged"]["total_return_fen"]
+        assert block["merged"]["realized_total_fen"] == attribution_block["merged"]["realized_total_fen"]
+        assert block["merged"]["unrealized_fen"] == attribution_block["merged"]["unrealized_fen"]
+        for item in block["accounts"]:
+            peer = next(
+                row
+                for row in attribution_block["accounts"]
+                if row["account_id"] == item["account_id"]
+            )
+            assert item["total_return_fen"] == peer["total_return_fen"], (
+                method,
+                item["account_id"],
+            )
+
+
+def test_merge_truth_transfer_ledger_is_balanced():
+    entries = MERGE_TRUTH["transfer_ledger"]
+    assert entries
+    for entry in entries:
+        assert entry["leg_count"] == len(entry["legs"]) >= 2
+        assert len({leg["account_id"] for leg in entry["legs"]}) == entry["leg_count"]
+        assert entry["net_fen"] == 0
+        assert entry["amount_fen"] == sum(
+            leg["settlement_fen"] for leg in entry["legs"] if leg["settlement_fen"] > 0
+        )
+        signs = {leg["direction"] for leg in entry["legs"]}
+        assert signs == {"in", "out"}
+
+
+def test_merge_truth_holdings_cover_terminal_positions():
+    """合并持仓真值必须覆盖估值表最后一日声明的全部标的。"""
+    rows = (DATA_DIR / "samples" / "valuation-demo-001.csv").read_text(
+        encoding="utf-8"
+    ).splitlines()[1:]
+    terminal = {}
+    for line in rows:
+        date, symbol, _name, quantity, _price = line.split(",")
+        if date == MERGE_TRUTH["scenario"]["valuation_date"]:
+            terminal[symbol] = quantity
+    for method, block in MERGE_TRUTH["methods"].items():
+        holdings = {item["symbol"]: item for item in block["merged_holdings"]}
+        assert set(holdings) == set(terminal), method
+        for symbol, quantity in terminal.items():
+            assert holdings[symbol]["quantity"] == quantity, (method, symbol)
+        for item in block["merged_holdings"]:
+            assert item["unrealized_fen"] == item["market_value_fen"] - item["cost_fen"]
+            assert item["account_count_at_terminal"] <= item["account_count_ever"]
+
+
+def test_every_merge_surface_points_at_real_rows_and_carries_expectations():
+    keys = {tuple(row["key"]) for row in COST_TRUTH["rows"]}
+    manifest = json.loads(
+        (DATA_DIR / "rules" / "manifest.json").read_text(encoding="utf-8")
+    )
+    surfaces = [
+        item["surface"]
+        for item in manifest["coverage"]["surfaces"]
+        if item["surface"].startswith("merge.")
+    ]
+    assert len(surfaces) == 4
+    evidence = MERGE_TRUTH["surface_evidence"]
+    assert set(surfaces) == set(evidence)
+    for surface in surfaces:
+        assert evidence[surface]["keys"], surface
+        assert evidence[surface]["expect"], surface
+        for key in evidence[surface]["keys"]:
+            assert tuple(key) in keys, (surface, key)
+
+
+def test_merge_surface_expectations_are_concrete():
+    evidence = MERGE_TRUTH["surface_evidence"]
+    transfer = evidence["merge.internal_transfer"]["expect"]
+    assert transfer["net_fen"] == 0 and transfer["leg_count"] == 2
+    assert transfer["amount_fen"] == 2000000
+    overlap = evidence["merge.overlapping_symbol"]["expect"]
+    assert overlap["account_count_ever"] == 2
+    assert overlap["account_count_at_terminal"] == 1
+    assert evidence["merge.two_accounts"]["expect"]["account_count"] == 2
+    assert evidence["merge.three_accounts"]["expect"]["account_count"] == 3
+
+
+def test_merge_manual_examples_are_checkable():
+    examples = {item["name"]: item for item in MERGE_TRUTH["manual_examples"]}
+    assert len(examples) >= 3
+    assert examples["two_legs_cancel_exactly"]["expect"]["net_fen"] == 0
+    assert examples["single_leg_never_offsets"]["expect"]["balanced"] is False
+    assert examples["same_symbol_two_accounts"]["expect"]["account_count_ever"] == 2
+    for item in examples.values():
+        assert item["derivation"] and item["expect"]
+
+
+def test_rules_pack_declares_transfer_patterns():
+    rules = json.loads(
+        (DATA_DIR / "rules" / "corporate_actions.json").read_text(encoding="utf-8")
+    )
+    assert rules["transfer_patterns"] == MERGE_TRUTH["scenario"]["transfer_patterns"]
+    assert set(rules["transfer_patterns"]) <= set(rules["non_action_patterns"])
+
+
+def test_contract_version_is_m5():
+    manifest = json.loads(
+        (DATA_DIR / "rules" / "manifest.json").read_text(encoding="utf-8")
+    )
+    assert manifest["contract_version"] == "0.6.0-m5"
+    for payload in (TRUTH, COST_TRUTH, ACTIONS_TRUTH, ATTRIBUTION_TRUTH, MERGE_TRUTH):
+        assert payload["contract_version"] == "0.6.0-m5"
+

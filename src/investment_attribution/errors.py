@@ -4,7 +4,7 @@
 ``except`` 抓得住、能转成既定退出码，而不是逃逸成 traceback。
 """
 
-from .exit_codes import EXIT_DEGRADED, EXIT_INPUT, EXIT_STAGE_NOT_READY
+from .exit_codes import EXIT_DEGRADED, EXIT_INPUT
 
 
 class IAError(ValueError):
@@ -47,10 +47,3 @@ class DataError(IAError):
     """随包数据契约损坏：manifest 缺失/字段不全/冻结产物不在位。"""
 
     code = "DATA_ERROR"
-
-
-class StageNotReady(IAError):
-    """模块尚未落地，显式拦截，不输出任何伪造结果。"""
-
-    code = "STAGE_NOT_READY"
-    exit_code = EXIT_STAGE_NOT_READY

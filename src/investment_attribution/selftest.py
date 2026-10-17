@@ -131,6 +131,90 @@ def run_selftest(data_dir):
 
     checks.append(_check("runtime_socket_probe", _no_runtime_network))
 
+    def _renderer_no_decisions():
+        """渲染层零判定：报告模板里不得出现成本口径 / 事件类型 / 收益口径。
+
+        这条检查与 ``tests/test_report.py`` 里的正/负对照同源：门禁本身
+        在 ``report/guard.py``，这里只是把它拉进"离开开发机也能证"的清单。
+        """
+        from .report.guard import scan_renderer
+
+        violations = scan_renderer(PACKAGE_ROOT)
+        if violations:
+            raise DataError(
+                "渲染层出现业务判定：{}".format(violations[:3]),
+                code="RENDERER_DECISION_FOUND",
+            )
+        return "0 business decisions in report renderer"
+
+    checks.append(_check("renderer_no_decisions", _renderer_no_decisions))
+
+    def _report_zero_external_links():
+        """零外链出口扫描的正/负对照：干净模型零命中，注入外链必须被抓。"""
+        from .report.guard import scan_external_references
+        from .report.render import render_html
+
+        model = {
+            "meta": {"title": "自检报告", "subtitle": "零外链对照"},
+            "header": {"badges": [], "notices": [], "disclaimer": "d"},
+            "sections": [
+                {
+                    "id": "notes",
+                    "kind": "notes",
+                    "title": "t",
+                    "note": "n",
+                    "items": [{"title": "a", "body": "b", "tone": "info"}],
+                },
+                {
+                    "id": "kpi",
+                    "kind": "kpi",
+                    "title": "t",
+                    "note": "n",
+                    "figures": [
+                        {
+                            "id": "f",
+                            "label": "l",
+                            "value_text": "1.00",
+                            "unit": "元",
+                            "tone": "flat",
+                            "evidence": [],
+                        }
+                    ],
+                },
+                {
+                    "id": "table",
+                    "kind": "table",
+                    "title": "t",
+                    "note": "n",
+                    "columns": [{"label": "c", "align": "left"}],
+                    "rows": [{"cells": ["v"], "tone": "flat", "evidence": []}],
+                },
+            ],
+            "counts": {
+                "section_count": 3,
+                "figure_count": 1,
+                "table_row_count": 1,
+                "note_item_count": 1,
+            },
+        }
+        clean = render_html(model)
+        found = scan_external_references(clean)
+        if found:
+            raise DataError(
+                "渲染层产出含外部引用：{}".format(found[0]),
+                code="REPORT_EXTERNAL_REFERENCE",
+            )
+        model["header"]["notices"] = ["见 http://example.invalid/x （注入用阳性对照，不是真链接）"]
+        dirty = render_html(model)
+        if not scan_external_references(dirty):
+            raise DataError(
+                "外链扫描没抓到注入的外部引用（门禁不可证伪）",
+                code="REPORT_SCAN_NOT_FALSIFIABLE",
+            )
+        return "clean=0 dirty={}".format(len(scan_external_references(dirty)))
+
+    checks.append(_check("report_zero_external_links", _report_zero_external_links))
+
     def _repo_root_resolvable():
         root = find_repo_root()
         if root is None:

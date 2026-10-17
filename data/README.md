@@ -116,7 +116,7 @@
 |---|---|
 | FIFO | 卖出时按**买入时间升序**消耗持仓批次；同一时点存在多批时按 `成交日期 + 成交时间 + 原始行号` 升序；每批成本含该批买入费用 |
 | 移动加权平均 | 每次买入后重算：`新单位成本 = (原持仓总成本 + 本次买入金额 + 本次买入费用) / (原持仓数量 + 本次买入数量)`；卖出不改变单位成本，仅按单位成本结转已实现收益 |
-| 口径选择 | 显式参数 `--cost-method fifo|wavg`，**无默认值**（必须指定，避免"用了哪个口径说不清"）；报告页眉强制标注 |
+| 口径选择 | 显式参数 `--method fifo|wavg`，**无默认值**（必须指定，避免"用了哪个口径说不清"）；报告页眉强制标注。M5 起全链路统一叫 `--method`（旧称 `--cost-method` 仅出现在历史交接文档里） |
 | 费用归属 | 佣金 / 印花税 / 过户费 / 其他费按交割单**实际列值**入账；买入费用计入成本，卖出费用冲减已实现收益；交割单未分列时按参数包中**显式分摊规则**处理并在报告标注"分摊口径" |
 | 数量单位 | 股（整数）；基金份额保留 4 位小数（若扩展基金通道） |
 
@@ -228,6 +228,31 @@
 
 - 所有可配置参数（日期区间、估值日、费用分摊规则、行业映射、TWR 估值点）**默认值均为经验示例值**，注明"非官方"；
 - 阈值与默认值只写在参数包 `params` 中，其他位置引用不复制。
+
+### 4.6 合并与报告口径（M5 落地的细则 = 唯一定义处）
+
+> 合并视图**不重算成本**：输入是 M4 的 `attribution.json`（已含分账户与合并两套数），
+> M5 只加一层增量——**逐笔划转台账**与**合并前后守恒断言**。
+> 划转模式来自冻结规则包，代码里没有第二份业务名表。
+
+| 项 | 定义 | 实现位置 |
+|---|---|---|
+| 划转模式 | 取自 `data/rules/corporate_actions.json` 的 `transfer_patterns`（当前为 `内部划转`）；银证转入 / 转出不是账户间划转，不进台账 | `merge/engine.py::load_transfer_patterns` |
+| 划转归组 | 按**合同号**归组；缺合同号的划转行直接落 `TRANSFER_CONTRACT_MISSING`，不与任何行配对 | `_transfer_ledger` |
+| 已抵消判定 | 同一合同号下**腿数 ≥ 2**、**净额恰为 0**、且**两腿分属不同账户**三条同时成立才算"已抵消"；否则分别落 `TRANSFER_LEG_UNPAIRED` / `TRANSFER_NET_NOT_ZERO` / `TRANSFER_SAME_ACCOUNT`（退出码 1）。**只导入一端时必须报问题，不得假装抵消成功** | `_transfer_ledger` |
+| 两端剔除证据 | 每条划转记两腿（账户 / 方向 / 金额 / 原始行 + sha256）与合并视图当日净现金流；两者同时为 0 才是"已抵消"的**可查证据**，不是一句结论 | `transfers[].offset` |
+| 合并前后总收益 | `Σ 各账户总收益 == 合并视图总收益`；差 > `bench_thresholds.transfer_offset_tolerance_cny`（0.01 元）落 `MERGE_TOTAL_NOT_CONSERVED` | `_compute_artifact` |
+| 合并持仓 | 按**标的**汇总各账户期末持仓（数量与成本相加），另记 `account_count_at_terminal`（期末持有账户数）与 `account_count_ever`（历史涉及账户数，用于暴露同名标的跨账户重叠）；市值合计必须等于各账户持仓市值合计，否则落 `MERGE_HOLDINGS_NOT_CONSERVED` | `_merged_holdings` |
+| 口径一致性 | `--method` 必须与归因产物的口径一致，不一致落 `METHOD_MISMATCH_WITH_ATTRIBUTION`（退出码 2）：合并视图不替用户猜口径 | `build_merge` |
+| 报告单源 | 报告只吃 `merged.json`；HTML 与 `report_data.json` 由**同一次**数据模型构建产出，口径与数字不来自第二处 | `report/model.py` |
+| 报告打码 | 股东账号与资金账号在**生成报告数据时**即打码（保留首尾各 2 位，中间以 `*` 覆盖），并在构建末尾再跑一趟兜底替换；HTML 与 JSON 都不含完整账号 | `report/model.py::mask_account` / `_sanitize` |
+| 逐数字下钻 | 每个汇总数与每行表格都挂 `source_file` / `source_sha256` / `source_line_no`；锚点取自上游产物的 `provenance` 索引（该索引又来自 M1 的审计三件套），**不造锚点** | `report/model.py` |
+| 渲染层零判定 | 渲染层不得按成本口径 / 事件类型 / 收益口径分支；判定词表覆盖字符串字面量、标识符、属性名三类载体，标准库方法名与业务词同形时走白名单 | `report/guard.py` |
+| 零外链 | 报告出口对 HTML 做静态扫描（`http://` / `https://` / `//`），命中即报错并不落任何产物 | `report/guard.py::scan_external_references` |
+| `run` 逐字节一致 | `run` 只是编排，按固定顺序调用与逐命令相同的同一批函数；同一输出目录、同一路径字符串下产物逐字节一致 | `pipeline/run_cmd.py` |
+| `bench` 单一判据 | B1–B5 的达标判据分别是五个模块下的 `verify.py`，`bench` 只汇总失败码、不长第二套计算路径 | `pipeline/bench_cmd.py` |
+| 真值 | `data/truth/merge_truth.json`（合并前后总收益、逐笔划转台账、合并持仓与账户计数、手工算例），由生成器用 `Fraction` + 整数分独立复算，**不 import 引擎** | `tools/gen_data.py` |
+| 合并视图的边界 | `attribution.json` 的合并视图把各账户现金流**按日期相加**（内部划转两腿同日相消），因此**不需要额外抵消逻辑**；M5 要做的是**列出**逐笔划转并给出"已抵消"证据（§4.2.1 第 5 行"合并视图"一行的展开） | `attribution/engine.py` / `merge/engine.py` |
 
 ## 五、隐私红线
 

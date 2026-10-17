@@ -16,6 +16,7 @@ from investment_attribution.ingest import import_files
 from investment_attribution.ingest.encoding import decode_bytes
 from investment_attribution.ingest.records import RowError
 from investment_attribution.ingest.tables import is_xlsx, read_table
+from investment_attribution.ingest.verify import compare as compare_b1
 
 SAMPLES = DATA_DIR / "samples"
 TRUTH = json.loads(
@@ -55,25 +56,34 @@ def test_huaxi_tab_gb18030_imports_every_row_without_error():
 
 @pytest.mark.parametrize("name", sorted(TRUTH_BY_FILE))
 def test_every_sample_matches_truth_ledger(name):
-    """逐行逐字段比对真值；``source_line_no`` 用源文件行号而非数组下标。"""
-    entry = TRUTH_BY_FILE[name]
+    """逐行逐字段比对真值；``source_line_no`` 用源文件行号而非数组下标。
+
+    判据实现已抽到 ``ingest/verify.py``：本测试与 ``bench --only B1`` 共用
+    同一份比对（两个实现各写一套，迟早会分叉成"测试过、基准不过"）。
+    """
     try:
         result = import_one(name)
     except IAError as exc:
-        assert entry["status"] == "file_error", "{} 意外不可用：{}".format(name, exc)
-        assert exc.code == entry["file_error_code"], name
-        return
-
-    assert entry["status"] != "file_error", "{} 应判为整份不可用".format(name)
-    assert result.ledger["rows"] == entry["expected_rows"], name
-    expected_errors = [
-        (item["source_line_no"], item["reason_code"])
-        for item in entry["expected_row_errors"]
-    ]
-    actual_errors = [
-        (item["source_line_no"], item["reason_code"]) for item in result.errors["errors"]
-    ]
-    assert actual_errors == expected_errors, name
+        outcomes = {name: {"status": "file_error", "file_error_code": exc.code}}
+    else:
+        fingerprint = result.fingerprints["files"][0]
+        outcomes = {
+            name: {
+                "status": "ok",
+                "rows": result.ledger["rows"],
+                "errors": result.errors["errors"],
+                "fingerprint": {
+                    "sha256": fingerprint["sha256"],
+                    "unknown_columns": fingerprint["unknown_columns"],
+                },
+            }
+        }
+    report = compare_b1(
+        outcomes,
+        {"format": TRUTH["format"], "files": [TRUTH_BY_FILE[name]]},
+        DATA_DIR,
+    )
+    assert report.ok is True, report.as_dict()["violations"]
 
 
 def test_huaxi_file_is_tab_delimited_gb18030_and_shell_wrapped():

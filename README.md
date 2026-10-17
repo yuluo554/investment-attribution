@@ -6,16 +6,19 @@
 > **不做投资建议，只做账。** 所有输出均为历史核算结果，不构成任何投资建议。
 > 纯本地、零上传、零遥测、不登录券商、不联网行情。断网可跑完整链路。
 
-**状态：M4 收益归因（2026-10-17）。** 当前仓库提供可运行的 CLI 契约、
+**状态：M5 合并与报告（2026-10-17）。** 当前仓库提供可运行的 CLI 契约、
 `import` 子命令（海通 xlsx / 华西 Tab+GB18030 两类真实格式 + 通用 CSV/TSV）、
 `cost` / `pnl` 子命令（FIFO / 移动加权双口径、费用入账、资金与股份余额勾稽、
 每日持仓快照）、`corporate-actions` 子命令（规则表匹配 + 人工确认队列 +
 调整前后可逆复算）、`attribution` 子命令（XIRR / TWR 双估值点口径 /
 已实现未实现拆分 / 费用拖累 / 标的·行业·账户·年度四维分解 / 可选本地基准）、
-确定性合成数据生成器（`tools/gen_data.py --check` 双层守门）、可证伪自检、
-**零上传静态门禁 + 运行期 socket 探针**与确定性写盘；其余业务子命令
-（`merge` / `report` / `run` / `bench`）按里程碑逐个落地，未落地时以退出码
-`3` 显式拦截，**不输出伪造结果**。
+`merge` 子命令（跨券商合并视图 + 逐笔划转台账 + 两端剔除）、
+`report` 子命令（单文件本地 HTML + 机读 `report_data.json`，同源渲染、
+逐数字下钻、生成阶段打码、零外链），`run` 一条命令跑完整链路，
+`bench --only B1..B5` 内置五套基准，确定性合成数据生成器
+（`tools/gen_data.py --check` 双层守门）、可证伪自检、
+**零上传静态门禁 + 运行期 socket 探针**与确定性写盘。
+骨架期的"阶段未就绪"（退出码 `3`）已随 M5 全部退役。
 
 ---
 
@@ -77,11 +80,12 @@ python -m pytest
 | `pnl [--fees]` | 已实现/未实现收益与费用三件套 | M2 ✅ |
 | `corporate-actions --method fifo\|wavg` | 公司行为事件台账 + 人工确认队列（口径必填） | M3 ✅ |
 | `attribution --method fifo\|wavg` | XIRR / TWR / 收益分解 / 费用拖累（口径必填） | M4 ✅ |
-| `merge` | 多账户合并与账户间划转抵消 | M5 |
-| `report` | 单文件本地 HTML 报告 + `report_data.json` | M5 |
-| `run` | 一条命令跑完整链路 | M5 |
-| `bench [--only B1]` | 内置基准套件 B1–B5 | M5 |
-| `selftest` | 可证伪自检（**当前可用**） | M0 ✅ |
+| `merge --method fifo\|wavg` | 多账户合并与账户间划转抵消（口径必填） | M5 ✅ |
+| `report` | 单文件本地 HTML 报告 + `report_data.json` | M5 ✅ |
+| `run --method fifo\|wavg` | 一条命令跑完整链路 | M5 ✅ |
+| `bench [--only B1]` | 内置基准套件 B1–B5 | M5 ✅ |
+| `selftest` | 可证伪自检 | M0 ✅ |
+
 
 ### `import` 用法与退出码
 
@@ -214,6 +218,109 @@ python -m investment_attribution attribution --method wavg \
 基准不做插值也不外推，两端日期缺失落 `BENCHMARK_DATE_MISSING`。
 估值序列、现金流与 XIRR/TWR 口径见 [`data/README.md` §4.2.1 / §4.3.1](data/README.md)。
 
+### `merge` 用法与退出码
+
+```bash
+# 合并**不重算成本**：输入是上一步的 attribution.json，本步只加一层增量
+python -m investment_attribution merge --method fifo \
+    --ledger out/attr-src/ledger.json \
+    --attribution out/attr/attribution.json --out-dir out/merge/
+```
+
+产物（经 `serialize.write_json_atomic` 落盘）：
+
+| 文件 | 内容 |
+|---|---|
+| `merged.json` | 合并视图（分账户明细 + 合计）+ **逐笔划转台账**（合同号 / 两腿 / 已抵消证据）+ 合并持仓（同名标的跨账户汇总）+ 对账检查 + 问题段 |
+
+`merge` 退出码：`0` 划转两端全部抵消且合并前后总收益不变；
+`1` 合并完成但检出问题（单腿划转、划转净额不为零、合并前后总收益不等、
+上游归因产物自带问题）；`2` 用法或输入不可用
+（**未指定 `--method`**、`--ledger` 或 `--attribution` 缺失、
+`--method` 与归因产物口径不一致）。
+
+划转**不写第二份业务名表**：模式取自冻结规则包
+`rules/corporate_actions.json` 的 `transfer_patterns`。两腿按**合同号**归组，
+净额为零且分属不同账户才算"已抵消"；只导入一端时只剩一腿，落
+`TRANSFER_LEG_UNPAIRED` 并 `exit 1`——**不假装抵消成功**。
+口径见 [`data/README.md` §4.6](data/README.md)。
+
+### `report` 用法与退出码
+
+```bash
+# 报告只有一份输入：上一步的 merged.json（口径来自产物，不在 CLI 再复述一遍）
+python -m investment_attribution report --merged out/merge/merged.json --out-dir out/report/
+```
+
+产物（同一次渲染产出，**同源**）：
+
+| 文件 | 内容 |
+|---|---|
+| `report.html` | 单文件报告：内嵌样式、无外链、无脚本，断网双击即可看，可直接打印为 PDF |
+| `report_data.json` | 机读版报告数据：同样的段落 / 汇总数 / 表格 / 锚点 |
+
+`report` 退出码：`0` 报告生成完成且上游产物无问题；`1` 报告生成完成但上游产物
+带 `invalid`（问题如实呈现在报告里，退出码同时告知脚本调用方）；
+`2` 用法或输入不可用（**未指定 `--merged`**、文件缺失、形态不符）。
+
+四条硬约束（都有测试）：
+
+1. **零外链**：出口前对 HTML 做静态扫描，任何 `http://` / `https://` / `//`
+   外部引用都会让命令报错且**不落半份产物**；报告里没有 CSS / JS / 字体 / 图片外链。
+2. **零网络**：构建与渲染全程处于运行期武装探针下，拦截次数写进两份产物。
+3. **生成阶段打码**：股东账号与资金账号在**生成报告数据时**就打码（保留首尾
+   各 2 位），HTML 与 `report_data.json` 都不携带完整账号。
+4. **逐数字下钻**：每个汇总数与每行表格都挂
+   `source_file` / `source_sha256` / `source_line_no` 三件套，锚点只来自上游
+   产物的 provenance 索引，**不造锚点**。
+
+渲染层**零业务判定**（成本口径 / 事件类型 / 收益口径一个词都不出现），
+由 `report/guard.py` 的 AST 门禁把守（三条 + 正/负对照），
+`selftest --strict` 里也有这两条检查。
+
+### `run` 用法与退出码
+
+```bash
+# 一条命令：import → cost → pnl --fees → corporate-actions → attribution → merge → report
+python -m investment_attribution run \
+    data/samples/htsec-demo-001.xlsx data/samples/huaxi-demo-001.xls \
+    data/samples/generic-demo-013-account-c.csv \
+    data/samples/generic-demo-015-no-fee-columns.csv \
+    --method fifo --valuation data/samples/valuation-demo-001.csv --out-dir out/chain/
+```
+
+`run` **只是编排**：产物与逐命令调用**逐字节一致**（测试按同一目录、同一
+路径字符串断言）。口径参数与 `cost` / `attribution` 统一叫 `--method`
+（必填，无默认值），`--valuation` 必填，`--out-dir` 必填。
+
+`run` 退出码取各步退出码的最大值（`0` / `1`）：任何一步降级都如实反映在总码上
+（样例含一条无法识别的现金行，故 `corporate-actions` 与 `run` 均为 `1`——
+这是**数据结论**，不是失败）。任一步用法或输入不可用（`2`）直接中断。
+
+### `bench` 用法与退出码
+
+```bash
+python -m investment_attribution bench              # B1–B5 全跑
+python -m investment_attribution bench --only B5    # 只跑合并层
+```
+
+`bench` 在临时目录里按 CI 的同一套流程自跑随包样例，跑完即清理。
+它**只做编排与失败码汇总**，判据是各模块下已经就位的那一份 `verify.py`：
+
+| 套件 | 判据模块 | 比什么 |
+|---|---|---|
+| `B1` | `ingest/verify.py` | 逐行列值 / 行级错误 / 文件指纹 vs 导入真值 |
+| `B2` | `ledger/verify.py` | 双口径逐笔持仓与已实现 vs 成本真值 |
+| `B3` | `actions/verify.py` | 逐事件类型 / 调整前后 / 待确认队列 vs 真值 |
+| `B4` | `attribution/verify.py` | XIRR / TWR / 拆分 / 四维分解 vs 真值 |
+| `B5` | `merge/verify.py` | 合并前后总收益 / 划转台账 / 合并持仓 vs 真值 |
+
+比对函数**只读两边产物**（不重算导入、不重算成本、不重算归因），所以
+"注入缺陷必须报未达标"是可证伪的——每个套件在测试里都有注入缺陷的探活用例。
+
+`bench` 退出码：`0` 全部请求套件达标；`1` 有套件未达标；`2` 用法错误
+（未识别的套件名，如 `--only B9`）。
+
 ## 退出码语义
 
 | 退出码 | 含义 |
@@ -221,14 +328,11 @@ python -m investment_attribution attribution --method wavg \
 | `0` | 成功 |
 | `1` | 降级完成 / 已检出问题（各子命令 README 段落会写明具体语义） |
 | `2` | 用法错误或输入不可用（参数错、文件缺失、数据目录不存在） |
-| `3` | **阶段未就绪**——该模块尚未落地，本次不产出任何结果 |
 
-`3` 是骨架期的临时语义，随模块落地逐个退役；退役时同步常量表、CLI 分派、
-本表、决策记录与测试。**M1 已退役 `import`**（现为 0 / 1 / 2 三档），
-**M2 已退役 `cost` / `pnl`**（同为 0 / 1 / 2 三档），
-**M3 已退役 `corporate-actions`**（同为 0 / 1 / 2 三档），
-**M4 已退役 `attribution`**（同为 0 / 1 / 2 三档）；
-仍返回 `3` 的只剩 M5 的 `merge` / `report` / `run` / `bench`。
+骨架期的退出码 `3`（阶段未就绪）**已在 M5 全部退役**：十条子命令全部落地后，
+CLI 不再有"未就绪"这条出口，`stages.py` 登记表与未就绪异常类一并删除——
+不留"看起来还会拦截"的幽灵代码。
+
 
 ## 数据目录
 
@@ -310,17 +414,21 @@ python tools/gen_data.py --check    # 形态校验 + 重生成逐字节比对（
 
 ```
 src/investment_attribution/   CLI、基础设施层与业务模块
-src/investment_attribution/ingest/   导入适配层（编码 / 壳清洗 / 列名归一 / 行级台账）
+src/investment_attribution/ingest/   导入适配层（编码 / 壳清洗 / 列名归一 / 行级台账 / B1 比对）
 src/investment_attribution/ledger/   成本引擎（FIFO / 移动加权 / 勾稽 / 快照 / B2 比对）
 src/investment_attribution/actions/  公司行为（规则表匹配 / 待确认队列 / 调整可逆 / B3 比对）
 src/investment_attribution/attribution/ 收益归因（估值表 / XIRR / TWR / 基准 / 行业 / 四维分解 / B4 比对）
-src/investment_attribution/pipeline/ 编排层（import / cost / pnl / corporate-actions / attribution）
-data/rules/                   契约清单 + 冻结规则包（别名 / 参数 / 公司行为 / 行业 / 账户）
-data/samples/                 合成交割单样例（多格式多编码，含刻意缺陷）
-data/truth/                   真值台账（导入 + 成本 + 公司行为 + 归因；只存输入 + 期望）
+src/investment_attribution/merge/    多账户合并（合并视图 / 逐笔划转台账 / 两端剔除 / B5 比对）
+src/investment_attribution/report/   本地报告（数据模型 / 零判定渲染层 / 零判定门禁与零外链扫描 / 编排）
+src/investment_attribution/pipeline/ 编排层（import / cost / pnl / corporate-actions / attribution / merge / report / run / bench）
+data/rules/                   契约清单 + 冻结规则包（别名 / 参数 / 公司行为 / 划转模式 / 行业 / 账户）
+data/samples/                 合成交割单样例（多格式多编码，含刻意缺陷）+ 多日估值序列
+data/truth/                   真值台账（导入 + 成本 + 公司行为 + 归因 + 合并；只存输入 + 期望）
 data/README.md                依据查证、数据纪律、数值口径（唯一来源）
 plan/                         计划文档与里程碑留档
-tests/                        契约、自检、零上传门禁（静态 + 运行期）、确定性写盘、导入层、成本引擎、公司行为与归因真值对齐
+tests/                        契约、自检、零上传门禁（静态 + 运行期）、确定性写盘、
+                              导入层 / 成本引擎 / 公司行为 / 归因 / 合并真值对齐、
+                              报告同源与零判定门禁、B1–B5 基准总入口、run 逐字节一致
 tools/                        gen_data.py（确定性生成器）
 ```
 

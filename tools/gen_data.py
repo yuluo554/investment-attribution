@@ -38,7 +38,7 @@ from xml.sax.saxutils import escape
 REPO_ROOT = Path(__file__).resolve().parent.parent
 DEFAULT_DATA_DIR = REPO_ROOT / "data"
 GENERATOR_TOOL = "tools/gen_data.py"
-CONTRACT_VERSION = "0.5.0-m4"
+CONTRACT_VERSION = "0.6.0-m5"
 SEED = 0x9E3779B97F4A7C15  # splitmix64 标准增量常量，作为固定种子
 MASK64 = (1 << 64) - 1
 
@@ -447,6 +447,9 @@ def attach_balances(rows):
 # ---------------------------------------------------------------------------
 
 TRANSFER_CONTRACT = "TR-A-B-0001"
+
+#: 账户间划转的判定模式（M5）。规则包与合并真值共用这一份声明。
+TRANSFER_PATTERNS = ("内部划转",)
 
 
 def build_account_a():
@@ -1159,6 +1162,9 @@ def build_corporate_actions():
         "contract_version": CONTRACT_VERSION,
         "unmatched_policy": "pending_confirmation",
         "non_action_patterns": ["银证转入", "银证转出", "内部划转", "银行转证券", "证券转银行"],
+        # 账户间划转的判定模式：既不进事件台账、也不当收入，而是合并视图要
+        # 两端剔除的对象。模式随规则包下发，引擎代码里没有第二份业务名表。
+        "transfer_patterns": list(TRANSFER_PATTERNS),
         "rules": [
             {
                 "rule_id": "ca.dividend",
@@ -1287,7 +1293,9 @@ def build_manifest():
                 "公司行为形态的逐事件期望（含 before/after 与待确认集合）已写入 "
                 "data/truth/actions_truth.json（M3），归因形态的期望值（每账户/合并视图的 "
                 "XIRR、TWR 两种估值点口径、拆分与四维分解）已写入 "
-                "data/truth/attribution_truth.json（M4）。"
+                "data/truth/attribution_truth.json（M4），合并形态的期望值（合并前后总收益、"
+                "逐笔划转台账、合并持仓与账户计数）已写入 "
+                "data/truth/merge_truth.json（M5）。"
             ),
             "surfaces": surfaces,
         },
@@ -1463,6 +1471,7 @@ def _scenario_rows(cost_inputs):
                     "business": tx.business,
                     "trade_date": tx.trade_date,
                     "trade_time": tx.trade_time or "",
+                    "contract_no": tx.contract_no or "",
                     "kind": kind,
                     "quantity": quantity,
                     "amount_fen": amount_fen,
@@ -2920,6 +2929,387 @@ def _attribution_surface_evidence(views, method_block, rows):
     }
 
 
+# ---------------------------------------------------------------------------
+# M5 合并真值（B5）：独立实现，不 import 引擎
+# ---------------------------------------------------------------------------
+
+MERGE_SURFACE_ORDER = (
+    "merge.two_accounts",
+    "merge.three_accounts",
+    "merge.internal_transfer",
+    "merge.overlapping_symbol",
+)
+
+MERGE_SURFACE_EVIDENCE = {
+    "merge.two_accounts": {
+        "keys": [["htsec-demo-001.xlsx", 2], ["huaxi-demo-001.xls", 2]],
+        "expect": {
+            "account_ids": ["Y0000001", "Y0000002"],
+            "account_count": 2,
+            "note": "两账户各有独立资金链（银证转入行各一条），合并后资金并列而非相加错位",
+        },
+    },
+    "merge.three_accounts": {
+        "keys": [
+            ["htsec-demo-001.xlsx", 2],
+            ["huaxi-demo-001.xls", 2],
+            ["generic-demo-013-account-c.csv", 2],
+        ],
+        "expect": {
+            "account_ids": ["Y0000001", "Y0000002", "Y0000003"],
+            "account_count": 3,
+            "note": "第三个账户在另一份 CSV 里，合并必须跨文件而不是只认第一份",
+        },
+    },
+    "merge.internal_transfer": {
+        "keys": [["htsec-demo-001.xlsx", 20], ["huaxi-demo-001.xls", 13]],
+        "expect": {
+            "contract_no": TRANSFER_CONTRACT,
+            "trade_date": "2025-10-10",
+            "amount_fen": 2000000,
+            "leg_count": 2,
+            "net_fen": 0,
+            "balanced": True,
+            "note": "同日一出一进、同合同号、金额相反：两腿相加为零才算已抵消",
+        },
+    },
+    "merge.overlapping_symbol": {
+        "keys": [["htsec-demo-001.xlsx", 3], ["huaxi-demo-001.xls", 7]],
+        "expect": {
+            "symbol": "699001",
+            "account_count_ever": 2,
+            "account_count_at_terminal": 1,
+            "note": "同名标的曾在两个账户持有：合并持仓按标的汇总，账户数要如实计数",
+        },
+    },
+}
+
+
+def _merge_holdings(sim, rows, prices):
+    """合并持仓真值：按标的汇总各账户期末持仓，并记账户计数。"""
+    holdings = {}
+    for position in sim["positions"]:
+        quantity = _frac(position["quantity"])
+        if quantity <= 0:
+            continue
+        symbol = position["symbol"]
+        price = prices.get((VALUATION_DATE, symbol))
+        if price is None:
+            raise ValueError("期末持仓 {} 缺估值价".format(symbol))
+        bucket = holdings.setdefault(
+            symbol,
+            {"quantity": Fraction(0), "cost_fen": 0, "market_value_fen": 0, "at_terminal": set()},
+        )
+        bucket["quantity"] += quantity
+        bucket["cost_fen"] += int(position["cost_fen"])
+        bucket["market_value_fen"] += _money_fen(quantity, price)
+        bucket["at_terminal"].add(position["account_id"])
+
+    ever = {}
+    for row in rows:
+        ever.setdefault(row["symbol"], set()).add(row["account_id"])
+
+    out = []
+    for symbol in sorted(holdings):
+        bucket = holdings[symbol]
+        out.append(
+            {
+                "symbol": symbol,
+                "quantity": _frac_text(bucket["quantity"]),
+                "cost_fen": int(bucket["cost_fen"]),
+                "market_value_fen": int(bucket["market_value_fen"]),
+                "unrealized_fen": int(bucket["market_value_fen"]) - int(bucket["cost_fen"]),
+                "accounts_at_terminal": sorted(bucket["at_terminal"]),
+                "account_count_at_terminal": len(bucket["at_terminal"]),
+                "accounts_ever": sorted(ever.get(symbol, set())),
+                "account_count_ever": len(ever.get(symbol, set())),
+            }
+        )
+    return out
+
+
+def _transfer_ledger_truth(rows):
+    """逐笔划转台账真值：按合同号归组，两腿金额方向与净额独立复算。"""
+    groups = {}
+    for row in rows:
+        business = row["business"] or ""
+        if not any(pattern in business for pattern in TRANSFER_PATTERNS):
+            continue
+        groups.setdefault(row["contract_no"], []).append(row)
+
+    entries = []
+    for contract_no in sorted(groups):
+        legs = []
+        for row in sorted(
+            groups[contract_no],
+            key=lambda item: (item["trade_date"], item["source_file"], item["source_line_no"]),
+        ):
+            settle = row["settlement_fen"] or 0
+            legs.append(
+                {
+                    "account_id": row["account_id"],
+                    "direction": "out" if settle < 0 else "in",
+                    "settlement_fen": settle,
+                    "trade_date": row["trade_date"],
+                    "source_file": row["source_file"],
+                    "source_line_no": row["source_line_no"],
+                }
+            )
+        net = sum(leg["settlement_fen"] for leg in legs)
+        entries.append(
+            {
+                "contract_no": contract_no,
+                "trade_date": legs[0]["trade_date"],
+                "leg_count": len(legs),
+                "amount_fen": sum(leg["settlement_fen"] for leg in legs if leg["settlement_fen"] > 0),
+                "net_fen": net,
+                "accounts": sorted({leg["account_id"] for leg in legs}),
+                "legs": legs,
+            }
+        )
+    return entries
+
+
+def build_merge_truth(cost_inputs, valuation_rows):
+    """B5 真值：合并前后总收益、逐笔划转台账、合并持仓。
+
+    独立实现：持仓与收益走 ``Fraction`` + 整数分的真值账本（与引擎是两套
+    代码），期末市值由估值表价格独立复算；划转按合同号重新归组。
+    """
+    rows = _scenario_rows(cost_inputs)
+    prices = {(row["date"], row["symbol"]): row["price_decimal"] for row in valuation_rows}
+    sim_fifo = _simulate(rows, "fifo")
+    sim_wavg = _simulate(rows, "wavg")
+    snapshot_dates, positions = _sim_snapshots(sim_fifo)
+    cash = _cash_timeline(rows)
+    income_by_account, income_by_symbol = _income_maps(rows)
+    all_accounts = [item["account_id"] for item in sim_fifo["accounts"]]
+    views = _view_truth(
+        sim_fifo, rows, prices, snapshot_dates, positions, cash, all_accounts
+    )
+    view_by_account = {item["account_id"]: item for item in views["accounts"]}
+
+    methods = {}
+    for name, sim in (("fifo", sim_fifo), ("wavg", sim_wavg)):
+        block = _method_block(sim, rows, prices, income_by_account, income_by_symbol)
+        accounts = []
+        for item in block["accounts"]:
+            view = view_by_account[item["account_id"]]
+            accounts.append(
+                {
+                    "account_id": item["account_id"],
+                    "net_contribution_fen": view["net_contribution_fen"],
+                    "terminal_cash_fen": view["terminal_cash_fen"],
+                    "terminal_market_value_fen": view["terminal_securities_fen"],
+                    "terminal_total_fen": view["terminal_total_fen"],
+                    "realized_from_sells_fen": item["realized_sells_fen"],
+                    "realized_total_fen": item["realized_total_fen"],
+                    "unrealized_fen": item["unrealized_fen"],
+                    "total_return_fen": item["total_return_fen"],
+                    "fees_fen": item["fees_fen"],
+                }
+            )
+        merged = {
+            "net_contribution_fen": views["merged"]["net_contribution_fen"],
+            "terminal_cash_fen": views["merged"]["terminal_cash_fen"],
+            "terminal_market_value_fen": views["merged"]["terminal_securities_fen"],
+            "terminal_total_fen": views["merged"]["terminal_total_fen"],
+            "realized_from_sells_fen": block["merged"]["realized_sells_fen"],
+            "realized_total_fen": block["merged"]["realized_total_fen"],
+            "unrealized_fen": block["merged"]["unrealized_fen"],
+            "total_return_fen": block["merged"]["total_return_fen"],
+            "fees_fen": block["merged"]["fees_fen"],
+        }
+        before = sum(item["total_return_fen"] for item in accounts)
+        after = merged["total_return_fen"]
+        methods[name] = {
+            "accounts": accounts,
+            "merged": merged,
+            "merged_holdings": _merge_holdings(sim, rows, prices),
+            "checks": {
+                "total_return_before_fen": before,
+                "total_return_after_fen": after,
+                "difference_fen": after - before,
+                "conserved": (after - before) == 0,
+            },
+        }
+
+    transfer_ledger = _transfer_ledger_truth(rows)
+    return {
+        "format": "ia.truth.merge",
+        "format_version": 1,
+        "contract_version": CONTRACT_VERSION,
+        "generator": {"tool": GENERATOR_TOOL, "seed": SEED},
+        "note": (
+            "只存输入与期望，不含 observed_*；由 tools/gen_data.py 独立实现"
+            "（Fraction 精确数量 + 整数分成本，期末市值按估值表价格独立复算），"
+            "不 import 引擎。合并口径：Σ 各账户总收益 == 合并视图总收益，"
+            "差 > 0.01 元即判不守恒；划转按合同号归组，两腿净额为零且分属"
+            "不同账户才算『已抵消』。"
+        ),
+        "scenario": {
+            "files": list(COST_SCENARIO_FILES),
+            "row_count": len(rows),
+            "valuation": "valuation-demo-001.csv",
+            "valuation_date": VALUATION_DATE,
+            "cost_methods": ["fifo", "wavg"],
+            "transfer_patterns": list(TRANSFER_PATTERNS),
+            "transfer_contract": TRANSFER_CONTRACT,
+        },
+        "manual_examples": [
+            {
+                "name": "two_legs_cancel_exactly",
+                "derivation": (
+                    "账户一转出 20000.00 元、账户二同日转入 20000.00 元，两者合同号相同"
+                    "（{}）：两腿金额相反，合并视图按日期相加后当日净现金流为 0，"
+                    "故合并前后总收益之差必为 0 分，远小于 0.01 元门槛。"
+                ).format(TRANSFER_CONTRACT),
+                "expect": {
+                    "contract_no": TRANSFER_CONTRACT,
+                    "trade_date": "2025-10-10",
+                    "amount_fen": 2000000,
+                    "leg_count": 2,
+                    "net_fen": 0,
+                    "difference_fen": 0,
+                },
+            },
+            {
+                "name": "single_leg_never_offsets",
+                "derivation": (
+                    "只导入账户一那一份流水时，划转只剩一腿（-20000.00 元）：净额 "
+                    "-2000000 分不为零，不构成抵消。合并必须报问题并返回退出码 1，"
+                    "而不是把它当成『转出后收益变少』照单全收。"
+                ),
+                "expect": {"single_leg_net_fen": -2000000, "balanced": False},
+            },
+            {
+                "name": "same_symbol_two_accounts",
+                "derivation": (
+                    "699001 在账户一（买入 1000 / 500 / 800、卖出 600 / 900 / 400）与"
+                    "账户二（买入 600、卖出 600）都有成交行：合并持仓按标的汇总数量与"
+                    "成本，『历史涉及账户数』= 2；期末只有账户一仍持有，故"
+                    "『期末持有账户数』= 1。"
+                ),
+                "expect": {
+                    "symbol": "699001",
+                    "account_count_ever": 2,
+                    "account_count_at_terminal": 1,
+                },
+            },
+        ],
+        "surface_evidence": MERGE_SURFACE_EVIDENCE,
+        "transfer_ledger": transfer_ledger,
+        "methods": methods,
+    }
+
+
+def _shape_check_merge_truth(data_dir, import_truth):
+    """M5 真值纪律：守恒自洽、划转台账自洽、形态指向真实行、手工算例在位。"""
+    issues = []
+    path = data_dir / "truth" / "merge_truth.json"
+    if not path.is_file():
+        return ["缺少文件 truth/merge_truth.json"]
+    try:
+        payload = json.loads(path.read_text(encoding="utf-8"))
+    except ValueError as exc:
+        return ["truth/merge_truth.json 不是合法 JSON：{}".format(exc)]
+
+    if payload.get("format") != "ia.truth.merge":
+        issues.append("merge_truth.format 不匹配")
+    scenario = payload.get("scenario") or {}
+    files = scenario.get("files") or []
+    if not files:
+        issues.append("merge_truth.scenario.files 为空")
+    for name in files:
+        if not (data_dir / "samples" / name).is_file():
+            issues.append("合并真值引用的样例不存在 {}".format(name))
+    if sorted((payload.get("methods") or {})) != ["fifo", "wavg"]:
+        issues.append("merge_truth.methods 必须同时含 fifo 与 wavg")
+    if not scenario.get("transfer_patterns"):
+        issues.append("merge_truth.scenario 缺 transfer_patterns")
+
+    for name, block in sorted((payload.get("methods") or {}).items()):
+        accounts = block.get("accounts") or []
+        if not accounts:
+            issues.append("merge_truth.{}: 分账户为空".format(name))
+        if not block.get("merged"):
+            issues.append("merge_truth.{}: 合并视图缺失".format(name))
+        if not block.get("merged_holdings"):
+            issues.append("merge_truth.{}: 合并持仓为空".format(name))
+        for item in accounts:
+            if item["realized_total_fen"] + item["unrealized_fen"] != item["total_return_fen"]:
+                issues.append(
+                    "merge_truth.{}.{}: 已实现+未实现 != 总收益".format(
+                        name, item["account_id"]
+                    )
+                )
+        checks = block.get("checks") or {}
+        before = sum(item["total_return_fen"] for item in accounts)
+        if checks.get("total_return_before_fen") != before:
+            issues.append("merge_truth.{}: checks.before != 各账户之和".format(name))
+        if checks.get("total_return_after_fen") != (block.get("merged") or {}).get(
+            "total_return_fen"
+        ):
+            issues.append("merge_truth.{}: checks.after != 合并视图总收益".format(name))
+        if checks.get("difference_fen") != 0 or checks.get("conserved") is not True:
+            issues.append("merge_truth.{}: 合并前后总收益必须守恒".format(name))
+
+    transfers = payload.get("transfer_ledger") or []
+    if not transfers:
+        issues.append("merge_truth.transfer_ledger 为空——样例必须注入账户间划转")
+    for entry in transfers:
+        if entry.get("net_fen") != 0:
+            issues.append("merge_truth.transfer_ledger {}: 净额不为零".format(entry.get("contract_no")))
+        if (entry.get("leg_count") or 0) < 2:
+            issues.append("merge_truth.transfer_ledger {}: 少于两腿".format(entry.get("contract_no")))
+        if len({leg["account_id"] for leg in entry.get("legs") or []}) < 2:
+            issues.append("merge_truth.transfer_ledger {}: 两腿同账户".format(entry.get("contract_no")))
+        for leg in entry.get("legs") or []:
+            if not (data_dir / "samples" / leg["source_file"]).is_file():
+                issues.append("merge_truth: 划转腿指向不存在的样例 {}".format(leg["source_file"]))
+
+    examples = payload.get("manual_examples") or []
+    if len(examples) < 3:
+        issues.append("merge_truth.manual_examples 少于三条（手工算例是第二判据）")
+    for example in examples:
+        if not example.get("derivation") or not example.get("expect"):
+            issues.append("手工算例缺推导或期望：{}".format(example.get("name")))
+
+    evidence = payload.get("surface_evidence") or {}
+    for surface in MERGE_SURFACE_ORDER:
+        item = evidence.get(surface)
+        if not item:
+            issues.append("merge_truth.surface_evidence 缺 {}".format(surface))
+            continue
+        keys = item.get("keys") or []
+        if not keys:
+            issues.append("{}: 缺证据行".format(surface))
+        for key in keys:
+            if not isinstance(key, list) or len(key) != 2:
+                issues.append("{}: 证据行形态不合法 {}".format(surface, key))
+                continue
+            name, line_no = key
+            sample = data_dir / "samples" / str(name)
+            if not sample.is_file():
+                issues.append("{}: 证据行指向不存在的样例 {}".format(surface, name))
+        if not item.get("expect"):
+            issues.append("{}: 缺逐项期望值".format(surface))
+
+    overlap = (evidence.get("merge.overlapping_symbol") or {}).get("expect") or {}
+    if overlap.get("account_count_ever", 0) < 2:
+        issues.append("merge.overlapping_symbol 期望必须显示跨账户重叠（账户数 >= 2）")
+    transfer_expect = (evidence.get("merge.internal_transfer") or {}).get("expect") or {}
+    if transfer_expect.get("net_fen") != 0 or transfer_expect.get("leg_count") != 2:
+        issues.append("merge.internal_transfer 期望必须是两腿净额为零")
+
+    if import_truth is not None:
+        known = {entry["source_file"] for entry in import_truth.get("files", [])}
+        for name in files:
+            if name not in known:
+                issues.append("合并真值引用的样例未登记进导入真值 {}".format(name))
+    return issues
+
+
 def _shape_check_attribution_truth(data_dir, import_truth):
     """M4 真值纪律：视图齐全、守恒自洽、形态指向真实行、手工算例在位。"""
     issues = []
@@ -3389,6 +3779,11 @@ def generate(data_dir):
     path.write_bytes(attribution_truth_payload)
     written.append((path, attribution_truth_payload))
 
+    merge_truth_payload = json_bytes(build_merge_truth(cost_inputs, valuation_rows))
+    path = data_dir / "truth" / "merge_truth.json"
+    path.write_bytes(merge_truth_payload)
+    written.append((path, merge_truth_payload))
+
     return written
 
 
@@ -3580,6 +3975,14 @@ def shape_check(data_dir):
             issues.append("未识别公司行为必须进待确认队列")
         if not actions.get("non_action_patterns"):
             issues.append("公司行为规则缺 non_action_patterns（资金划转无法与非行为区分）")
+        if not actions.get("transfer_patterns"):
+            issues.append("公司行为规则缺 transfer_patterns（账户间划转无法识别）")
+        for pattern in actions.get("transfer_patterns") or []:
+            if pattern not in (actions.get("non_action_patterns") or []):
+                issues.append(
+                    "transfer_patterns 的 {} 不在 non_action_patterns 内"
+                    "（划转行必须先被判为非公司行为）".format(pattern)
+                )
         seen_patterns = {}
         for rule in actions.get("rules", []):
             rule_id = rule.get("rule_id")
@@ -3640,6 +4043,7 @@ def shape_check(data_dir):
     issues += _shape_check_cost_truth(data_dir, truth)
     issues += _shape_check_actions_truth(data_dir, truth)
     issues += _shape_check_attribution_truth(data_dir, truth)
+    issues += _shape_check_merge_truth(data_dir, truth)
 
     return issues
 

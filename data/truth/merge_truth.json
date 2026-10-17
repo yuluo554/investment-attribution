@@ -1,0 +1,417 @@
+{
+  "contract_version": "0.6.0-m5",
+  "format": "ia.truth.merge",
+  "format_version": 1,
+  "generator": {
+    "seed": 11400714819323198485,
+    "tool": "tools/gen_data.py"
+  },
+  "manual_examples": [
+    {
+      "derivation": "账户一转出 20000.00 元、账户二同日转入 20000.00 元，两者合同号相同（TR-A-B-0001）：两腿金额相反，合并视图按日期相加后当日净现金流为 0，故合并前后总收益之差必为 0 分，远小于 0.01 元门槛。",
+      "expect": {
+        "amount_fen": 2000000,
+        "contract_no": "TR-A-B-0001",
+        "difference_fen": 0,
+        "leg_count": 2,
+        "net_fen": 0,
+        "trade_date": "2025-10-10"
+      },
+      "name": "two_legs_cancel_exactly"
+    },
+    {
+      "derivation": "只导入账户一那一份流水时，划转只剩一腿（-20000.00 元）：净额 -2000000 分不为零，不构成抵消。合并必须报问题并返回退出码 1，而不是把它当成『转出后收益变少』照单全收。",
+      "expect": {
+        "balanced": false,
+        "single_leg_net_fen": -2000000
+      },
+      "name": "single_leg_never_offsets"
+    },
+    {
+      "derivation": "699001 在账户一（买入 1000 / 500 / 800、卖出 600 / 900 / 400）与账户二（买入 600、卖出 600）都有成交行：合并持仓按标的汇总数量与成本，『历史涉及账户数』= 2；期末只有账户一仍持有，故『期末持有账户数』= 1。",
+      "expect": {
+        "account_count_at_terminal": 1,
+        "account_count_ever": 2,
+        "symbol": "699001"
+      },
+      "name": "same_symbol_two_accounts"
+    }
+  ],
+  "methods": {
+    "fifo": {
+      "accounts": [
+        {
+          "account_id": "Y0000001",
+          "fees_fen": 11346,
+          "net_contribution_fen": 13000000,
+          "realized_from_sells_fen": 474273,
+          "realized_total_fen": 600507,
+          "terminal_cash_fen": 11637388,
+          "terminal_market_value_fen": 2045000,
+          "terminal_total_fen": 13682388,
+          "total_return_fen": 682388,
+          "unrealized_fen": 81881
+        },
+        {
+          "account_id": "Y0000002",
+          "fees_fen": 9605,
+          "net_contribution_fen": 13000000,
+          "realized_from_sells_fen": -110605,
+          "realized_total_fen": -85605,
+          "terminal_cash_fen": 12914395,
+          "terminal_market_value_fen": 0,
+          "terminal_total_fen": 12914395,
+          "total_return_fen": -85605,
+          "unrealized_fen": 0
+        },
+        {
+          "account_id": "Y0000003",
+          "fees_fen": 1215,
+          "net_contribution_fen": 2000000,
+          "realized_from_sells_fen": 18785,
+          "realized_total_fen": 18785,
+          "terminal_cash_fen": 2018785,
+          "terminal_market_value_fen": 0,
+          "terminal_total_fen": 2018785,
+          "total_return_fen": 18785,
+          "unrealized_fen": 0
+        },
+        {
+          "account_id": "Y0000004",
+          "fees_fen": 2130,
+          "net_contribution_fen": 3000000,
+          "realized_from_sells_fen": 98130,
+          "realized_total_fen": 103130,
+          "terminal_cash_fen": 2102870,
+          "terminal_market_value_fen": 1080000,
+          "terminal_total_fen": 3182870,
+          "total_return_fen": 182870,
+          "unrealized_fen": 79740
+        }
+      ],
+      "checks": {
+        "conserved": true,
+        "difference_fen": 0,
+        "total_return_after_fen": 798438,
+        "total_return_before_fen": 798438
+      },
+      "merged": {
+        "fees_fen": 24296,
+        "net_contribution_fen": 31000000,
+        "realized_from_sells_fen": 480583,
+        "realized_total_fen": 636817,
+        "terminal_cash_fen": 28673438,
+        "terminal_market_value_fen": 3125000,
+        "terminal_total_fen": 31798438,
+        "total_return_fen": 798438,
+        "unrealized_fen": 161621
+      },
+      "merged_holdings": [
+        {
+          "account_count_at_terminal": 1,
+          "account_count_ever": 2,
+          "accounts_at_terminal": [
+            "Y0000001"
+          ],
+          "accounts_ever": [
+            "Y0000001",
+            "Y0000002"
+          ],
+          "cost_fen": 487254,
+          "market_value_fen": 510000,
+          "quantity": "500",
+          "symbol": "699001",
+          "unrealized_fen": 22746
+        },
+        {
+          "account_count_at_terminal": 1,
+          "account_count_ever": 1,
+          "accounts_at_terminal": [
+            "Y0000001"
+          ],
+          "accounts_ever": [
+            "Y0000001"
+          ],
+          "cost_fen": 420354,
+          "market_value_fen": 455000,
+          "quantity": "7000",
+          "symbol": "699003",
+          "unrealized_fen": 34646
+        },
+        {
+          "account_count_at_terminal": 2,
+          "account_count_ever": 2,
+          "accounts_at_terminal": [
+            "Y0000001",
+            "Y0000004"
+          ],
+          "accounts_ever": [
+            "Y0000001",
+            "Y0000004"
+          ],
+          "cost_fen": 2055771,
+          "market_value_fen": 2160000,
+          "quantity": "200",
+          "symbol": "699004",
+          "unrealized_fen": 104229
+        }
+      ]
+    },
+    "wavg": {
+      "accounts": [
+        {
+          "account_id": "Y0000001",
+          "fees_fen": 11346,
+          "net_contribution_fen": 13000000,
+          "realized_from_sells_fen": 475635,
+          "realized_total_fen": 601869,
+          "terminal_cash_fen": 11637388,
+          "terminal_market_value_fen": 2045000,
+          "terminal_total_fen": 13682388,
+          "total_return_fen": 682388,
+          "unrealized_fen": 80519
+        },
+        {
+          "account_id": "Y0000002",
+          "fees_fen": 9605,
+          "net_contribution_fen": 13000000,
+          "realized_from_sells_fen": -110605,
+          "realized_total_fen": -85605,
+          "terminal_cash_fen": 12914395,
+          "terminal_market_value_fen": 0,
+          "terminal_total_fen": 12914395,
+          "total_return_fen": -85605,
+          "unrealized_fen": 0
+        },
+        {
+          "account_id": "Y0000003",
+          "fees_fen": 1215,
+          "net_contribution_fen": 2000000,
+          "realized_from_sells_fen": 18785,
+          "realized_total_fen": 18785,
+          "terminal_cash_fen": 2018785,
+          "terminal_market_value_fen": 0,
+          "terminal_total_fen": 2018785,
+          "total_return_fen": 18785,
+          "unrealized_fen": 0
+        },
+        {
+          "account_id": "Y0000004",
+          "fees_fen": 2130,
+          "net_contribution_fen": 3000000,
+          "realized_from_sells_fen": 98130,
+          "realized_total_fen": 103130,
+          "terminal_cash_fen": 2102870,
+          "terminal_market_value_fen": 1080000,
+          "terminal_total_fen": 3182870,
+          "total_return_fen": 182870,
+          "unrealized_fen": 79740
+        }
+      ],
+      "checks": {
+        "conserved": true,
+        "difference_fen": 0,
+        "total_return_after_fen": 798438,
+        "total_return_before_fen": 798438
+      },
+      "merged": {
+        "fees_fen": 24296,
+        "net_contribution_fen": 31000000,
+        "realized_from_sells_fen": 481945,
+        "realized_total_fen": 638179,
+        "terminal_cash_fen": 28673438,
+        "terminal_market_value_fen": 3125000,
+        "terminal_total_fen": 31798438,
+        "total_return_fen": 798438,
+        "unrealized_fen": 160259
+      },
+      "merged_holdings": [
+        {
+          "account_count_at_terminal": 1,
+          "account_count_ever": 2,
+          "accounts_at_terminal": [
+            "Y0000001"
+          ],
+          "accounts_ever": [
+            "Y0000001",
+            "Y0000002"
+          ],
+          "cost_fen": 488616,
+          "market_value_fen": 510000,
+          "quantity": "500",
+          "symbol": "699001",
+          "unrealized_fen": 21384
+        },
+        {
+          "account_count_at_terminal": 1,
+          "account_count_ever": 1,
+          "accounts_at_terminal": [
+            "Y0000001"
+          ],
+          "accounts_ever": [
+            "Y0000001"
+          ],
+          "cost_fen": 420354,
+          "market_value_fen": 455000,
+          "quantity": "7000",
+          "symbol": "699003",
+          "unrealized_fen": 34646
+        },
+        {
+          "account_count_at_terminal": 2,
+          "account_count_ever": 2,
+          "accounts_at_terminal": [
+            "Y0000001",
+            "Y0000004"
+          ],
+          "accounts_ever": [
+            "Y0000001",
+            "Y0000004"
+          ],
+          "cost_fen": 2055771,
+          "market_value_fen": 2160000,
+          "quantity": "200",
+          "symbol": "699004",
+          "unrealized_fen": 104229
+        }
+      ]
+    }
+  },
+  "note": "只存输入与期望，不含 observed_*；由 tools/gen_data.py 独立实现（Fraction 精确数量 + 整数分成本，期末市值按估值表价格独立复算），不 import 引擎。合并口径：Σ 各账户总收益 == 合并视图总收益，差 > 0.01 元即判不守恒；划转按合同号归组，两腿净额为零且分属不同账户才算『已抵消』。",
+  "scenario": {
+    "cost_methods": [
+      "fifo",
+      "wavg"
+    ],
+    "files": [
+      "htsec-demo-001.xlsx",
+      "huaxi-demo-001.xls",
+      "generic-demo-013-account-c.csv",
+      "generic-demo-015-no-fee-columns.csv"
+    ],
+    "row_count": 46,
+    "transfer_contract": "TR-A-B-0001",
+    "transfer_patterns": [
+      "内部划转"
+    ],
+    "valuation": "valuation-demo-001.csv",
+    "valuation_date": "2025-12-31"
+  },
+  "surface_evidence": {
+    "merge.internal_transfer": {
+      "expect": {
+        "amount_fen": 2000000,
+        "balanced": true,
+        "contract_no": "TR-A-B-0001",
+        "leg_count": 2,
+        "net_fen": 0,
+        "note": "同日一出一进、同合同号、金额相反：两腿相加为零才算已抵消",
+        "trade_date": "2025-10-10"
+      },
+      "keys": [
+        [
+          "htsec-demo-001.xlsx",
+          20
+        ],
+        [
+          "huaxi-demo-001.xls",
+          13
+        ]
+      ]
+    },
+    "merge.overlapping_symbol": {
+      "expect": {
+        "account_count_at_terminal": 1,
+        "account_count_ever": 2,
+        "note": "同名标的曾在两个账户持有：合并持仓按标的汇总，账户数要如实计数",
+        "symbol": "699001"
+      },
+      "keys": [
+        [
+          "htsec-demo-001.xlsx",
+          3
+        ],
+        [
+          "huaxi-demo-001.xls",
+          7
+        ]
+      ]
+    },
+    "merge.three_accounts": {
+      "expect": {
+        "account_count": 3,
+        "account_ids": [
+          "Y0000001",
+          "Y0000002",
+          "Y0000003"
+        ],
+        "note": "第三个账户在另一份 CSV 里，合并必须跨文件而不是只认第一份"
+      },
+      "keys": [
+        [
+          "htsec-demo-001.xlsx",
+          2
+        ],
+        [
+          "huaxi-demo-001.xls",
+          2
+        ],
+        [
+          "generic-demo-013-account-c.csv",
+          2
+        ]
+      ]
+    },
+    "merge.two_accounts": {
+      "expect": {
+        "account_count": 2,
+        "account_ids": [
+          "Y0000001",
+          "Y0000002"
+        ],
+        "note": "两账户各有独立资金链（银证转入行各一条），合并后资金并列而非相加错位"
+      },
+      "keys": [
+        [
+          "htsec-demo-001.xlsx",
+          2
+        ],
+        [
+          "huaxi-demo-001.xls",
+          2
+        ]
+      ]
+    }
+  },
+  "transfer_ledger": [
+    {
+      "accounts": [
+        "Y0000001",
+        "Y0000002"
+      ],
+      "amount_fen": 2000000,
+      "contract_no": "TR-A-B-0001",
+      "leg_count": 2,
+      "legs": [
+        {
+          "account_id": "Y0000001",
+          "direction": "out",
+          "settlement_fen": -2000000,
+          "source_file": "htsec-demo-001.xlsx",
+          "source_line_no": 20,
+          "trade_date": "2025-10-10"
+        },
+        {
+          "account_id": "Y0000002",
+          "direction": "in",
+          "settlement_fen": 2000000,
+          "source_file": "huaxi-demo-001.xls",
+          "source_line_no": 13,
+          "trade_date": "2025-10-10"
+        }
+      ],
+      "net_fen": 0,
+      "trade_date": "2025-10-10"
+    }
+  ]
+}
