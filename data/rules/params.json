@@ -1,0 +1,57 @@
+{
+  "account_status_values": [
+    "registered",
+    "pending"
+  ],
+  "contract_version": "0.2.0-m1",
+  "cost_methods": [
+    "fifo",
+    "wavg"
+  ],
+  "date_formats": [
+    "%Y-%m-%d",
+    "%Y/%m/%d",
+    "%Y.%m.%d",
+    "%Y%m%d"
+  ],
+  "encoding_order": [
+    "utf-8-sig",
+    "utf-8",
+    "gb18030"
+  ],
+  "fee_allocation": {
+    "mode": "as_reported",
+    "note": "费用只按交割单实际列值入账；不臆造费率。",
+    "unallocated": "keep_separate"
+  },
+  "format": "ia.params",
+  "format_version": 1,
+  "money_max_scale": 2,
+  "money_unit": "fen",
+  "price_max_scale": 4,
+  "quantity_max_scale": 4,
+  "time_formats": [
+    "%H:%M:%S",
+    "%H:%M",
+    "%H%M%S"
+  ],
+  "tolerances_source": "rules/manifest.json#bench_thresholds",
+  "twr": {
+    "bases": [
+      "cashflow",
+      "daily"
+    ],
+    "default_basis": "cashflow",
+    "missing_valuation": "VALUATION_MISSING"
+  },
+  "xirr": {
+    "bisection_lower": "-0.999999",
+    "bisection_upper": "1000000",
+    "initial_guess": "0.1",
+    "max_bisection_iterations": 200,
+    "max_iterations": 100,
+    "npv_tolerance": "1e-6",
+    "rate_tolerance": "1e-12",
+    "year_basis_days": 365
+  }
+}

@@ -41,14 +41,23 @@ def test_unknown_command_is_usage_error(capsys):
 
 
 def test_stage_not_ready_commands_return_three(capsys):
-    for command in ("import", "cost", "pnl", "corporate-actions", "attribution", "merge", "report", "run", "bench"):
+    for command in ("cost", "pnl", "corporate-actions", "attribution", "merge", "report", "run", "bench"):
         argv = [command]
-        if command in ("import", "run"):
+        if command == "run":
             argv.append("x.csv")
         code = cli.main(argv)
         captured = capsys.readouterr()
         assert code == EXIT_STAGE_NOT_READY, command
         assert "STAGE_NOT_READY" in captured.err
+
+
+def test_import_is_no_longer_stage_blocked(capsys):
+    """M1 退役 import 的退出码 3：缺文件必须是 2，不是 3，更不是 0。"""
+    code = cli.main(["import", "does-not-exist.csv"])
+    captured = capsys.readouterr()
+    assert code == EXIT_INPUT
+    assert "STAGE_NOT_READY" not in captured.err
+    assert "FILE_NOT_FOUND" in captured.err
 
 
 def test_missing_data_dir_returns_two(tmp_path):

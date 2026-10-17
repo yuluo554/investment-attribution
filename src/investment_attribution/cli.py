@@ -19,6 +19,7 @@ from .exit_codes import (
     EXIT_STAGE_NOT_READY,
 )
 from .paths import resolve_data_dir
+from .pipeline.import_cmd import exit_code_for, run_import
 from .selftest import run_selftest
 from .serialize import dumps_json, write_atomic, write_json_atomic
 from .stages import require_ready
@@ -65,8 +66,10 @@ def build_parser():
     for name in ("import",):
         p = sub.add_parser(name, help="导入交割单，产出统一流水与行级错误台账")
         p.add_argument("input", nargs="+", help="券商导出的交割单文件")
-        p.add_argument("--out", default=None, help="统一流水输出路径")
-        p.add_argument("--errors", default=None, help="行级错误台账输出路径")
+        p.add_argument("--out-dir", default=None, help="产物输出目录（统一流水 / 错误台账 / 指纹 / 账户映射）")
+        p.add_argument("--out", default=None, help="统一流水输出路径（覆盖 --out-dir 默认名）")
+        p.add_argument("--errors", default=None, help="行级错误台账输出路径（覆盖 --out-dir 默认名）")
+        p.add_argument("--accounts", default=None, help="账户登记表 JSON（覆盖随包登记表）")
 
     for name in ("cost", "pnl"):
         p = sub.add_parser(name, help="成本台账 / 已实现未实现收益")
@@ -123,6 +126,46 @@ def _cmd_selftest(args):
     return EXIT_OK
 
 
+def _cmd_import(args):
+    """导入交割单：成功 0 / 有行级问题 1 / 整份文件不可用 2。"""
+    result = run_import(
+        args.input,
+        data_dir=args.data_dir,
+        out_dir=args.out_dir,
+        accounts_path=args.accounts,
+        ledger_path=args.out,
+        errors_path=args.errors,
+    )
+    summary = result.ledger["summary"]
+    sys.stderr.write(
+        "导入完成：{} 个文件 / {} 行入库 / {} 行拒绝 / {} 个重复文件 / {} 行待确认账户\n".format(
+            summary["files_input"],
+            summary["rows_accepted"],
+            summary["rows_rejected"],
+            summary["files_duplicate"],
+            summary["rows_pending_account"],
+        )
+    )
+    for target in ("ledger", "errors", "fingerprints", "account_map"):
+        if target in result.paths:
+            sys.stderr.write("  {}: {}\n".format(target, result.paths[target]))
+    if result.degraded:
+        pending = result.account_map["pending"]
+        if pending:
+            sys.stderr.write(
+                "待确认账户（未并入默认账户）：{}\n".format(
+                    ", ".join(str(item["account_id"]) for item in pending)
+                )
+            )
+        if result.errors["summary"]["error_count"]:
+            sys.stderr.write(
+                "行级失败 {} 行，已写入错误台账（原始行文本 + 源文件行号 + 原因）。\n".format(
+                    result.errors["summary"]["error_count"]
+                )
+            )
+    return exit_code_for(result)
+
+
 def _cmd_stage_not_ready(command):
     require_ready(command)
     # 走到这里说明登记表与分派不一致，属实现缺陷，不能静默返回成功。
@@ -133,6 +176,7 @@ def _cmd_stage_not_ready(command):
 
 
 HANDLERS = {
+    "import": _cmd_import,
     "selftest": _cmd_selftest,
 }
 

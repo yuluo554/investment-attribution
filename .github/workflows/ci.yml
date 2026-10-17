@@ -36,10 +36,16 @@ jobs:
       - name: Selftest (console script form)
         run: investment-attribution selftest --strict
 
+      - name: Generated data gate (shape + byte identity)
+        run: python tools/gen_data.py --check
+
+      - name: Import smoke (two real formats)
+        run: python -m investment_attribution import data/samples/htsec-demo-001.xlsx data/samples/huaxi-demo-001.xls --out-dir out/
+
       - name: Stage-not-ready contract
         shell: bash
         run: |
           set +e
-          python -m investment_attribution import x.csv
+          python -m investment_attribution cost --method fifo
           code=$?
           test "$code" = "3"

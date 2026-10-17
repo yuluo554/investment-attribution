@@ -1,167 +1,380 @@
 {
-  "format": "ia.manifest",
-  "format_version": 1,
-  "contract_version": "0.1.0-skeleton",
   "bench_thresholds": {
-    "position_quantity_tolerance_shares": 1,
     "position_amount_tolerance_cny": 0.01,
-    "xirr_relative_tolerance": 0.0001,
+    "position_quantity_tolerance_shares": 1,
     "split_conservation_tolerance_cny": 0.01,
-    "transfer_offset_tolerance_cny": 0.01
+    "transfer_offset_tolerance_cny": 0.01,
+    "xirr_relative_tolerance": 0.0001
   },
+  "contract_version": "0.2.0-m1",
   "coverage": {
-    "note": "M1 起由生成器填满；要求逐形态登记 total / sampled 且分子 = 分母（测试锁定）。",
+    "note": "total/sampled 逐形态登记，要求分子 = 分母。M1 的 sampled 指该形态已在样例中注入；导入形态的逐行列值期望已写入 data/truth/import_truth.json，成本 / 公司行为 / 归因形态的期望值随 M2–M4 追加。",
     "surfaces": [
       {
+        "evidence": [
+          {
+            "note": "海通 19 列 xlsx",
+            "sample": "htsec-demo-001.xlsx"
+          }
+        ],
+        "sampled": 1,
         "surface": "import.htsec_xlsx",
-        "total": 0,
-        "sampled": 0
+        "total": 1
       },
       {
+        "evidence": [
+          {
+            "note": "Tab 分隔 + GB18030 + 全单元格 =\"...\" 壳",
+            "sample": "huaxi-demo-001.xls"
+          }
+        ],
+        "sampled": 1,
         "surface": "import.huaxi_xls_tab_gb18030",
-        "total": 0,
-        "sampled": 0
+        "total": 1
       },
       {
+        "evidence": [
+          {
+            "note": "UTF-8 通用 CSV",
+            "sample": "generic-demo-001.csv"
+          },
+          {
+            "note": "UTF-8 BOM",
+            "sample": "generic-demo-012-bom.csv"
+          }
+        ],
+        "sampled": 1,
         "surface": "import.generic_csv_utf8",
-        "total": 0,
-        "sampled": 0
+        "total": 1
       },
       {
+        "evidence": [
+          {
+            "note": "GB18030 通用 CSV",
+            "sample": "generic-demo-002.csv"
+          }
+        ],
+        "sampled": 1,
         "surface": "import.generic_csv_gb18030",
-        "total": 0,
-        "sampled": 0
+        "total": 1
       },
       {
+        "evidence": [
+          {
+            "note": "全单元格 =\"...\" 包裹",
+            "sample": "huaxi-demo-001.xls"
+          },
+          {
+            "note": "含一条非法壳行",
+            "sample": "generic-demo-003-formula.csv"
+          }
+        ],
+        "sampled": 1,
         "surface": "import.cell_formula_shell",
-        "total": 0,
-        "sampled": 0
+        "total": 1
       },
       {
+        "evidence": [
+          {
+            "note": "缺 成交数量 列",
+            "sample": "generic-demo-004-missing-column.csv"
+          }
+        ],
+        "sampled": 1,
         "surface": "import.missing_column",
-        "total": 0,
-        "sampled": 0
+        "total": 1
       },
       {
+        "evidence": [
+          {
+            "note": "两条错位列行",
+            "sample": "generic-demo-005-misaligned.csv"
+          }
+        ],
+        "sampled": 1,
         "surface": "import.misaligned_column",
-        "total": 0,
-        "sampled": 0
+        "total": 1
       },
       {
+        "evidence": [
+          {
+            "note": "0 字节",
+            "sample": "generic-demo-006-empty.csv"
+          }
+        ],
+        "sampled": 1,
         "surface": "import.empty_file",
-        "total": 0,
-        "sampled": 0
+        "total": 1
       },
       {
+        "evidence": [
+          {
+            "note": "仅表头无数据行",
+            "sample": "generic-demo-007-header-only.csv"
+          }
+        ],
+        "sampled": 1,
         "surface": "import.header_only",
-        "total": 0,
-        "sampled": 0
+        "total": 1
       },
       {
+        "evidence": [
+          {
+            "note": "2025-01-06 699001 两笔买入",
+            "sample": "htsec-demo-001.xlsx"
+          }
+        ],
+        "sampled": 1,
         "surface": "cost.same_day_multi_fill",
-        "total": 0,
-        "sampled": 0
+        "total": 1
       },
       {
+        "evidence": [
+          {
+            "note": "2025-03-05 699001 卖出 600，原持仓 1500",
+            "sample": "htsec-demo-001.xlsx"
+          }
+        ],
+        "sampled": 1,
         "surface": "cost.partial_sell",
-        "total": 0,
-        "sampled": 0
+        "total": 1
       },
       {
+        "evidence": [
+          {
+            "note": "2025-03-05 清仓 699001，2025-04-08 回补 800",
+            "sample": "htsec-demo-001.xlsx"
+          }
+        ],
+        "sampled": 1,
         "surface": "cost.clear_then_rebuy",
-        "total": 0,
-        "sampled": 0
+        "total": 1
       },
       {
+        "evidence": [
+          {
+            "note": "2025-07-15 拆分 699003 后 2025-07-16 卖出",
+            "sample": "htsec-demo-001.xlsx"
+          }
+        ],
+        "sampled": 1,
         "surface": "cost.after_split_sell",
-        "total": 0,
-        "sampled": 0
+        "total": 1
       },
       {
+        "evidence": [
+          {
+            "note": "699001 两批买入后部分卖出，FIFO 与加权成本不同",
+            "sample": "htsec-demo-001.xlsx"
+          }
+        ],
+        "sampled": 1,
         "surface": "cost.fifo_vs_wavg_divergence",
-        "total": 0,
-        "sampled": 0
+        "total": 1
       },
       {
+        "evidence": [
+          {
+            "note": "2025-05-20 红利入账 699002",
+            "sample": "htsec-demo-001.xlsx"
+          }
+        ],
+        "sampled": 1,
         "surface": "corporate_action.dividend",
-        "total": 0,
-        "sampled": 0
+        "total": 1
       },
       {
+        "evidence": [
+          {
+            "note": "2025-06-10 送股入账 699002",
+            "sample": "htsec-demo-001.xlsx"
+          }
+        ],
+        "sampled": 1,
         "surface": "corporate_action.stock_dividend",
-        "total": 0,
-        "sampled": 0
+        "total": 1
       },
       {
+        "evidence": [
+          {
+            "note": "2025-07-01 配股 699002",
+            "sample": "htsec-demo-001.xlsx"
+          }
+        ],
+        "sampled": 1,
         "surface": "corporate_action.rights_issue",
-        "total": 0,
-        "sampled": 0
+        "total": 1
       },
       {
+        "evidence": [
+          {
+            "note": "2025-07-15 拆分 699003",
+            "sample": "htsec-demo-001.xlsx"
+          }
+        ],
+        "sampled": 1,
         "surface": "corporate_action.split",
-        "total": 0,
-        "sampled": 0
+        "total": 1
       },
       {
+        "evidence": [
+          {
+            "note": "2025-06-10 红利再投 699001",
+            "sample": "htsec-demo-001.xlsx"
+          }
+        ],
+        "sampled": 1,
         "surface": "corporate_action.reinvested_dividend",
-        "total": 0,
-        "sampled": 0
+        "total": 1
       },
       {
+        "evidence": [
+          {
+            "note": "2025-08-01 其他业务甲（规则表无法识别）",
+            "sample": "htsec-demo-001.xlsx"
+          }
+        ],
+        "sampled": 1,
         "surface": "corporate_action.unrecognized_pending",
-        "total": 0,
-        "sampled": 0
+        "total": 1
       },
       {
+        "evidence": [
+          {
+            "note": "2025-04-01 699006 单笔买入 1000 股",
+            "sample": "huaxi-demo-001.xls"
+          }
+        ],
+        "sampled": 1,
         "surface": "attribution.lump_sum",
-        "total": 0,
-        "sampled": 0
+        "total": 1
       },
       {
+        "evidence": [
+          {
+            "note": "699005 三笔定投 + 一笔回补",
+            "sample": "huaxi-demo-001.xls"
+          }
+        ],
+        "sampled": 1,
         "surface": "attribution.dca",
-        "total": 0,
-        "sampled": 0
+        "total": 1
       },
       {
+        "evidence": [
+          {
+            "note": "2025-06-20 699005 卖出 500",
+            "sample": "huaxi-demo-001.xls"
+          }
+        ],
+        "sampled": 1,
         "surface": "attribution.midterm_redemption",
-        "total": 0,
-        "sampled": 0
+        "total": 1
       },
       {
+        "evidence": [
+          {
+            "note": "699006 成本 17510.00，清仓回款 15729.25",
+            "sample": "huaxi-demo-001.xls"
+          }
+        ],
+        "sampled": 1,
         "surface": "attribution.negative_return",
-        "total": 0,
-        "sampled": 0
+        "total": 1
       },
       {
+        "evidence": [
+          {
+            "note": "699007 买卖同价且费用列为 0",
+            "sample": "huaxi-demo-001.xls"
+          }
+        ],
+        "sampled": 1,
         "surface": "attribution.zero_return",
-        "total": 0,
-        "sampled": 0
+        "total": 1
       },
       {
+        "evidence": [
+          {
+            "note": "2025-12-22 全部清仓，期末持仓为 0",
+            "sample": "huaxi-demo-001.xls"
+          }
+        ],
+        "sampled": 1,
         "surface": "attribution.zero_terminal_value",
-        "total": 0,
-        "sampled": 0
+        "total": 1
       },
       {
+        "evidence": [
+          {
+            "note": "账户一",
+            "sample": "htsec-demo-001.xlsx"
+          },
+          {
+            "note": "账户二",
+            "sample": "huaxi-demo-001.xls"
+          }
+        ],
+        "sampled": 1,
         "surface": "merge.two_accounts",
-        "total": 0,
-        "sampled": 0
+        "total": 1
       },
       {
+        "evidence": [
+          {
+            "note": "账户一",
+            "sample": "htsec-demo-001.xlsx"
+          },
+          {
+            "note": "账户二",
+            "sample": "huaxi-demo-001.xls"
+          },
+          {
+            "note": "账户三",
+            "sample": "generic-demo-013-account-c.csv"
+          }
+        ],
+        "sampled": 1,
         "surface": "merge.three_accounts",
-        "total": 0,
-        "sampled": 0
+        "total": 1
       },
       {
+        "evidence": [
+          {
+            "note": "2025-10-10 转出 20000.00",
+            "sample": "htsec-demo-001.xlsx"
+          },
+          {
+            "note": "同日转入 20000.00，合同号 TR-A-B-0001",
+            "sample": "huaxi-demo-001.xls"
+          }
+        ],
+        "sampled": 1,
         "surface": "merge.internal_transfer",
-        "total": 0,
-        "sampled": 0
+        "total": 1
       },
       {
+        "evidence": [
+          {
+            "note": "699001 账户一持仓",
+            "sample": "htsec-demo-001.xlsx"
+          },
+          {
+            "note": "699001 账户二持仓",
+            "sample": "huaxi-demo-001.xls"
+          }
+        ],
+        "sampled": 1,
         "surface": "merge.overlapping_symbol",
-        "total": 0,
-        "sampled": 0
+        "total": 1
       }
     ]
+  },
+  "format": "ia.manifest",
+  "format_version": 1,
+  "generator": {
+    "frozen": true,
+    "seed": 11400714819323198485,
+    "tool": "tools/gen_data.py"
   }
 }

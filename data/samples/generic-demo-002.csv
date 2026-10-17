@@ -1,0 +1,4 @@
+trade_date,trade_time,business,symbol,name,quantity,price,amount,settlement_amount,commission,stamp_tax,transfer_fee,other_fee,direction,contract_no,trade_no,account_id,shareholder_account
+2025-04-01,09:35:00,证券买入,699006,示例医药己,1000,12.00,12000.00,-12005.00,5.00,0.00,0.00,0.00,buy,HX-B-0005,T-B-3992,Y0000002,A000000002
+2025-05-06,09:42:00,证券买入,699001,示例科技甲,600,10.50,6300.00,-6305.00,5.00,0.00,0.00,0.00,buy,HX-B-0006,T-B-2078,Y0000002,A000000002
+2025-06-20,10:05:00,证券卖出,699005,示例能源戊,500,22.00,11000.00,10984.00,5.00,11.00,0.00,0.00,sell,HX-B-0007,T-B-5138,Y0000002,A000000002

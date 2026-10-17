@@ -1,0 +1,166 @@
+{
+  "aliases": {
+    "account_id": [
+      "资金账号",
+      "资金账户",
+      "account_id"
+    ],
+    "amount": [
+      "成交金额",
+      "成交额",
+      "amount"
+    ],
+    "business": [
+      "业务名称",
+      "操作",
+      "业务类型",
+      "操作类型",
+      "business"
+    ],
+    "cash_balance": [
+      "资金本次余额",
+      "资金余额",
+      "cash_balance"
+    ],
+    "commission": [
+      "手续费",
+      "佣金",
+      "commission"
+    ],
+    "contract_no": [
+      "合同号",
+      "合同编号",
+      "委托编号",
+      "contract_no"
+    ],
+    "direction": [
+      "买卖方向",
+      "操作方向",
+      "方向",
+      "direction"
+    ],
+    "name": [
+      "证券名称",
+      "股票名称",
+      "名称",
+      "name"
+    ],
+    "note": [
+      "备注",
+      "note"
+    ],
+    "other_fee": [
+      "其他费",
+      "其他费用",
+      "other_fee"
+    ],
+    "price": [
+      "成交价格",
+      "成交价",
+      "价格",
+      "price"
+    ],
+    "quantity": [
+      "成交数量",
+      "数量",
+      "成交量",
+      "quantity"
+    ],
+    "settlement_amount": [
+      "发生金额",
+      "清算金额",
+      "settlement_amount"
+    ],
+    "share_balance": [
+      "股份本次余额",
+      "股份余额",
+      "share_balance"
+    ],
+    "shareholder_account": [
+      "股东账号",
+      "股东账户",
+      "shareholder_account"
+    ],
+    "stamp_tax": [
+      "印花税",
+      "stamp_tax"
+    ],
+    "symbol": [
+      "证券代码",
+      "股票代码",
+      "代码",
+      "symbol"
+    ],
+    "trade_date": [
+      "成交日期",
+      "买卖日期",
+      "发生日期",
+      "日期",
+      "trade_date"
+    ],
+    "trade_no": [
+      "成交号",
+      "成交编号",
+      "trade_no"
+    ],
+    "trade_time": [
+      "成交时间",
+      "时间",
+      "trade_time"
+    ],
+    "transfer_fee": [
+      "过户费",
+      "transfer_fee"
+    ]
+  },
+  "canonical_fields": [
+    "symbol",
+    "name",
+    "trade_date",
+    "trade_time",
+    "business",
+    "quantity",
+    "price",
+    "amount",
+    "settlement_amount",
+    "commission",
+    "stamp_tax",
+    "transfer_fee",
+    "other_fee",
+    "direction",
+    "contract_no",
+    "trade_no",
+    "account_id",
+    "shareholder_account",
+    "cash_balance",
+    "share_balance",
+    "note"
+  ],
+  "contract_version": "0.2.0-m1",
+  "direction_patterns": {
+    "buy": [
+      "证券买入",
+      "买入",
+      "buy"
+    ],
+    "sell": [
+      "证券卖出",
+      "卖出",
+      "sell"
+    ]
+  },
+  "extra_fields": {
+    "cash_balance": "money",
+    "note": "text",
+    "share_balance": "quantity"
+  },
+  "format": "ia.aliases",
+  "format_version": 1,
+  "required_fields": [
+    "symbol",
+    "trade_date",
+    "business",
+    "quantity"
+  ],
+  "unknown_column_policy": "keep_in_extra_and_record"
+}

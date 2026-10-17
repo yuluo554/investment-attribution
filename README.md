@@ -6,8 +6,10 @@
 > **不做投资建议，只做账。** 所有输出均为历史核算结果，不构成任何投资建议。
 > 纯本地、零上传、零遥测、不登录券商、不联网行情。断网可跑完整链路。
 
-**状态：M0 骨架（2026-10-17）。** 当前仓库提供可运行的 CLI 契约、
-可证伪自检、零上传静态门禁与确定性写盘；七个业务子命令按里程碑逐个落地，
+**状态：M1 数据先行（2026-10-17）。** 当前仓库提供可运行的 CLI 契约、
+`import` 子命令（海通 xlsx / 华西 Tab+GB18030 两类真实格式 + 通用 CSV/TSV）、
+确定性合成数据生成器（`tools/gen_data.py --check` 双层守门）、可证伪自检、
+零上传静态门禁与确定性写盘；其余业务子命令按里程碑逐个落地，
 未落地时以退出码 `3` 显式拦截，**不输出伪造结果**。
 
 ---
@@ -65,7 +67,7 @@ python -m pytest
 
 | 子命令 | 作用 | 状态 |
 |---|---|---|
-| `import` | 多券商交割单导入 → 统一流水 + 行级错误台账 | M1 |
+| `import` | 多券商交割单导入 → 统一流水 + 行级错误台账 | M1 ✅ |
 | `cost --method fifo\|wavg` | 持仓成本台账（口径必填，无默认值） | M2 |
 | `pnl [--fees]` | 已实现/未实现收益与费用三件套 | M2 |
 | `corporate-actions` | 公司行为事件台账 + 人工确认队列 | M3 |
@@ -75,6 +77,36 @@ python -m pytest
 | `run` | 一条命令跑完整链路 | M5 |
 | `bench [--only B1]` | 内置基准套件 B1–B5 | M5 |
 | `selftest` | 可证伪自检（**当前可用**） | M0 ✅ |
+
+### `import` 用法与退出码
+
+```bash
+# 两类已实测格式一起导入（xlsx / .xls 实为 Tab+GB18030 文本）
+python -m investment_attribution import \
+    data/samples/htsec-demo-001.xlsx data/samples/huaxi-demo-001.xls \
+    --out-dir out/
+
+# 指定统一流水 / 错误台账路径（覆盖 --out-dir 默认名）
+python -m investment_attribution import data/samples/htsec-demo-001.xlsx \
+    --out out/ledger.json --errors out/import_errors.json
+
+# 用自己的账户登记表覆盖随包登记表
+python -m investment_attribution import data/samples/htsec-demo-001.xlsx \
+    --accounts my-accounts.json --out-dir out/
+```
+
+产物（全部经 `serialize.write_json_atomic` 落盘）：
+
+| 文件 | 内容 |
+|---|---|
+| `ledger.json` | 统一流水（每行带 `source_file` / `source_sha256` / `source_line_no`） |
+| `import_errors.json` | 行级错误台账（原始行文本 + 源文件行号 + 原因码） |
+| `fingerprints.json` | 文件指纹与去重记录（改名 / 改扩展名识别为同一件） |
+| `account_map.json` | 账户—股东账号映射；未登记账户落"待确认" |
+
+`import` 退出码：`0` 全部入库；`1` 有行级失败或有未登记账户；
+`2` 整份文件不可用（缺必填列 / 空文件 / 编码探测失败 / 仅表头 / 文件缺失）。
+**整份文件不可用时不写任何产物**，避免留下"少了一个账户却看起来完整"的半份流水。
 
 ## 退出码语义
 
@@ -86,7 +118,8 @@ python -m pytest
 | `3` | **阶段未就绪**——该模块尚未落地，本次不产出任何结果 |
 
 `3` 是骨架期的临时语义，随模块落地逐个退役；退役时同步常量表、CLI 分派、
-本表、决策记录与测试。
+本表、决策记录与测试。**M1 已退役 `import`**（现为 0 / 1 / 2 三档），
+其余子命令仍返回 `3`。
 
 ## 数据目录
 
@@ -96,7 +129,12 @@ python -m pytest
 
 契约清单位于 `data/rules/manifest.json`，承载基准门槛与覆盖度登记。
 M1 起，合成样例、列名别名表、公司行为规则表、参数包与真值台账统一由
-`tools/` 下的生成器产出，配 `--check` 位级守门，**禁止手改**。
+`tools/` 下的生成器产出，配 `--check` 位级守门，**禁止手改**：
+
+```bash
+python tools/gen_data.py            # 生成 data/rules data/samples data/truth
+python tools/gen_data.py --check    # 形态校验 + 重生成逐字节比对（两层守门）
+```
 
 ## 隐私与安全
 
@@ -156,12 +194,16 @@ M1 起，合成样例、列名别名表、公司行为规则表、参数包与�
 ## 仓库结构
 
 ```
-src/investment_attribution/   CLI 与核心模块
-data/rules/manifest.json      契约清单（门槛 + 覆盖度登记）
+src/investment_attribution/   CLI、基础设施层与业务模块
+src/investment_attribution/ingest/   导入适配层（编码 / 壳清洗 / 列名归一 / 行级台账）
+src/investment_attribution/pipeline/ 编排层（import 起）
+data/rules/                   契约清单 + 冻结规则包（别名 / 参数 / 公司行为 / 行业 / 账户）
+data/samples/                 合成交割单样例（多格式多编码，含刻意缺陷）
+data/truth/                   真值台账（只存输入 + 期望）
 data/README.md                依据查证、数据纪律、数值口径（唯一来源）
 plan/                         计划文档与里程碑留档
-tests/                        契约、自检、零上传门禁、确定性写盘
-tools/                        生成器与发布工具（M1 起）
+tests/                        契约、自检、零上传门禁、确定性写盘、导入层与真值对齐
+tools/                        gen_data.py（确定性生成器）
 ```
 
 ## 开发状态与计划

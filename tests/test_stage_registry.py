@@ -27,5 +27,15 @@ def test_selftest_is_never_stage_blocked():
     assert "selftest" not in stages.STAGE_NOT_READY
 
 
+def test_import_is_never_stage_blocked_again():
+    """防复活断言：import 已于 M1 落地，不得重新登记为未就绪。"""
+    assert "import" not in stages.STAGE_NOT_READY
+    assert "import" in HANDLERS
+
+
 def test_require_ready_returns_none_for_selftest():
     assert stages.require_ready("selftest") is None
+
+
+def test_require_ready_returns_none_for_import():
+    assert stages.require_ready("import") is None

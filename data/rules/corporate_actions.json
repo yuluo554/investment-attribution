@@ -1,0 +1,73 @@
+{
+  "contract_version": "0.2.0-m1",
+  "format": "ia.corporate_actions",
+  "format_version": 1,
+  "rules": [
+    {
+      "business_name_patterns": [
+        "红利入账",
+        "股息入账",
+        "现金红利"
+      ],
+      "cash_per_share": null,
+      "event_type": "dividend",
+      "evidence_hint": "data/README.md §4.1 费用按交割单实际列值",
+      "requires_manual_confirm": false,
+      "rule_id": "ca.dividend",
+      "share_factor": null,
+      "tax_rule": "as_reported"
+    },
+    {
+      "business_name_patterns": [
+        "送股入账",
+        "送股"
+      ],
+      "cash_per_share": null,
+      "event_type": "stock_dividend",
+      "evidence_hint": "份额增量取交割单数量列",
+      "requires_manual_confirm": false,
+      "rule_id": "ca.stock_dividend",
+      "share_factor": null,
+      "tax_rule": "as_reported"
+    },
+    {
+      "business_name_patterns": [
+        "配股"
+      ],
+      "cash_per_share": null,
+      "event_type": "rights_issue",
+      "evidence_hint": "配股价格取交割单成交价格列",
+      "requires_manual_confirm": false,
+      "rule_id": "ca.rights_issue",
+      "share_factor": null,
+      "tax_rule": "as_reported"
+    },
+    {
+      "business_name_patterns": [
+        "拆分",
+        "份额折算"
+      ],
+      "cash_per_share": null,
+      "event_type": "split",
+      "evidence_hint": "拆分比例取交割单数量增量",
+      "requires_manual_confirm": false,
+      "rule_id": "ca.split",
+      "share_factor": null,
+      "tax_rule": "none"
+    },
+    {
+      "business_name_patterns": [
+        "红利再投",
+        "分红再投"
+      ],
+      "cash_per_share": null,
+      "event_type": "reinvested_dividend",
+      "evidence_hint": "再投价格取交割单成交价格列",
+      "requires_manual_confirm": false,
+      "rule_id": "ca.reinvested_dividend",
+      "share_factor": null,
+      "tax_rule": "as_reported"
+    }
+  ],
+  "unmatched_policy": "pending_confirmation"
+}

@@ -1,0 +1,29 @@
+{
+  "accounts": [
+    {
+      "account_id": "Y0000001",
+      "alias": "示例账户一",
+      "shareholder_accounts": [
+        "A000000001"
+      ]
+    },
+    {
+      "account_id": "Y0000002",
+      "alias": "示例账户二",
+      "shareholder_accounts": [
+        "A000000002"
+      ]
+    },
+    {
+      "account_id": "Y0000003",
+      "alias": "示例账户三",
+      "shareholder_accounts": [
+        "A000000003"
+      ]
+    }
+  ],
+  "contract_version": "0.2.0-m1",
+  "format": "ia.accounts",
+  "format_version": 1,
+  "note": "样例账户登记；用户真实账户用 --accounts 显式传入，覆盖本文件。"
+}
