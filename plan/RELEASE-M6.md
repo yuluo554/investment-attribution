@@ -294,3 +294,22 @@ total hits = 0 / excused = 5 / skipped = 0      # exit 0
 
 `py -3.8` / `py -3.12` 全量 pytest 各 429 passed；`tools/gen_data.py --check` 形态 +
 29 产物逐字节不变。修的是**判据与覆盖面**，没碰任何数据、口径或产物。
+
+### 7.4 发布物本体复核（发布后追加，2026-10-17）
+
+在 tag 之后的 `main`（`8d46d79`）上另起一棵**全新 clone + 全新 venv**，独立复跑一遍，
+并核对发布物本体：
+
+| 复核项 | 命令 | 结果 |
+|---|---|---|
+| 远端状态 | `git log --oneline -1` / `git ls-files \| wc -l` / `git status --porcelain` | `8d46d79`；125 个入仓文件；**0 处未提交改动**（历史 = 工作树） |
+| tag 类型与 tagger | `git cat-file -t refs/tags/v1.0.0` / `git for-each-ref` | `tag`（**标注 tag**，普通 clone 会连带取到）；tagger = `yuluo554 <282769740+yuluo554@users.noreply.github.com>` |
+| 提交数 | `git rev-list --count HEAD` | 10（M0–M6 共 10 个 commit） |
+| 全量测试 | 新 venv + `pip install -e ".[dev]"` + `pytest` | **431 passed** |
+| 数据守门 | `tools/gen_data.py --check` | `[shape] ok` + `[bytes] ok (29 artifacts)` |
+| 脱敏四面（**含标注 tag 对象**） | `tools/scan_privacy.py --all` | `total hits = 0 / excused = 5 / skipped = 0`，exit 0 —— 7.2 的缺陷 B 在 tag 对象真实存在的库里已不复现 |
+| 自检 | `selftest --strict` | exit 0 |
+| 基准 | `bench` | B1–B5 全达标，exit 0 |
+| **发布物本体 = tag 树** | 附件解包目录 vs `git archive v1.0.0` 解包目录 `diff -r` | **逐文件逐字节相同**（附件顶层目录 `investment-attribution-1.0.0/`） |
+
+至此 M6 三件套（tag / Release 附产物 / 发布留档）与 DoD 六项全部闭合，且**每一项都指得出在哪验的**。
