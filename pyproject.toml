@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "investment-attribution"
-version = "0.1.0.dev0"
+version = "1.0.0"
 description = "券商交割单收益归因工作台：纯本地、零上传、可审计的投资账"
 readme = "README.md"
 requires-python = ">=3.8"
@@ -12,7 +12,7 @@ license = { text = "MIT" }
 authors = [{ name = "yuluo554" }]
 keywords = ["brokerage", "attribution", "xirr", "twr", "portfolio", "local-first"]
 classifiers = [
-    "Development Status :: 2 - Pre-Alpha",
+    "Development Status :: 5 - Production/Stable",
     "Intended Audience :: End Users/Desktop",
     "License :: OSI Approved :: MIT License",
     "Programming Language :: Python :: 3",

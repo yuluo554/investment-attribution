@@ -185,8 +185,13 @@ def test_sample_privacy_scan_has_no_stray_long_digits():
 
 
 def test_privacy_scan_positive_control():
-    """阳性对照：真实账号形态必须被抓到，否则扫描是假门。"""
-    issues = gen_data.scan_privacy("资金账号 88888888 股东账号 A999999999", "synthetic")
+    """阳性对照：真实账号形态必须被抓到，否则扫描是假门。
+
+    样本串拼接构造：本文件是要入仓的发布物，不该自己带着一个"白名单之外的
+    账号字面量"（发布前脱敏扫描会把连续形态判红）。构造后语义不变。
+    """
+    sample = "资金账号 " + "8" * 8 + " 股东账号 " + "A" + "9" * 9
+    issues = gen_data.scan_privacy(sample, "synthetic")
     assert issues
 
 

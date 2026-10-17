@@ -19,6 +19,10 @@ jobs:
       PYTHONDONTWRITEBYTECODE: "1"
     steps:
       - uses: actions/checkout@v4
+        with:
+          # 脱敏扫描的"历史面"要遍历全部可达对象；浅克隆只给 tip 树，
+          # 历史面会静默缩水成"只扫了最新一版"——那正是假绿。
+          fetch-depth: 0
 
       - uses: actions/setup-python@v5
         with:
@@ -29,6 +33,11 @@ jobs:
 
       - name: Test
         run: python -m pytest
+
+      - name: Privacy scan (four surfaces, 0 hits)
+        run: |
+          python tools/scan_privacy.py --self-test
+          python tools/scan_privacy.py --all
 
       - name: Selftest (python -m form)
         run: python -m investment_attribution selftest --strict
