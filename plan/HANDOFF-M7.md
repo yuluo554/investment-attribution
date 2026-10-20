@@ -11,11 +11,11 @@
 |---|---|---|
 | 公开仓库 | <https://github.com/yuluo554/investment-attribution>（public） | `gh repo view` |
 | Release | <https://github.com/yuluo554/investment-attribution/releases/tag/v1.0.0> | 两个附件均 `uploaded` |
-| tag | `v1.0.0`（annotated）→ commit `7da7c269aba3289726fdd982c1bf76c106659dd7` | `git rev-parse v1.0.0^{commit}` |
-| 附件 | `investment-attribution-v1.0.0.tar.gz`（336748 字节，sha256 `684a4913d96fa3ddab81ff25f7f167ef9c177d8f9a8297366ab52aa52f3c3498`）+ `SHA256SUMS` | 下载后 `sha256sum -c` 为 OK，与本地留档件逐字节相同 |
+| tag | `v1.0.0`（annotated，**2026-10-20 已重指**到本次发布的 `main` 末端；首次发布指向 `7da7c269…`） | `git rev-parse v1.0.0^{commit}`；对齐判据 `git rev-list -n1 v1.0.0 == git rev-parse HEAD`，详情见 `plan/RELEASE-M6.md §7.5` |
+| 附件 | `investment-attribution-v1.0.0.tar.gz` + `SHA256SUMS`（字节数与 sha256 **不写在这里**：本文件在 tag 树里，写进去就是自指——权威值见 Release 页的 `SHA256SUMS` 与 `release/RELEASE_NOTES.md`） | 下载后 `sha256sum -c` 为 OK，与本地留档件逐字节相同；重算配方见 §五 |
 | 发布留档 | `plan/RELEASE-M6.md`（tag 前落盘；§七 为 tag 后分栏） | 本文件同目录 |
 | CI | 3 次推送 → 3 条 run 四矩阵全绿（`{windows,ubuntu} × {3.8,3.12}`） | <https://github.com/yuluo554/investment-attribution/actions>（run id 逐条见 `RELEASE-M6.md §七`） |
-| 测试 / 基准 | 双解释器各 429 passed；B1–B5 共 201 项比对 0 违例 | `plan/RELEASE-M6.md §四` |
+| 测试 / 基准 | 双解释器各 432 passed；B1–B5 共 201 项比对 0 违例 | `plan/RELEASE-M6.md §四` |
 | 版本 | 包 `1.0.0`（`pyproject` 与 `__version__` 一致） | — |
 | 数据契约版本 | `0.6.0-m5`（**M6 刻意未升档**，理由见下） | `data/rules/manifest.json` |
 
@@ -101,9 +101,9 @@ PYTHONPATH=src PYTHONUTF8=1 py -3.12 -m investment_attribution run \
     data/samples/generic-demo-015-no-fee-columns.csv \
     --method fifo --valuation data/samples/valuation-demo-001.csv --out-dir out/chain/; echo $?
 
-# 发布物复核（重算 tag 的源码包 sha256）
+# 发布物复核（重算 tag 的源码包 sha256，再与 Release 页 SHA256SUMS 对撞）
 git archive --format=tar --prefix=investment-attribution-1.0.0/ v1.0.0 | gzip -9n \
-    | sha256sum   # 期望 684a4913d96fa3ddab81ff25f7f167ef9c177d8f9a8297366ab52aa52f3c3498
+    | sha256sum   # 期望 == Release 页 `SHA256SUMS` 里那一行（本文件在 tag 树里，故不写死该值：写进去就是自指）
 
 # CI 状态
 gh run list --limit 5

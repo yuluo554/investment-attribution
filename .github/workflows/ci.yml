@@ -5,6 +5,16 @@ on:
   pull_request:
   workflow_dispatch:
 
+# 只读权限：本工作流只跑测试与门禁，不写仓库任何东西。
+permissions:
+  contents: read
+
+# 同一 ref 的并发推送取消旧 run（`tag push` 与分支 push 各自独立计）：
+# 排队中的旧 run 对新提交没有意义，且省 runner。
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   test:
     name: py${{ matrix.python-version }} / ${{ matrix.os }}
@@ -18,7 +28,7 @@ jobs:
       PYTHONUTF8: "1"
       PYTHONDONTWRITEBYTECODE: "1"
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           # 脱敏扫描的"历史面"要遍历全部可达对象；浅克隆只给 tip 树，
           # 历史面会静默缩水成"只扫了最新一版"——那正是假绿。
@@ -43,7 +53,7 @@ jobs:
             git for-each-ref --format='tagger=%(taggername) <%(taggeremail)>' "$ref"
           fi
 
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@v7
         with:
           python-version: ${{ matrix.python-version }}
 

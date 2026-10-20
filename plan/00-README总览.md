@@ -134,7 +134,7 @@ M1–M5 业务模块（导入 / 成本 / 公司行为 / 归因 / 合并与报告
 | 单文件 HTML 零外链零网络 | 自写最小 HTML writer | 报告产物 | 静态扫描 0 外部引用（`http://`/`https://`/`//` 三形态阳性对照 + 注入外链必须报错且不落产物）+ 渲染全程武装探针 `blocked_attempts == 0` | ✅ M5 |
 | 敏感字段默认打码 | 生成阶段打码 | 报告产物 | 构建报告数据时即打码（`Y0000001 → Y0****01`）+ 兜底替换；HTML 与 JSON 均无完整账号形态（CI 加 grep 断言） | ✅ M5 |
 | 纯本地零上传零遥测 | 架构决策（无网络库导入 + 审计钩子拦截） | CLI + 单文件 HTML | 静态 AST import 审计（阳性/阴性对照）+ 运行期 `sys.addaudithook` 探针（真 socket 被拦且留痕 / 解除武装不拦不留痕）+ 拦截次数写进产物 `zero_upload.runtime_probe` | ✅ M4 |
-| **发布可用性** | GitHub Releases | 源码仓库 + 基准套件 | 干净环境 clone 跑通 README 快速开始（远端 clone 与 `--no-local` clone 各 429 passed，逐条命令复现）；远端仓库 = `yuluo554/investment-attribution`（public）；Release 附件 sha256 下载后复算一致 | ✅ M6 |
+| **发布可用性** | GitHub Releases | 源码仓库 + 基准套件 | 干净环境 clone 跑通 README 快速开始（远端 clone 与 `--no-local` clone 各 432 passed，逐条命令复现）；远端仓库 = `yuluo554/investment-attribution`（public）；Release 附件 sha256 下载后复算一致 | ✅ M6 |
 | 基金 CSV / 手工模板（扩展项） | — | 不承诺首期 | 非首期 DoD | 扩展项 |
 | PDF 交割单（扩展项） | 模板无穷 ⬜ | 不承诺首期 | 非首期 DoD | 扩展项 |
 | 更多券商适配（扩展项） | — | 不承诺首期 | 非首期 DoD | 扩展项 |
@@ -162,8 +162,8 @@ M1–M5 业务模块（导入 / 成本 / 公司行为 / 归因 / 合并与报告
   （`{windows,ubuntu} × {3.8,3.12}`）全绿，共 24 步/腿，含全量 pytest、
   **脱敏四面扫描**、两种入口的 `selftest --strict`、`gen_data.py --check`、六个子命令的
   冒烟与"口径必填 = exit 2"负断言、报告零外链与打码 grep、`run` 全链路（断言 exit 1 且
-  13 份产物齐全）、B1–B5 基准套件；本地另跑 3.8 / 3.12 全量 pytest 各 429 passed，
-  干净 clone（远端 + `--no-local`）各 429 passed 并逐条复现 README 命令。
+  13 份产物齐全）、B1–B5 基准套件；本地另跑 3.8 / 3.12 全量 pytest 各 432 passed，
+  干净 clone（远端 + `--no-local`）各 432 passed 并逐条复现 README 命令。
   逐项证据见 `plan/RELEASE-M6.md §三–§六`。
 - **退役后的退出码面**：`ALL_EXIT_CODES == (0, 1, 2)`；`stages.py` 与未就绪异常类已删除，
   `test_stage_registry.py` 改为"分派完备性"断言并断言源码无 `STAGE_NOT_READY` 残留。

@@ -93,8 +93,8 @@ exit 0
 
 | 通道 | 结果 |
 |---|---|
-| `py -3.8 -m pytest` | **429 passed** |
-| `py -3.12 -m pytest` | **429 passed** |
+| `py -3.8 -m pytest` | **432 passed** |
+| `py -3.12 -m pytest` | **432 passed** |
 
 含本次新增的 `tests/test_privacy_scan.py`（10 条：真仓库四面 0 命中、五条规则阳性
 对照、名单冻结、"名单外同形态照样命中"、无 `.git` 时历史/元数据两面报 `skipped`
@@ -158,7 +158,7 @@ exit 0
 | 克隆（本地 `--no-local`） | `git clone --no-local . <dir>` | `8e9b9e6` |
 | 新 venv | `py -3.12 -m venv` | Python 3.12.10 |
 | 安装 | `pip install -e ".[dev]"` | ok；`__version__ == 1.0.0` |
-| 全量测试 | `python -m pytest` | 远端 clone **429 passed**；`--no-local` clone **429 passed** |
+| 全量测试 | `python -m pytest` | 远端 clone **432 passed**；`--no-local` clone **432 passed** |
 | README 逐条 | `selftest` / `selftest --strict` / console script / `gen_data.py --check` / `scan_privacy.py --all` / `bench` / `run` | 全部按 §4.1–§4.5 复现（exit 0 / 0 / 0 / 0 / 0 / 0，`run` 为 1） |
 
 `tools/gen_data.py --check` 在无安装（仅 `PYTHONPATH`）与安装后两种形态下都可跑；
@@ -294,7 +294,7 @@ $ python tools/scan_privacy.py --all
 total hits = 0 / excused = 5 / skipped = 0      # exit 0
 ```
 
-`py -3.8` / `py -3.12` 全量 pytest 各 429 passed；`tools/gen_data.py --check` 形态 +
+`py -3.8` / `py -3.12` 全量 pytest 各 432 passed；`tools/gen_data.py --check` 形态 +
 29 产物逐字节不变。修的是**判据与覆盖面**，没碰任何数据、口径或产物。
 
 ### 7.4 发布物本体复核（发布后追加，2026-10-17）
@@ -307,7 +307,7 @@ total hits = 0 / excused = 5 / skipped = 0      # exit 0
 | 远端状态 | `git log --oneline -1` / `git ls-files \| wc -l` / `git status --porcelain` | `8d46d79`；125 个入仓文件；**0 处未提交改动**（历史 = 工作树） |
 | tag 类型与 tagger | `git cat-file -t refs/tags/v1.0.0` / `git for-each-ref` | `tag`（**标注 tag**，普通 clone 会连带取到）；tagger = `yuluo554 <282769740+yuluo554@users.noreply.github.com>` |
 | 提交数 | `git rev-list --count HEAD` | 10（M0–M6 共 10 个 commit） |
-| 全量测试 | 新 venv + `pip install -e ".[dev]"` + `pytest` | **431 passed** |
+| 全量测试 | 新 venv + `pip install -e ".[dev]"` + `pytest` | **432 passed** |
 | 数据守门 | `tools/gen_data.py --check` | `[shape] ok` + `[bytes] ok (29 artifacts)` |
 | 脱敏四面（**含标注 tag 对象**） | `tools/scan_privacy.py --all` | `total hits = 0 / excused = 5 / skipped = 0`，exit 0 —— 7.2 的缺陷 B 在 tag 对象真实存在的库里已不复现 |
 | 自检 | `selftest --strict` | exit 0 |
@@ -315,3 +315,75 @@ total hits = 0 / excused = 5 / skipped = 0      # exit 0
 | **发布物本体 = tag 树** | 附件解包目录 vs `git archive v1.0.0` 解包目录 `diff -r` | **逐文件逐字节相同**（附件顶层目录 `investment-attribution-1.0.0/`） |
 
 至此 M6 三件套（tag / Release 附产物 / 发布留档）与 DoD 六项全部闭合，且**每一项都指得出在哪验的**。
+
+### 7.5 发布线重对齐：tag `v1.0.0` 重指本次发布的 `main` 末端（2026-10-20）
+
+**背因（D1）**：首次发布的 tag 指向 `7da7c26`，而 `main` 已在其后走了 4 个提交，其中
+`8d46d79` 修的正是"**CI 的 tag run 拿不到标注 tag 对象**"（§7.2 问题 A）。这条修正
+**既不在发布物里、也不在 tag 树里**，且没有任何门禁会提示——发布物与 `main` 静默分叉。
+本次把 tag 重指到 `main` 末端、**连同这批发布工程改动一起重发附件**。动的只有 tag、
+附件与发布工程面：核算/归因语义、`data/**` 字节、脱敏门禁的扫描面一个字没改。
+
+#### 7.5.1 事实
+
+| 事实 | 值 |
+|---|---|
+| tag | `v1.0.0`，**annotated**，重指到本次发布的 `main` 末端（首次发布指向 `7da7c26`；旧 tag 对象 `4bef938f5dc7ac065a7eb03ba3f0d317d1f82699` 仍在库中，可回退） |
+| 对齐判据 | `git rev-list -n1 v1.0.0` == `git rev-parse HEAD`；`git log --oneline v1.0.0..HEAD` 为**空** |
+| tag 类型门 | `git cat-file -t refs/tags/v1.0.0` → `tag`（CI 的 `Restore annotated tag objects` 依赖它；轻量 tag 会让那个门红） |
+| tagger | `yuluo554 <282769740+yuluo554@users.noreply.github.com>`（与全部提交同源，非个人邮箱） |
+| tag 树规模 | **126** 个跟踪文件（首次发布的 tag 树 124；多出 `plan/HANDOFF-M7.md` 与 `tests/test_doc_counts.py`） |
+| **附件 = tag 树** | **126/126 文件逐字节相同**（每个文件按 `git blob` 头 sha1 复算，与 `git ls-tree -r v1.0.0` 的 blob 逐条对撞；零缺失、零多余、零字节差；顶层前缀 `investment-attribution-1.0.0/`） |
+| 重复构建可复现 | 同一 tag 连建两次字节相同（`cmp` 无差异） |
+| 附件自检 | 本地与下载件 `sha256sum -c SHA256SUMS` → `OK`；下载件与本地留档件 `cmp` 逐字节相同 |
+
+**本节为什么不写附件 sha256 / 字节数 / tag 对象号 / commit sha**：本节在 tag 树里，而这些东西
+都由这棵树本身算出来——写进去就是**自指**（改一个数字，产物字节随之变，数字立刻又不对）。
+首次发布时 M6 用"tag 之后另追加一节"绕开，代价是 tag 树里那一节长期是**待补**状态
+（§七 开头那句就是它留下的）。这次改成**权威值只放不参与自指的两处**：
+① Release 页的 `SHA256SUMS` 附件；② 本机 `release/RELEASE_NOTES.md`（`release/` 已 gitignore，不入仓）。
+树内只记**可复算的判据与配方**——复验方按下面配方重打，与 Release 页 `SHA256SUMS` 对撞即可，不必信本节。
+
+**构建配方**（只有这条能复现既有附件的形态）：
+
+```bash
+git archive --format=tar --prefix=investment-attribution-1.0.0/ v1.0.0 | gzip -9n \
+  > investment-attribution-v1.0.0.tar.gz
+```
+
+> `git archive --format=tar.gz` **不行**：它走 git 内置的 gzip，产物字节与留档件不同
+> （实测 339863 字节 vs 336748）。这条配方本身有证明：拿**旧** tag（`7da7c26`）按它重打，
+> 得到的就是首次发布的留档件本身（336748 字节、`684a4913…3498`，逐字节相同）。
+
+#### 7.5.2 本次一并执行的远端动作
+
+```bash
+git push origin main                                  # 发布工程改动先上 main
+git push --force origin refs/tags/v1.0.0               # 重指 tag（强推；最高风险动作，用户已确认）
+gh release upload v1.0.0 <tarball> SHA256SUMS --clobber
+gh release edit v1.0.0 --notes-file release/RELEASE_NOTES.md
+```
+
+执行后，**§7.1 的 `tag 指向的 commit` / `附件` / `附件 sha256` / `真下载复核` 四行，以及 §7.1 末尾
+「tag 树与 main 的差异」一段，即被本节取代**。本节不改写 §一–§六 与 §7.1–§7.4——与 §七 开头
+定下的分栏纪律一致。回退 patch（远端已推则需再强推一次）：
+`git update-ref refs/tags/v1.0.0 4bef938f5dc7ac065a7eb03ba3f0d317d1f82699`。
+
+#### 7.5.3 与重指同一提交里落的四项发布工程改动（都不在核算面）
+
+1. `pyproject.toml`：`license = { text = "MIT" }` → **SPDX 表达式** `license = "MIT"` + `license-files = ["LICENSE"]`，
+   删 `License ::` classifier，`build-system` 抬到 `setuptools>=77`（SPDX 字符串的最低要求）；
+   元数据生成 warning **3 → 0**（`py -3.12` + setuptools 84.0.0 实测），产物元数据出现
+   `License-Expression: MIT` / `License-File: LICENSE`。
+2. `.github/workflows/ci.yml`：`actions/checkout@v4 → @v7`、`actions/setup-python@v5 → @v7`，
+   加 `permissions: contents: read` 与 `concurrency`；**`fetch-depth: 0` 与 `Restore annotated tag objects`
+   原样保留**（它们正是 §7.2 两个问题的补丁，删掉等于把假绿放回来）。
+3. `plan/` 的末态计数统一为 **432**（= 431 项功能测试 + `tests/test_doc_counts.py` 守门自身 1 项），
+   并**新增该计数守门**：真跑 `pytest --collect-only` 与文档声明对撞，加/删测试必须同步 `plan/` 的数字，
+   历史里程碑快照数（33/111/161/240/310/419）按名单放行且名单不得腐烂。D2 的两处漂移
+   （`plan/` 写 429 / 写 431 而实测另一数）至此消失。
+4. `.gitignore`：忽略 `update/`（迭代交接目录含本机绝对路径，不忽略会让本仓自己的
+   `test_privacy_scan.py` 判红——tree 面按设计连未跟踪文件一起扫）。
+
+逐批动作、命令、逐条输出、退出码、三项负控与干净环境复验，见 `update/03-执行记录.md`（该目录不入仓）。
+
