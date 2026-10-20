@@ -1,5 +1,9 @@
 [build-system]
-requires = ["setuptools>=77"]
+# 下限必须是 61 而不是 77：PEP 639 的 SPDX license 表达式要 setuptools>=77，
+# 而 77 起不再支持 Python 3.8（3.8 上最高只有 75.3.4）——CI 的 py3.8 腿会因
+# "No matching distribution found for setuptools>=77" 在装构建依赖时就失败（实测）。
+# 本仓 floor 保持 >=3.8（DEC3=A），故 license 仍用弃用但各版本通吃的 TOML 表形态。
+requires = ["setuptools>=61"]
 build-backend = "setuptools.build_meta"
 
 [project]
@@ -8,13 +12,16 @@ version = "1.0.0"
 description = "券商交割单收益归因工作台：纯本地、零上传、可审计的投资账"
 readme = "README.md"
 requires-python = ">=3.8"
-license = "MIT"
-license-files = ["LICENSE"]
+# SPDX 表达式形态（license = "MIT" + license-files）要 setuptools>=77 → 要 Python>=3.9，
+# 与下面的 requires-python = ">=3.8" 互斥；等 floor 抬到 >=3.9 那天再换过来。
+license = { text = "MIT" }
 authors = [{ name = "yuluo554" }]
 keywords = ["brokerage", "attribution", "xirr", "twr", "portfolio", "local-first"]
 classifiers = [
     "Development Status :: 5 - Production/Stable",
     "Intended Audience :: End Users/Desktop",
+    # 与上面的 license 表同因保留（setuptools>=77 才支持"删 classifier 改 SPDX 表达式"）。
+    "License :: OSI Approved :: MIT License",
     "Programming Language :: Python :: 3",
     "Programming Language :: Python :: 3.8",
     "Programming Language :: Python :: 3.12",

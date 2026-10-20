@@ -369,12 +369,17 @@ gh release edit v1.0.0 --notes-file release/RELEASE_NOTES.md
 定下的分栏纪律一致。回退 patch（远端已推则需再强推一次）：
 `git update-ref refs/tags/v1.0.0 4bef938f5dc7ac065a7eb03ba3f0d317d1f82699`。
 
-#### 7.5.3 与重指同一提交里落的四项发布工程改动（都不在核算面）
+#### 7.5.3 与重指同一提交里落的发布工程改动（三项落地、一项试过被 CI 打回）
 
-1. `pyproject.toml`：`license = { text = "MIT" }` → **SPDX 表达式** `license = "MIT"` + `license-files = ["LICENSE"]`，
-   删 `License ::` classifier，`build-system` 抬到 `setuptools>=77`（SPDX 字符串的最低要求）；
-   元数据生成 warning **3 → 0**（`py -3.12` + setuptools 84.0.0 实测），产物元数据出现
-   `License-Expression: MIT` / `License-File: LICENSE`。
+1. `pyproject.toml` 的 license：**试过**换成 SPDX 表达式（`license = "MIT"` + `license-files`，
+   `build-system` 抬到 `setuptools>=77`，元数据 warning 3 → 0），**被 CI 打回**——
+   `setuptools>=77` 起不再支持 Python 3.8（3.8 上最高只有 75.3.4），py3.8 两条腿在
+   "安装构建依赖"就 `No matching distribution found for setuptools>=77`（实跑日志）。
+   即 **D3（license 弃用）与 DEC3=A（floor 保持 `>=3.8`）互斥**：PEP 639 支持 = `setuptools>=77` = Python `>=3.9`。
+   本轮按 DEC3=A **回退**为弃用但各版本通吃的形态（`license = { text = "MIT" }` + `License ::` classifier +
+   `setuptools>=61`），并把原因写进 `pyproject.toml` 注释（两处）。**D3 因此仍未闭合**，
+   出路只有两条：floor 抬到 `>=3.9`（或直接 `>=3.12`）后换 SPDX 表达式，或在 2027-02-18
+   硬期限前最后处理一次。**这一条是"本轮改了又退回去"的如实记录，不算已完成项。**
 2. `.github/workflows/ci.yml`：`actions/checkout@v4 → @v7`、`actions/setup-python@v5 → @v7`，
    加 `permissions: contents: read` 与 `concurrency`；**`fetch-depth: 0` 与 `Restore annotated tag objects`
    原样保留**（它们正是 §7.2 两个问题的补丁，删掉等于把假绿放回来）。
